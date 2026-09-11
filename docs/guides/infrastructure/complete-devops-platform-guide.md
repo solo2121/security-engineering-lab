@@ -1,6 +1,14 @@
 # Complete DevOps Platform Guide: Infrastructure to GitOps
 ## Vagrant + Kubernetes + Terraform + Ansible + ArgoCD + Observability
 
+> **Standalone tutorial, not this repo's lab.** This guide has you hand-write
+> your own single-VM Vagrantfile and set up k3d from scratch to learn the
+> concepts end-to-end. It is intentionally independent of
+> `labs/infrastructure/devops-linux-lab/`, which uses k3s, Harbor, and Argo CD
+> across its own multi-VM Vagrantfile and Ansible roles — see that lab's
+> [README](../../../labs/infrastructure/devops-linux-lab/README.md) if you
+> want to work with the actual repository lab.
+
 ---
 
 ## Table of Contents

@@ -14,14 +14,10 @@
 5. [Initial Access](#5-initial-access)  
 6. [Credential Attacks](#6-credential-attacks)  
 7. [Active Directory Certificate Services](#7-active-directory-certificate-services)  
-8. [Modern AD Attacks](#8-modern-ad-attacks)  
-9. [Lateral Movement Across VLANs](#9-lateral-movement-across-vlans)  
-10. [Domain Compromise](#10-domain-compromise)  
-11. [Cloud Attacks — LocalStack](#11-cloud-attacks--localstack)  
-12. [LLM Security Testing](#12-llm-security-testing)  
-13. [Web Application Attacks](#13-web-application-attacks)  
-14. [Post-Exploitation and Persistence](#14-post-exploitation-and-persistence)  
-15. [Lab Reset](#15-lab-reset)
+8–15. Modern AD Attacks, Lateral Movement Across VLANs, Domain Compromise,
+Cloud Attacks (LocalStack), LLM Security Testing, Web Application Attacks,
+Post-Exploitation and Persistence, and Lab Reset — **not yet written up as
+individual sections; see [Sections 8–15 (Pending)](#sections-815-pending) below.**
 
 ---
 
@@ -443,7 +439,7 @@ python3 /opt/coercer/coercer/coercer.py \
 
 ---
 
-## 8–15
+## Sections 8–15 (Pending)
 
 The remaining scenarios (ZeroLogon, PetitPotam, Shadow Credentials, NoPac,
 RBCD, PrintNightmare; lateral movement; DCSync / tickets; LocalStack; LLM;

@@ -35,8 +35,8 @@ you're not sure where to look.
 
 | Doc | What it covers |
 |---|---|
-| [`guides/infrastructure/devops-platform-overview.md`](guides/infrastructure/devops-platform-overview.md) | Quick start: Vagrant → Docker → Minikube → Jenkins → Prometheus/Grafana |
-| [`guides/infrastructure/complete-devops-platform-guide.md`](guides/infrastructure/complete-devops-platform-guide.md) | Full depth: adds Terraform, ArgoCD/GitOps, image scanning, canary deployments |
+| [`guides/infrastructure/devops-platform-overview.md`](guides/infrastructure/devops-platform-overview.md) | Standalone tutorial (not this repo's lab): Vagrant → Docker → Minikube → Jenkins → Prometheus/Grafana |
+| [`guides/infrastructure/complete-devops-platform-guide.md`](guides/infrastructure/complete-devops-platform-guide.md) | Standalone tutorial (not this repo's lab): adds Terraform, k3d, ArgoCD/GitOps, image scanning, canary deployments |
 | [`guides/infrastructure/kubernetes-security-hardening.md`](guides/infrastructure/kubernetes-security-hardening.md) | k3s cluster hardening |
 | [`guides/infrastructure/ansible-automation.md`](guides/infrastructure/ansible-automation.md) | Hands-on Ansible practice guide for the lab's Linux nodes (lab provisioning itself still uses Vagrant shell provisioners; see [`roadmap.md`](project/roadmap.md)) |
 | [`guides/infrastructure/vagrant-management-tutorial.md`](guides/infrastructure/vagrant-management-tutorial.md) | Vagrant commands and workflows |

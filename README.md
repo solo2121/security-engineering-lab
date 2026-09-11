@@ -348,6 +348,8 @@ This validates host dependencies and enables lab-specific plugin checks. For the
 
 [![Enterprise Infrastructure Architecture](./assets/diagrams/architecture-overview.png)](./assets/diagrams/)
 
+*The Ansible and Terraform/OpenTofu automation shown above is specific to the DevOps/DevSecOps lab (Lab 3). The Active Directory and Windows Hardening labs are each provisioned by a single Vagrantfile with inline shell/PowerShell provisioners instead — see [Provisioning Philosophy](./docs/architecture/architecture.md#provisioning-philosophy) for why.*
+
 The lab environments deploy independently through provider-aware Vagrant configurations. The architecture combines isolated Active Directory environments, segmented virtual networks, Kubernetes workloads, security monitoring, policy enforcement, and validation workflows.
 
 The labs demonstrate:

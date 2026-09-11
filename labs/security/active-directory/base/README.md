@@ -24,7 +24,7 @@ Enterprise-grade Active Directory penetration testing lab built with Vagrant, su
 - [VirtualBox Provider](#virtualbox-provider)
 - [Platform-Specific Guides](#platform-specific-guides)
 - [Attack Scenarios](#attack-scenarios)
-- [Credentials](#credentials)
+- [Default Credentials](#default-credentials)
 - [Lab Validation](#lab-validation)
 - [Troubleshooting](#troubleshooting)
 - [Performance Tips](#performance-tips)
@@ -622,35 +622,16 @@ Full interactive docs: `http://172.28.128.60:8000/docs`.
 
 ## Default Credentials
 
-### Domain Admin Accounts
+| Username | Password | Role |
+|----------|----------|------|
+| `labadmin` | `LabAdmin123!` | Domain Admin |
+| `Administrator` | `Passw0rd!` | Built-in Domain Admin |
+| `vagrant` | `Vagrant123!` | Domain Admin (default Vagrant user) |
 
-| Username | Password | Domain | Role |
-|----------|----------|--------|------|
-| `labadmin` | `LabAdmin123!` | lab.local | Domain Admin |
-| `Administrator` | `Passw0rd!` | lab.local | Domain Admin |
-
-### Service Accounts
-
-| Account | Password | Purpose |
-|---------|----------|---------|
-| `svc_sql` | `SqlSvcPass123!` | SQL Server Service Account |
-| `svc_backup` | `BackupPass123!` | Backup Service Account |
-| `svc_monitoring` | `MonitorPass123!` | Monitoring Service Account |
-| `svc_print` | `PrintPass123!` | Print Spooler Service |
-| `svc_web` | `WebPass123!` | Web Application Pool |
-| `svc_join` | `JoinP@ss!` | Domain Join Service Account |
-
-### Attack-Specific Accounts
-
-| Account | Password | Attack Vector |
-|---------|----------|---------------|
-| `svc_asrep` | `ServiceP@ss1` | AS-REP Roasting |
-| `svc_kerberoast` | `ServiceP@ss2` | Kerberoasting |
-| `svc_delegate` | `DelegateP@ss123` | Constrained Delegation |
-| `svc_webapp` | `WebAppP@ss123` | Extra Kerberoast Target |
-| `svc_apppool` | `AppPoolP@ss123` | Extra Kerberoast Target |
-| `svc_mssql2` | `MssqlP@ss123` | Extra Kerberoast Target |
-| `svc_sql_gmsa` | `GmsaP@ss123!` | gMSA Abuse |
+This is a highlight, not the full list. The lab also ships service, departmental,
+local, database, web-application, GPP, and machine-account credentials — see the
+**[full credential matrix](./docs/lab-credentials.md)** for the complete,
+up-to-date roster and their mapped attack vectors.
 
 **Note:** Do not use these credentials outside this lab environment.
 

@@ -119,6 +119,41 @@ SERVICE_ACCOUNTS:
     password: "BackupPass123!"
     description: "Backup service account"
     attack_vector: "Backup privilege abuse"
+
+  - username: "svc_monitoring"
+    password: "MonitorPass123!"
+    description: "Monitoring service account"
+    attack_vector: "Kerberoasting"
+
+  - username: "svc_web"
+    password: "WebPass123!"
+    description: "Web application pool identity"
+    attack_vector: "Kerberoasting"
+
+  - username: "svc_join"
+    password: "JoinP@ss!"
+    description: "Domain join service account"
+    attack_vector: "Kerberoasting"
+
+  - username: "svc_webapp"
+    password: "WebAppP@ss123"
+    description: "Extra Kerberoast target"
+    attack_vector: "Kerberoasting"
+
+  - username: "svc_apppool"
+    password: "AppPoolP@ss123"
+    description: "Extra Kerberoast target"
+    attack_vector: "Kerberoasting"
+
+  - username: "svc_mssql2"
+    password: "MssqlP@ss123"
+    description: "Extra Kerberoast target"
+    attack_vector: "Kerberoasting"
+
+  - username: "svc_sql_gmsa"
+    password: "GmsaP@ss123!"
+    description: "Group-managed service account (gMSA)"
+    attack_vector: "gMSA Abuse"
 ```
 
 </details>
@@ -263,6 +298,7 @@ ATTACK_VECTORS:
   - AD_CS_ABUSE
   - PASSWORD_SPRAYING
   - LATERAL_MOVEMENT
+  - GMSA_ABUSE
 ```
 
 </details>

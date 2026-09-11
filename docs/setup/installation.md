@@ -14,10 +14,11 @@ Each lab includes a Vagrantfile for both providers: the KVM/libvirt Vagrantfile 
 - [Prerequisites](#prerequisites)
 - [Step 1: Host System Setup (KVM/libvirt)](#step-1-host-system-setup-kvmlibvirt)
 - [Step 1 (Alternative): Host System Setup (VirtualBox)](#step-1-alternative-host-system-setup-virtualbox)
-- [Step 2: Install Vagrant](#step-2-install-vagrant)
-- [Step 3: Install Vagrant Plugins](#step-3-install-vagrant-plugins)
-- [Step 4: Deploy a Lab Environment](#step-4-deploy-a-lab-environment)
-- [Verification and Cleanup](#verification-and-cleanup)
+- [Install Vagrant Plugins](#install-vagrant-plugins)
+- [Lab 1: Active Directory Pentest Lab](#lab-1-active-directory-pentest-lab)
+- [Lab 2: DevOps / DevSecOps Lab](#lab-2-devops--devsecops-lab)
+- [Verification Checklist](#verification-checklist)
+- [Uninstall and Cleanup](#uninstall-and-cleanup)
 - [Troubleshooting](#troubleshooting)
 
 ---

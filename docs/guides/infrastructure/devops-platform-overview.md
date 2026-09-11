@@ -1,4 +1,11 @@
 
+> **Standalone tutorial, not this repo's lab.** This guide has you build your
+> own throwaway VM with Minikube and Jenkins to learn core DevOps concepts.
+> It is intentionally independent of `labs/infrastructure/devops-linux-lab/`,
+> which uses k3s, Harbor, and Argo CD instead — see that lab's
+> [README](../../../labs/infrastructure/devops-linux-lab/README.md) if you
+> want to work with the actual repository lab.
+
 ---
 
 ## Table of Contents
