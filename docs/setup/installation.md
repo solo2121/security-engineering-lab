@@ -265,7 +265,7 @@ An alternate VLAN-segmented edition is located in:
 labs/security/active-directory/vlan-segmented/
 ```
 
-This environment includes Windows Server 2022, domain-joined workstations, AD CS, Kali Linux, LocalStack, and additional research targets.
+This environment includes Windows Server 2022, domain-joined workstations, AD CS, Kali Linux (the default attacker box; set `KALI_BOX` to use Parrot Security or another Debian-based box instead — see the lab README), LocalStack, and additional research targets.
 
 > **Windows licensing note:** The Windows Server and Windows 10 boxes used in this lab are built from Microsoft's free [Windows Server Evaluation](https://www.microsoft.com/evalcenter/evaluate-windows-server-2022) and [Windows 10/11 Evaluation](https://developer.microsoft.com/windows/downloads/virtual-machines/) media, intended for evaluation, testing, and development use. Evaluation media is time-limited (commonly 180 days for Windows Server) and is not licensed for production use. You are responsible for complying with Microsoft's licensing terms if you use this lab beyond evaluation purposes.
 

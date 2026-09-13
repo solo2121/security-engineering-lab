@@ -111,7 +111,15 @@ ACTIONS = {
     "6": ("ssh", "SSH into a VM"),
     "7": ("status", "Show status"),
     "8": ("list_all", "List all lab VMs"),
+    "9": ("switch_attacker_box", "Switch attacker box (Kali/Parrot/custom)"),
     "q": ("quit", "Quit"),
+}
+
+# Known attacker-box presets offered by "Switch attacker box". Anything
+# else can still be typed in via the "custom" option.
+ATTACKER_BOX_PRESETS = {
+    "kali": (None, None),  # None clears the override -> Vagrantfile default
+    "parrot": ("ParrotSec/Parrot-security-7.3-libvirt-amd64", "7.3"),
 }
 
 
@@ -682,15 +690,21 @@ def interactive_menu(
         return
 
     while True:
+        box_suffix = (
+            f" | Attacker box: {os.environ['KALI_BOX']}"
+            if os.environ.get("KALI_BOX")
+            else ""
+        )
         if supported:
             excluded = [name for name in vms if name not in active]
             menu_title = (
                 f"Vagrant Lab Manager -- Provider: {SELECTED_PROVIDER} | "
                 f"Profile: {profile} | "
                 f"Active: {len(active)} | Excluded: {len(excluded)}"
+                f"{box_suffix}"
             )
         else:
-            menu_title = f"Vagrant Lab Manager -- Provider: {SELECTED_PROVIDER}"
+            menu_title = f"Vagrant Lab Manager -- Provider: {SELECTED_PROVIDER}{box_suffix}"
 
         console.print(
             Panel.fit(
@@ -710,6 +724,80 @@ def interactive_menu(
         )
 
         action, _ = ACTIONS[choice]
+
+        if action == "switch_attacker_box":
+            current_box = os.environ.get("KALI_BOX", "kalilinux/rolling")
+            current_version = os.environ.get("KALI_BOX_VERSION", "2026.1.0")
+            console.print(
+                Panel.fit(
+                    "[bold]Attacker box (kali VM)[/bold]\n"
+                    f"Current: [cyan]{current_box}[/cyan] @ {current_version}",
+                    border_style="cyan",
+                )
+            )
+            box_choice = Prompt.ask(
+                "Choose an attacker box",
+                choices=["kali", "parrot", "custom", "cancel"],
+                default="cancel",
+            )
+
+            if box_choice == "cancel":
+                continue
+
+            if box_choice in ATTACKER_BOX_PRESETS:
+                box, version = ATTACKER_BOX_PRESETS[box_choice]
+                if box is None:
+                    os.environ.pop("KALI_BOX", None)
+                    os.environ.pop("KALI_BOX_VERSION", None)
+                    console.print(
+                        "[green]Attacker box reset to the Kali default "
+                        "(kalilinux/rolling).[/green]"
+                    )
+                else:
+                    os.environ["KALI_BOX"] = box
+                    os.environ["KALI_BOX_VERSION"] = version
+                    console.print(
+                        f"[green]Attacker box set to {box} @ "
+                        f"{version}.[/green]\n"
+                        "[yellow]Unverified against this repo's "
+                        "Kali-specific guides -- confirm the box/version "
+                        "exists on Vagrant Cloud for your provider "
+                        "before relying on it.[/yellow]"
+                    )
+            else:  # custom
+                custom_box = Prompt.ask(
+                    "Box (org/name)",
+                    default=os.environ.get("KALI_BOX", ""),
+                )
+                if not custom_box:
+                    console.print(
+                        "[yellow]No box entered -- leaving the current "
+                        "setting unchanged.[/yellow]"
+                    )
+                    continue
+
+                custom_version = Prompt.ask(
+                    "Box version (blank = latest)",
+                    default=os.environ.get("KALI_BOX_VERSION", ""),
+                )
+                os.environ["KALI_BOX"] = custom_box
+                if custom_version:
+                    os.environ["KALI_BOX_VERSION"] = custom_version
+                else:
+                    os.environ.pop("KALI_BOX_VERSION", None)
+
+                console.print(
+                    f"[green]Attacker box set to {custom_box}"
+                    + (f" @ {custom_version}" if custom_version else "")
+                    + ".[/green]"
+                )
+
+            console.print(
+                "[dim]Takes effect on the next 'up'/'reload' for kali -- "
+                "an already-running kali VM keeps its current box until "
+                "it's destroyed and brought up again.[/dim]"
+            )
+            continue
 
         if action == "list_all":
             table = Table(title="All lab VMs")
@@ -851,10 +939,38 @@ def main() -> int:
         ),
     )
 
+    parser.add_argument(
+        "--kali-box",
+        default=None,
+        metavar="ORG/NAME",
+        help=(
+            "Override the attacker VM's box for this run (sets "
+            "KALI_BOX for the vagrant subprocess), e.g. --kali-box "
+            "ParrotSec/Parrot-security-7.3-libvirt-amd64 to use Parrot "
+            "Security instead of Kali Linux. The VM keeps the name "
+            "'kali' either way. Combine with --kali-box-version."
+        ),
+    )
+
+    parser.add_argument(
+        "--kali-box-version",
+        default=None,
+        metavar="VERSION",
+        help="Box version to pair with --kali-box, e.g. 7.3.",
+    )
+
     args = parser.parse_args()
 
     global SELECTED_PROVIDER
     SELECTED_PROVIDER = resolve_provider(args.provider)
+
+    # Applied to this process's environment so every vagrant subprocess
+    # this run makes (interactive or one-shot) inherits it via the
+    # existing `env = {**os.environ, ...}` copy in run_vagrant().
+    if args.kali_box:
+        os.environ["KALI_BOX"] = args.kali_box
+    if args.kali_box_version:
+        os.environ["KALI_BOX_VERSION"] = args.kali_box_version
 
     vagrantfile = find_vagrantfile()
 
@@ -872,6 +988,14 @@ def main() -> int:
         f"[dim]Provider: [bold]{SELECTED_PROVIDER}[/bold] "
         "(override with --provider or VAGRANT_DEFAULT_PROVIDER)[/dim]"
     )
+    if os.environ.get("KALI_BOX"):
+        box_version = os.environ.get("KALI_BOX_VERSION")
+        console.print(
+            f"[dim]Attacker box (kali): [bold]{os.environ['KALI_BOX']}[/bold]"
+            + (f" @ {box_version}" if box_version else "")
+            + " (override with --kali-box/--kali-box-version or "
+            "KALI_BOX/KALI_BOX_VERSION)[/dim]"
+        )
 
     vms = discover_vms(vagrantfile)
     active, profile, supported = resolve_active_vms(vagrantfile, vms)

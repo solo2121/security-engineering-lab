@@ -9,7 +9,7 @@
 # ==============================================================================
 # Author: Miguel A. Carlo
 # Project: Enterprise Active Directory Penetration Testing Lab
-# Version: 1.13 - Enterprise Edition (FLAT NETWORK - PROFILE-BASED)
+# Version: 1.14 - Enterprise Edition (FLAT NETWORK - PROFILE-BASED)
 # Release Date: unreleased
 #
 # UNIFIED VAGRANTFILE: this single file supports both KVM/QEMU via
@@ -20,6 +20,12 @@
 # Linux hosts and VirtualBox elsewhere (see current_provider below).
 # Set LAB_GUI=true to run VirtualBox VMs with a GUI window (headless by
 # default; no effect under libvirt).
+#
+# Changes in v1.14:
+# - Added KALI_BOX / KALI_BOX_VERSION so the attacker VM can run an
+#   alternate Debian-based pentesting distribution (e.g. Parrot
+#   Security) instead of Kali Linux, without renaming the VM. Defaults
+#   are unchanged (kalilinux/rolling).
 #
 # Changes in v1.13:
 # - Added LAB_PROFILE (minimal/ad/web/cloud/full) to control which
@@ -80,6 +86,18 @@ puts "Provider: #{PROVIDER}"
 # Set LAB_GUI=true to open a VirtualBox GUI window per VM (default: headless).
 # No effect under libvirt.
 LAB_GUI = ENV.fetch('LAB_GUI', 'false').downcase == 'true'
+
+# ------------------------------------------------------------
+# ATTACKER BOX SELECTION
+# ------------------------------------------------------------
+# Defaults to Kali Linux. Override with KALI_BOX / KALI_BOX_VERSION to
+# use a different Debian-based pentesting distribution as the "kali"
+# VM instead - for example Parrot Security:
+#   KALI_BOX=ParrotSec/Parrot-security-7.3-libvirt-amd64 KALI_BOX_VERSION=7.3 vagrant up
+# Verify the box name/version on Vagrant Cloud before overriding; not
+# every box publishes every provider (libvirt/virtualbox) or version.
+KALI_BOX = ENV.fetch('KALI_BOX', 'kalilinux/rolling')
+KALI_BOX_VERSION = ENV.fetch('KALI_BOX_VERSION', '2026.1.0')
 
 # ------------------------------------------------------------
 # DOMAIN CONSTANTS
@@ -984,10 +1002,12 @@ Vagrant.configure("2") do |config|
 
   # ===========================================================================
   # KALI - PROFESSIONAL PENTESTING PLATFORM WITH MODERN TOOLS
+  # (defaults to Kali Linux; set KALI_BOX to use Parrot Security or
+  # another Debian-based box instead - see ATTACKER BOX SELECTION above)
   # ===========================================================================
   config.vm.define "kali" do |vm|
-    vm.vm.box = "kalilinux/rolling"
-    vm.vm.box_version = "2026.1.0"
+    vm.vm.box = KALI_BOX
+    vm.vm.box_version = KALI_BOX_VERSION
     vm.vm.hostname = "kali.lab.local"
     configure_network(vm, VM_IPS[:kali])
 

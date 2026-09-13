@@ -546,9 +546,11 @@ The manager provides:
 - SSH access shortcuts (including direct OPNsense SSH)
 - Individual VM start/stop/reload/destroy controls
 - "Start All" / "Halt All" scoped to your current `LAB_PROFILE`
-- Option `[Q]` quit, `[R]` refresh
+- Option `[K]` switch the attacker box (Kali/Parrot/custom — see below), `[Q]` quit, `[R]` refresh
 
 **Picking a VM outside your current profile:** it isn't hidden, and it isn't a dead end. VMs excluded by the active profile show as `excluded (LAB_PROFILE)` in the list; selecting one asks whether to run just that VM's actions under the profile that includes it — e.g. *"'metasploitable2' requires LAB_PROFILE=full (Full lab - All VMs, recommended 48GB RAM). Run this one VM's actions under LAB_PROFILE=full?"*. Confirming applies that profile to that one `vagrant` call only; declining cancels cleanly. Your shell's `LAB_PROFILE` and the rest of your session are never changed by this.
+
+**Attacker box (`kali`):** defaults to Kali Linux (`kalilinux/rolling`). Choose an alternative three ways: the interactive menu's `[K]` option (prompts for Kali, Parrot Security, or a custom `org/name`), the `--kali-box`/`--kali-box-version` CLI flags, or the `KALI_BOX`/`KALI_BOX_VERSION` environment variables — all three set the same thing and the VM keeps the name `kali` regardless of which box it runs. The change only takes effect on the next `up`/`reload` for `kali`; an already-running VM keeps its current box until destroyed and brought up again. Parrot Security is an opt-in, unverified alternative — only the Kali default is covered by this repo's tests and Kali-specific guides.
 
 VMs are displayed by network segment:
 

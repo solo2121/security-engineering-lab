@@ -77,7 +77,7 @@ Users are responsible for complying with all applicable laws.
 | AD Certificate Services | Windows Server 2022 | ESC1–ESC9 vulnerabilities |
 | DB Server (simulated SQL) | Windows Server 2022 | SMB/credential-exposure target (no SQL Server engine installed) |
 | Windows 10 | 22H2 | Domain workstation |
-| Kali Linux | Rolling | Attacker platform |
+| Kali Linux | Rolling | Attacker platform (default; set `KALI_BOX` to swap in Parrot Security or another Debian-based box - see [Configuration](#configuration)) |
 | AI Platform (LLM01) | Custom | OWASP LLM Top 10 + modern attacks |
 | Cloud Attack VM | LocalStack | AWS simulation (S3, IAM, EC2, Lambda, Secrets Manager, Terraform) |
 | Linux Server | Ubuntu 22.04 | Internal vulnerabilities (Polkit CVE-2021-3560, weak SSH config) |
@@ -512,11 +512,14 @@ All settings are controlled with the same environment variables regardless of pr
 | `LAB_GUI` | `false` | Set to `true` to open a VirtualBox GUI console window per VM instead of running headless. No effect under libvirt. |
 | `<VM>_MEMORY`, `<VM>_CPUS` | per-VM defaults | Override memory (MB) / CPU count for a given VM, e.g. `DC01_MEMORY=8192`. |
 | `<VM>_IP` | per-VM defaults | Override a VM's static IP (must stay inside `LAB_SUBNET`). |
+| `KALI_BOX`, `KALI_BOX_VERSION` | `kalilinux/rolling`, `2026.1.0` | Swap the attacker VM's box, e.g. `KALI_BOX=ParrotSec/Parrot-security-7.3-libvirt-amd64 KALI_BOX_VERSION=7.3 vagrant up` to use Parrot Security instead of Kali. The VM keeps the name `kali` regardless of which box it runs. Verify the box/version exists for your provider on Vagrant Cloud first. `scripts/vagrant_manager.py` offers the same choice three ways: the `--kali-box`/`--kali-box-version` flags, the `KALI_BOX`/`KALI_BOX_VERSION` env vars, or option **9** ("Switch attacker box") in the interactive menu, which prompts for Kali, Parrot, or a custom box. |
 | `LAB_PROFILE` | `ad` | Selects which VMs are created — see [Lab Profiles](#lab-profiles). |
 
 An optional `config.rb` in this directory is loaded automatically if present, for host-specific overrides you don't want to export as environment variables — shared between both providers since there's now one Vagrantfile.
 
-Both providers pull the same Vagrant Cloud boxes (`kalilinux/rolling`, `generic/ubuntu2204`, `peru/windows-10-enterprise-x64-eval`, `peru/windows-server-2022-standard-x64-eval`, etc.) — these are pulled automatically by `vagrant up` and require no manual download.
+Both providers pull the same Vagrant Cloud boxes (`kalilinux/rolling`, `generic/ubuntu2204`, `peru/windows-10-enterprise-x64-eval`, `peru/windows-server-2022-standard-x64-eval`, etc.) — these are pulled automatically by `vagrant up` and require no manual download. The attacker box is the one exception: it follows `KALI_BOX` / `KALI_BOX_VERSION` above.
+
+> **Using Parrot Security instead of Kali:** the `kali` VM only gets `python3-pip`, `python3-venv`, `bloodhound`, `neo4j`, and a handful of `pip`-installed packages from this Vagrantfile - the rest of the attacker toolset comes preinstalled on whichever box you choose. Parrot Security and Kali are both Debian-based and ship a comparable pentesting toolset, so this should work, but it isn't covered by this repo's tests, and any guide elsewhere in these docs that references Kali-specific tool paths or menu locations was written and verified against Kali. Treat Parrot as an unverified, opt-in alternative rather than a fully tested second target.
 
 ### Known limitations
 
@@ -904,6 +907,11 @@ In-depth docs for this lab live under [`docs/`](docs/):
 ---
 
 ## Changelog
+
+### v1.14 (unreleased)
+
+**Added:**
+- `KALI_BOX` / `KALI_BOX_VERSION` environment variables let the attacker VM run an alternate Debian-based pentesting distribution — for example Parrot Security — instead of Kali Linux, without changing the VM name (`kali`), hostname, or IP. Defaults are unchanged (`kalilinux/rolling`, `2026.1.0`). See [Configuration](#configuration).
 
 ### v1.13 (unreleased)
 

@@ -10,6 +10,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **`KALI_BOX` / `KALI_BOX_VERSION` environment variables for
+  `active-directory/base` and `active-directory/vlan-segmented`.** The
+  attacker VM (still named `kali`) can now run an alternate
+  Debian-based pentesting distribution instead of Kali Linux — for
+  example Parrot Security — by overriding these two variables at
+  `vagrant up` time. Defaults are unchanged (`kalilinux/rolling`,
+  `2026.1.0`); no VM names, hostnames, IPs, or provisioning logic
+  changed. This is an opt-in, unverified alternative — only the Kali
+  default is covered by this repo's tests and Kali-specific guides.
+  Both labs' `scripts/vagrant_manager.py` gained matching `--kali-box`
+  / `--kali-box-version` CLI flags (set the same env vars for the
+  subprocess) plus a new interactive menu option — `9` in
+  `active-directory/base`, `[K]` in `active-directory/vlan-segmented`
+  — that prompts to switch between Kali, Parrot, or a custom box, and
+  both now display the active attacker box in their banner and menu
+  title when overridden.
 - **Provider-aware `vagrant_manager.py` for `active-directory/base` and
   `active-directory/vlan-segmented`.** Both managers gained a
   `resolve_provider()` helper (CLI `--provider` flag → `VAGRANT_DEFAULT_PROVIDER`

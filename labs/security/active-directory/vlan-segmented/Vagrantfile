@@ -257,7 +257,10 @@ VM_CONFIG = {
     health_check: { type: :winrm, port: 5985, timeout: 1200, marker: 'C:\\DC-FINAL.txt' }
   },
   'kali' => {
-    box: 'kalilinux/rolling', box_version: '2026.1.0', memory: 4096, cpus: 2, disk_size: 80,
+    # Defaults to Kali Linux; override with KALI_BOX / KALI_BOX_VERSION
+    # to use Parrot Security or another Debian-based box instead, e.g.:
+    #   KALI_BOX=ParrotSec/Parrot-security-7.3-libvirt-amd64 KALI_BOX_VERSION=7.3 vagrant up
+    box: ENV.fetch('KALI_BOX', 'kalilinux/rolling'), box_version: ENV.fetch('KALI_BOX_VERSION', '2026.1.0'), memory: 4096, cpus: 2, disk_size: 80,
     hostname: 'kali.lab.local', guest: :linux, vlan: 99, host_number: 10, autostart: true, nat_ip: '192.168.100.180',
     health_check: { type: :ssh, port: 22, timeout: 300 }
   },
