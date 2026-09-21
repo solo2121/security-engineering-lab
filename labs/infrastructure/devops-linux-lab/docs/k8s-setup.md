@@ -32,7 +32,7 @@ no separate CNI manifest or `kubeadm join` step is required.
 
 `worker-1` and `worker-2` join the cluster automatically during
 provisioning once the control plane's cluster state is available; see
-[`architecture.md`](architecture.md#provisioning-flow) for the
+[`architecture.md`](architecture.md#deployment-sequence) for the
 provisioning sequence.
 
 > Superseded note: earlier revisions of this lab used a manual
