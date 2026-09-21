@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
+import argparse
+import random
 import sys
+import threading
+import time
 import warnings
+from datetime import datetime
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 
 try:
-    from scapy.all import *
+    from scapy.all import ICMP, IP, TCP, UDP, send, sr1
+    from scapy.all import fragment as scapy_fragment
 except ImportError:
     print("Error: Scapy library not found. Please install it with: pip install scapy")
     sys.exit(1)
-
-import time
-import random
-import threading
-from datetime import datetime
-import argparse
-from scapy.all import fragment as scapy_fragment
 
 
 def banner():
