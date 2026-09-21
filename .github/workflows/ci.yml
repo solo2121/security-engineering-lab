@@ -26,7 +26,6 @@ on:
   push:
     branches:
       - main
-      - chore/repository-standardization
   pull_request:
     branches:
       - main
@@ -548,13 +547,10 @@ jobs:
   # ---------------------------------------------------------------------------
   # Job 6c: Ansible role linting
   #
-  # The roadmap includes creating Ansible roles for the DevOps lab (see
-  # docs/project/roadmap.md), but that work has not started yet as of
-  # this job's addition -- there is no ansible/ directory in the repo.
-  # Rather than block on that future work, this job checks whether
-  # labs/infrastructure/devops-linux-lab/ansible/ exists and skips
-  # cleanly (not a failure) if it doesn't. Once roles are added there,
-  # this job activates automatically with no further CI changes needed.
+  # Lints the DevOps lab roles under labs/infrastructure/devops-linux-lab/
+  # ansible/ with ansible-lint. The directory check is kept as a guard so
+  # the job skips cleanly, rather than failing, if that tree is ever moved
+  # or removed.
   # ---------------------------------------------------------------------------
   lint-ansible-roles:
     name: Lint Ansible Roles
@@ -571,10 +567,7 @@ jobs:
             echo "found=true" >> "$GITHUB_OUTPUT"
           else
             echo "found=false" >> "$GITHUB_OUTPUT"
-            echo "No labs/infrastructure/devops-linux-lab/ansible/ directory yet -- skipping."
-            echo "See docs/project/roadmap.md: \"Create Ansible roles to improve"
-            echo "repeatability of DevOps lab provisioning.\" This job will start"
-            echo "linting automatically once that directory exists."
+            echo "labs/infrastructure/devops-linux-lab/ansible/ not found -- skipping."
           fi
 
       - name: Set up Python 3.12
