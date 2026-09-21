@@ -39,7 +39,7 @@ repos:
           - "--exclude=SC1091,SC2034,SC2155,SC2207"
 
   - repo: https://github.com/pycqa/flake8
-    rev: 7.1.1
+    rev: 7.3.0
     hooks:
       - id: flake8
         name: flake8 (informational style check)
