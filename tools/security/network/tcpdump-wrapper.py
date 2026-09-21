@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
 
+import ipaddress
 import os
-import sys
+import re
 import subprocess
+import sys
 from datetime import datetime
+
+_HOSTNAME_RE = re.compile(r"^[A-Za-z0-9]([A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$")
+_INTERFACE_LINE_RE = re.compile(r"^\d+\.(\S+)")
 
 
 def clear_screen():
-    os.system('clear' if os.name == 'posix' else 'cls')
+    # ANSI clear + cursor home; avoids spawning a shell for a cosmetic action.
+    print("\033[2J\033[H", end="")
 
 
 def print_header():
@@ -20,11 +26,25 @@ def print_header():
     """)
 
 
+def parse_interface_list(output):
+    """Extract interface names from `tcpdump -D` output.
+
+    Each line looks like ``1.eth0 [Up, Running, Connected]`` (the index and
+    name are joined by a dot, with no space), so the name is taken from the
+    first token rather than the second whitespace-separated field.
+    """
+    interfaces = []
+    for line in output.splitlines():
+        match = _INTERFACE_LINE_RE.match(line.strip())
+        if match:
+            interfaces.append(match.group(1))
+    return interfaces
+
+
 def get_interface_list():
     try:
         result = subprocess.run(['tcpdump', '-D'], capture_output=True, text=True, check=True)
-        interfaces = [line.split()[1] for line in result.stdout.split('\n') if line]
-        return interfaces
+        return parse_interface_list(result.stdout)
     except subprocess.CalledProcessError as e:
         print(f"Error getting interfaces: {e.stderr}")
         return []
@@ -88,6 +108,47 @@ def generate_filename(interface):
     return f"capture_{interface}_{timestamp}.pcap"
 
 
+def prompt_port():
+    """Ask for a TCP/UDP port until a value in 1-65535 is entered."""
+    while True:
+        raw = input("Enter port number (1-65535): ").strip()
+        if raw.isdigit() and 1 <= int(raw) <= 65535:
+            return int(raw)
+        print("Please enter a whole number between 1 and 65535.")
+
+
+def prompt_host():
+    """Ask for an IP address or hostname and reject anything else."""
+    while True:
+        raw = input("Enter host IP or hostname: ").strip()
+        try:
+            ipaddress.ip_address(raw)
+            return raw
+        except ValueError:
+            pass
+        if _HOSTNAME_RE.match(raw):
+            return raw
+        print("Please enter a valid IP address or hostname.")
+
+
+def prompt_positive_int(message):
+    """Ask for a positive whole number."""
+    while True:
+        raw = input(message).strip()
+        if raw.isdigit() and int(raw) > 0:
+            return int(raw)
+        print("Please enter a positive whole number.")
+
+
+def prompt_custom_filter():
+    """Ask for a BPF expression; refuse empty input or anything that looks like an option."""
+    while True:
+        raw = input("Enter custom filter (e.g., 'host 192.168.1.1 and port 80'): ").strip()
+        if raw and not raw.startswith("-"):
+            return raw
+        print("The filter must not be empty or start with '-'.")
+
+
 def select_capture_options():
     print_header()
     print("Capture Options:\n")
@@ -97,27 +158,28 @@ def select_capture_options():
     print("4. Capture specific protocol")
     print("5. Advanced filter (custom)")
 
+    protocols = {"1": "tcp", "2": "udp", "3": "icmp"}
+
     while True:
-        choice = input("\nSelect capture option (1-5): ")
+        choice = input("\nSelect capture option (1-5): ").strip()
         if choice == '1':
             return []
         elif choice == '2':
-            port = input("Enter port number: ")
-            return [f"port {port}"]
+            return [f"port {prompt_port()}"]
         elif choice == '3':
-            host = input("Enter host IP: ")
-            return [f"host {host}"]
+            return [f"host {prompt_host()}"]
         elif choice == '4':
             print("\nProtocol options:")
             print("1. TCP")
             print("2. UDP")
             print("3. ICMP")
-            proto_choice = input("Select protocol: ")
-            protocols = {1: 'tcp', 2: 'udp', 3: 'icmp'}
-            return [f"{protocols.get(int(proto_choice), 'tcp')}"]
+            while True:
+                proto_choice = input("Select protocol (1-3): ").strip()
+                if proto_choice in protocols:
+                    return [protocols[proto_choice]]
+                print("Please enter 1, 2, or 3.")
         elif choice == '5':
-            custom_filter = input("Enter custom filter (e.g., 'host 192.168.1.1 and port 80'): ")
-            return [custom_filter]
+            return [prompt_custom_filter()]
         else:
             print("Invalid choice. Please select 1-5.")
 
@@ -129,19 +191,24 @@ def select_packet_count():
     print("2. Specific number of packets")
 
     while True:
-        choice = input("\nSelect packet count option (1-2): ")
+        choice = input("\nSelect packet count option (1-2): ").strip()
         if choice == '1':
             return []
         elif choice == '2':
-            count = input("Enter number of packets to capture: ")
-            return ['-c', count]
+            count = prompt_positive_int("Enter number of packets to capture: ")
+            return ['-c', str(count)]
         else:
             print("Invalid choice. Please select 1 or 2.")
 
 
+def build_command(interface, save_path, filter_options, count_options):
+    """Assemble the tcpdump argv: options first, BPF filter expression last."""
+    return ['tcpdump', '-i', interface, '-w', save_path] + count_options + filter_options
+
+
 def run_tcpdump(interface, save_dir, filename, filter_options, count_options):
     save_path = os.path.join(save_dir, filename)
-    command = ['tcpdump', '-i', interface, '-w', save_path] + filter_options + count_options
+    command = build_command(interface, save_path, filter_options, count_options)
 
     print("\nStarting capture with the following command:")
     print(" ".join(command))
