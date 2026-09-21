@@ -1,0 +1,19 @@
+# Normalise line endings so scripts provisioned into Linux guests never
+# pick up CRLF on Windows hosts (VirtualBox on Windows is a supported host).
+* text=auto
+
+*.sh        text eol=lf
+*.py        text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.toml      text eol=lf
+*.ini       text eol=lf
+*.cfg       text eol=lf
+*.ps1       text eol=lf
+Vagrantfile text eol=lf
+Makefile    text eol=lf
+
+# Binary assets: never diff or convert.
+*.png  binary
+*.gif  binary
+*.webm binary
