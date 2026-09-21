@@ -46,6 +46,11 @@ on:
 permissions:
   contents: read
 
+# Cancel superseded runs on the same pull request; never cancel a push to main.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
 
   # ---------------------------------------------------------------------------
@@ -54,6 +59,7 @@ jobs:
   validate-vagrantfiles:
     name: Validate Vagrantfiles
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -110,6 +116,7 @@ jobs:
   validate-vagrantfiles-virtualbox:
     name: Validate Vagrantfiles (VirtualBox)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -189,6 +196,7 @@ jobs:
   lint-shell-scripts:
     name: Lint Shell Scripts
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -234,6 +242,7 @@ jobs:
   lint-python-scripts:
     name: Lint Python Scripts
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -291,6 +300,7 @@ jobs:
   security-scan:
     name: Security Scan (Python)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -343,6 +353,7 @@ jobs:
   detect-secrets-scan:
     name: Detect Secrets (blocks on new/unaudited findings)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -398,6 +409,7 @@ jobs:
   modern-python-tooling:
     name: Ruff / Black / Mypy (informational — never blocks)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -427,6 +439,7 @@ jobs:
   run-tests:
     name: Run Test Suites
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -465,6 +478,7 @@ jobs:
   check-doc-links:
     name: Check Doc Links and References
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -519,6 +533,7 @@ jobs:
   topology-diagram-smoke-check:
     name: Topology Diagram Smoke Check (informational — never blocks)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -555,6 +570,7 @@ jobs:
   lint-ansible-roles:
     name: Lint Ansible Roles
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
