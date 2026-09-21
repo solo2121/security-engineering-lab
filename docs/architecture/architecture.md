@@ -104,7 +104,7 @@ Standalone security utilities and experiments.
 
 | Directory | Purpose |
 |-----------|---------|
-| `audit/` | LLM security scanner, validator, and Cisco switch audit tooling |
+| `audit/` | Cisco switch audit tooling |
 | `exploitation/` | Educational exploit, SQL injection, and hashcat assistant scripts |
 | `network/` | Firewall scan wrapper, Scapy port scanner, tcpdump wrapper, and Ettercap menu |
 | `reconnaissance/` | Amass, nmap, and port-scanning helpers |

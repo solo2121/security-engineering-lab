@@ -18,7 +18,7 @@
 
 | Component | Path | Purpose |
 |-----------|------|---------|
-| Audit | [`tools/security/audit/`](../../tools/security/audit/) | LLM security scanner, validator, and Cisco switch audit tooling |
+| Audit | [`tools/security/audit/`](../../tools/security/audit/) | Cisco switch audit tooling |
 | Network | [`tools/security/network/`](../../tools/security/network/) | Traffic analysis, firewall scanning, and topology mapping |
 | Exploitation | [`tools/security/exploitation/`](../../tools/security/exploitation/) | Educational offensive tooling and post-exploitation workflows |
 | Reconnaissance | [`tools/security/reconnaissance/`](../../tools/security/reconnaissance/) | Nmap automation, Amass OSINT, and port scanning |

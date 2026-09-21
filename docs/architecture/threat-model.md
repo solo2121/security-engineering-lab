@@ -32,7 +32,7 @@ Each lab below is modeled the same way:
 - Resource-Based Constrained Delegation, Shadow Credentials
 - AD CS abuse: ESC1, ESC4, ESC7, ESC8, ESC9 against `LAB-ESC-CA`
 - gMSA password readable by Domain Users; ADIDNS wildcard record writable by any authenticated user
-- LLM01–LLM15 vulnerable endpoints on `llm01`: prompt injection, RAG poisoning, embedding inversion
+- OWASP Top 10 for LLM Applications (LLM01–LLM10) vulnerable endpoints on `llm01`, plus two legacy supplemental scenarios: prompt injection, RAG poisoning, embedding inversion
 - Exposed Terraform state (`cloud-pentest`) simulating leaked AWS credentials via LocalStack
 - CVE-2021-3560 (Polkit) local privilege escalation on `linux01`
 - `metasploitable2` and `juice-shop` as standalone, unauthenticated external-style targets
@@ -85,7 +85,7 @@ This lab is bidirectional by design: it's as much a defensive/detection-engineer
 These apply to all three labs and are stated once here rather than repeated per-lab:
 
 - **The physical/virtualization host is fully trusted.** No lab models an attacker who has already compromised the KVM/libvirt host itself — if that trust boundary fails, every VM in every lab is trivially compromised, and that's considered outside what these labs are testing.
-- **Upstream Vagrant boxes are trusted.** These labs do not model supply-chain compromise of the base box images themselves (e.g., a tampered `kalilinux/rolling` box). Box versions are pinned (see each lab's `CHANGELOG.md` entries) for reproducibility, not as a supply-chain control.
+- **Upstream Vagrant boxes are trusted.** These labs do not model supply-chain compromise of the base box images themselves (e.g., a tampered `kalilinux/rolling` box). Box versions are pinned only for some images (for example Kali, Metasploitable2, and the Ubuntu boxes in the base lab); the Windows evaluation boxes, most boxes in the segmented lab, and the DevOps lab's `bento/*` boxes follow the latest published release. Where pinning exists it is for reproducibility, not as a supply-chain control.
 - **No lab is exposed to the real internet.** All three are NAT-isolated by design; none of this attack surface is reachable outside the host running Vagrant. Real-world initial-access techniques (phishing, external perimeter breach) are not modeled anywhere in this repository.
 - **Single-host deployment only.** No lab supports or models a distributed, multi-host attack surface.
 
