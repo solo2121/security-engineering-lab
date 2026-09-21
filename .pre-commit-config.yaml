@@ -33,10 +33,10 @@ repos:
     rev: v0.10.0
     hooks:
       - id: shellcheck
-        name: shellcheck (errors only)
+        name: shellcheck (warnings and errors)
         args:
-          - "--severity=error"
-          - "--exclude=SC1091,SC2086,SC2034,SC2155,SC2164,SC2181,SC2207"
+          - "--severity=warning"
+          - "--exclude=SC1091,SC2034,SC2155,SC2207"
 
   - repo: https://github.com/pycqa/flake8
     rev: 7.1.1

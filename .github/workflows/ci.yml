@@ -4,7 +4,7 @@
 #
 # Jobs:
 #   validate-vagrantfiles  — syntax check all three Vagrantfiles
-#   lint-shell-scripts     — shellcheck errors only (not warnings)
+#   lint-shell-scripts     — shellcheck warnings and errors (blocks)
 #   lint-python-scripts    — syntax check only (flake8 informational)
 #   security-scan          — bandit informational only (never blocks)
 #   detect-secrets-scan    — detect-secrets against .secrets.baseline
@@ -191,7 +191,7 @@ jobs:
           VAGRANT_DEFAULT_PROVIDER: virtualbox
 
   # ---------------------------------------------------------------------------
-  # Job 2: Shell script linting — errors only, not style warnings
+  # Job 2: Shell script linting — blocks on warnings and errors
   # ---------------------------------------------------------------------------
   lint-shell-scripts:
     name: Lint Shell Scripts
@@ -205,7 +205,7 @@ jobs:
       - name: Install shellcheck
         run: sudo apt-get install -y shellcheck
 
-      - name: Run shellcheck (errors only)
+      - name: Run shellcheck (warnings and errors)
         run: |
           echo "Scanning shell scripts for errors..."
           FAILED=0
@@ -213,16 +213,14 @@ jobs:
 
           while IFS= read -r -d '' script; do
             CHECKED=$((CHECKED + 1))
+            # Blocks on warnings and errors. Excluded (existing, reviewed):
             # SC1091 — not following sourced file (expected in lab scripts)
-            # SC2086 — double quote to prevent globbing (too noisy)
             # SC2034 — variable appears unused (false positives in sourced scripts)
-            # SC2155 — declare and assign separately (style, not error)
-            # SC2164 — use cd ... || exit (style)
-            # SC2181 — check exit code directly (style)
-            # SC2207 — mapfile not available everywhere (portability warning)
+            # SC2155 — declare and assign separately (style)
+            # SC2207 — mapfile not available everywhere (portability)
             if ! shellcheck \
-              --severity=error \
-              --exclude=SC1091,SC2086,SC2034,SC2155,SC2164,SC2181,SC2207 \
+              --severity=warning \
+              --exclude=SC1091,SC2034,SC2155,SC2207 \
               "$script" 2>&1; then
               echo "FAILED: $script"
               FAILED=1
@@ -231,7 +229,7 @@ jobs:
 
           echo "Checked $CHECKED shell scripts"
           if [ "$FAILED" -eq 1 ]; then
-            echo "shellcheck found real errors — fix them before merging"
+            echo "shellcheck found problems — fix them before merging"
             exit 1
           fi
           echo "All shell scripts passed"
@@ -466,6 +464,15 @@ jobs:
 
       - name: Run Bash unit tests
         run: bats tests/bash/
+
+      - name: Run llm-lab tests
+        # In-process FastAPI TestClient tests; no VM or network needed.
+        # pytest and httpx are test-only and not in the lab's requirements.txt.
+        run: |
+          pip install --quiet \
+            -r labs/security/active-directory/base/llm-lab/requirements.txt \
+            pytest httpx
+          pytest labs/security/active-directory/base/llm-lab/tests -v
 
       - name: Repository health validation
         run: |
