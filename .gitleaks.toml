@@ -1,8 +1,24 @@
 [extend]
 useDefault = true
 
-[[rules]]
-id = "lab-credentials"
-description = "Lab credential patterns (intentional test data)"
-regex = '''(JoinP@ss!|LabAdmin123!|Passw0rd!|Vagrant123!|opnsense|DOMAIN_JOIN_PASS)'''
-ignore = true
+# The previous version of this file used `[[rules]] ... ignore = true`,
+# which gitleaks does not support: `[[rules]]` always defines a NEW
+# detection rule, and an unrecognized `ignore` key is silently dropped.
+# The result was the opposite of what was intended — these lab-only
+# strings were being reported as leaks instead of being allowlisted.
+#
+# The correct mechanism is a top-level [allowlist] table.
+[allowlist]
+description = "Known lab-only credentials and generated files, intentionally committed as test/lab data"
+paths = [
+  # Hashed values from `detect-secrets scan`, not raw secrets.
+  '''\.secrets\.baseline$''',
+]
+regexes = [
+  '''JoinP@ss!''',
+  '''LabAdmin123!''',
+  '''Passw0rd!''',
+  '''Vagrant123!''',
+  '''opnsense''',
+  '''DOMAIN_JOIN_PASS''',
+]
