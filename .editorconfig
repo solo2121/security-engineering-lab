@@ -1,0 +1,35 @@
+# EditorConfig helps keep formatting consistent across editors.
+# See https://editorconfig.org
+#
+# Values here match what the repo already does: LF endings (.gitattributes),
+# 120-column Python (pyproject.toml [tool.black] / [tool.ruff]), and tab
+# indentation in the Makefile (required by make).
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.py]
+max_line_length = 120
+
+[*.{yml,yaml}]
+indent_size = 2
+
+[*.{json,toml}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+indent_size = 2
+
+[Makefile]
+indent_style = tab
+
+[*.bats]
+indent_size = 2
