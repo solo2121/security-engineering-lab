@@ -6,7 +6,7 @@
 ![Alternative Provider](https://img.shields.io/badge/alternative%20provider-VirtualBox-183A61)
 ![Scope](https://img.shields.io/badge/scope-authorized%20%7C%20isolated%20research-red)
 
-> A modular, Vagrant-provisioned cybersecurity homelab for building, validating, and documenting enterprise security infrastructure in isolated environments.
+> A modular, Vagrant-provisioned security engineering laboratory and cybersecurity homelab for building, validating, and documenting enterprise security infrastructure in isolated environments.
 
 **Security Engineering Lab** provides reproducible Active Directory security research, network segmentation, Kubernetes and DevSecOps workflows, Windows hardening validation, and infrastructure automation.
 
@@ -18,7 +18,7 @@ It is designed to be **runnable, not static**: each lab includes deployable infr
 **Status:** Active development — see the [Roadmap](./docs/project/roadmap.md), [CHANGELOG](./CHANGELOG.md), and [CI workflow](https://github.com/solo2121/security-engineering-lab/actions/workflows/ci.yml)
 
 > [!CAUTION]
-> This repository contains intentionally vulnerable configurations and authorized security-test scenarios. Deploy only on an isolated host and virtual network that cannot route to production, personal, or public networks.
+> This repository contains intentionally vulnerable configurations and authorized security-test scenarios. Deploy only on an isolated host and virtual network with no route to production, personal, or public networks.
 >
 > Review the [Security Scope](./docs/security-scope.md) and [Emergency Isolation Runbook](./docs/architecture/emergency-isolation-runbook.md) before deployment.
 
@@ -81,7 +81,7 @@ It is designed to be **runnable, not static**: each lab includes deployable infr
 | Automation | Vagrant, Ansible, Bash, and Python |
 | Cloud-native stack | Selected DevOps/DevSecOps profiles use K3s, Harbor, Argo CD, Prometheus, Grafana, Loki, Falco, and Kyverno |
 | Validation | GitHub Actions, pytest, Bats, ShellCheck, and documentation checks |
-| Intended use | Authorized research, defensive security practice, and isolated education |
+| Intended use | Authorized research, defensive security practice, and isolated security education |
 
 ---
 
@@ -97,12 +97,12 @@ It is designed to be **runnable, not static**: each lab includes deployable infr
 
 ### Resource planning and profiles
 
-| Lab | Default VMs | Host RAM (min / recommended) | Free disk | Best for |
+| Lab | Default VMs | Host RAM (minimum / recommended) | Free disk | Best for |
 |---|---:|---:|---:|---|
-| [Active Directory — base](./labs/security/active-directory/base/) | 6; up to 11 with `LAB_PROFILE=full` | 16 GB / 32 GB+ | 200 GB+ | Learning core AD attack paths, including Kerberoasting, AS-REP roasting, and AD CS abuse, without network-segmentation complexity. It also hosts the OWASP Top 10 for LLM Applications (2025) training lab on its own `llm01` VM with `LAB_PROFILE=llm`. |
+| [Active Directory — base](./labs/security/active-directory/base/) | 6; up to 11 with `LAB_PROFILE=full` | 16 GB / 32 GB+ | 200 GB+ | Learning core AD attack paths, including Kerberoasting, AS-REP roasting, and AD CS abuse, without network-segmentation complexity. The `llm` profile adds the OWASP Top 10 for LLM Applications (2025) training lab. |
 | [Active Directory — segmented](./labs/security/active-directory/vlan-segmented/) | 7; up to 12 with `LAB_PROFILE=full` | 16 GB / 32 GB+ | 80 GB+ | Practicing lateral movement, routing controls, trust boundaries, and defensive visibility across segmented network boundaries. |
 | [DevOps/DevSecOps](./labs/infrastructure/devops-linux-lab/) | 2; up to 12 with `LAB_PROFILE=full` | 16 GB for minimal / 32 GB+ for full | 200 GB+ | Kubernetes, Harbor, CI/CD, GitOps, observability, runtime security, policy enforcement, and Linux administration. |
-| DevSecOps Lite — ARM64 | — | — | — | Planned; not yet published. Intended as an ARM64-native Linux and Kubernetes platform-engineering environment. |
+| DevSecOps Lite — ARM64 | — | — | — | Planned; not currently deployable. Intended as an ARM64-native Linux and Kubernetes platform-engineering environment. |
 | [Windows Server Hardening](./labs/security/windows-hardening/) | 1; 2 with `LAB_PROFILE=full` | 8 GB / 16 GB+ | 60 GB+ | A defensive counterpart to the AD base lab, with hardening controls mapped to specific attack techniques. Complete the AD base lab first. |
 
 > [!NOTE]
@@ -229,7 +229,7 @@ Full unedited recordings are available for the [Active Directory lab](./assets/d
 
 The base Active Directory lab provides Windows enterprise-style infrastructure for authorized identity security research and defensive validation.
 
-It covers Active Directory Domain Services, Kerberos, LDAP, Active Directory Certificate Services, credential-access simulation, privilege-escalation research, post-compromise workflows, and detection-engineering concepts.
+It covers Active Directory Domain Services, Kerberos, LDAP, Active Directory Certificate Services, credential-access simulation, privilege-escalation research, post-compromise analysis workflows, and detection-engineering concepts.
 
 It also hosts the OWASP Top 10 for LLM Applications (2025) training lab on a dedicated `llm01` VM:
 
@@ -277,7 +277,7 @@ Each full lab uses a provider-aware `Vagrantfile` supporting KVM/QEMU with libvi
 | **KVM/QEMU with libvirt** | Linux hosts with hardware virtualization and nested-virtualization support | `vagrant up --provider=libvirt` |
 | **VirtualBox** | Compatible Intel/AMD x86_64 hosts running Linux, macOS, or Windows | `vagrant up --provider=virtualbox` |
 
-KVM/QEMU with libvirt is the primary development provider and generally provides the strongest performance for CPU-, memory-, storage-, and network-intensive environments.
+KVM/QEMU with libvirt is the primary development provider for this project and is used for the main Linux validation workflows. It is the recommended provider for resource-intensive lab profiles on compatible Linux hosts.
 
 > [!NOTE]
 > “Supported” means the provider workflow is maintained and validated for the documented lab scope. It does not guarantee identical behavior across every host kernel, provider release, Vagrant plugin version, third-party Vagrant box revision, or hardware configuration.
@@ -296,7 +296,7 @@ The segmented lab uses separate libvirt networks and isolated VirtualBox interna
 
 ### Apple Silicon status
 
-Apple Silicon Macs use the ARM64 architecture. Apple Silicon hosts are not currently supported or validated for the repository’s published lab workflows.
+Apple Silicon uses the ARM64 architecture. Apple Silicon hosts are not currently supported or validated for the repository’s published lab workflows.
 
 Although ARM64 Vagrant and virtualization workflows may be possible for selected Linux guests, the current lab portfolio depends on combinations of x86_64 Windows guests, x86_64 Vagrant boxes, guest media, provider-specific networking, nested-virtualization assumptions, and provisioning behavior that have not been validated on ARM64 hosts.
 
@@ -388,7 +388,7 @@ See the following documents for architecture details, trust boundaries, and desi
 
 | Domain | Capabilities | Location |
 |---|---|---|
-| Active Directory security | Domain deployment, AD CS, identity attack-path simulation, privilege-escalation research, and post-compromise workflows | `labs/security/active-directory/base/` |
+| Active Directory security | Domain deployment, AD CS, identity attack-path simulation, privilege-escalation research, and post-compromise analysis workflows | `labs/security/active-directory/base/` |
 | LLM application security | OWASP Top 10 for LLM Applications (2025), including a safety-sandboxed vulnerable and defensive training pair for each covered category | `labs/security/active-directory/base/llm-lab/` |
 | Network segmentation | Logical segmentation boundaries, routing separation, trust relationships, and segmentation-aware security-testing scenarios | `labs/security/active-directory/vlan-segmented/` |
 | DevOps/DevSecOps | Kubernetes operations, GitOps, observability, runtime security, and policy enforcement | `labs/infrastructure/devops-linux-lab/` |
@@ -410,7 +410,7 @@ See the following documents for architecture details, trust boundaries, and desi
 | Monitoring | Prometheus, Grafana, Loki |
 | Runtime security | Falco |
 | Policy security | Kyverno |
-| Containers | Docker, Harbor |
+| Container platform | K3s, containerd, Helm, Harbor |
 | Active Directory | Windows Server, Kerberos, LDAP |
 | AD CS | Certificate Services and escalation scenarios |
 | Detection engineering | MITRE ATT&CK concepts and log analysis |
@@ -497,9 +497,10 @@ Most deployment issues fall into a few categories:
 - Insufficient host CPU, memory, disk capacity, or virtualization support
 - Unavailable boxes, package mirrors, or container images
 
-Start by re-running the full prerequisite check:
+Start by checking lab state and re-running the full prerequisite check:
 
 ```bash
+vagrant status
 ./scripts/check-prerequisites.sh --all
 ```
 
@@ -535,6 +536,8 @@ For step-by-step fixes, including debug logging, provider-switch recovery, netwo
 ---
 
 ## Repository structure
+
+Key directories and project files:
 
 ```text
 security-engineering-lab/
@@ -617,9 +620,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md), the [Tests README](./tests/README.md),
 
 ## Project maturity
 
-The repository is actively developed. Core lab workflows are maintained through automated repository checks and documented validation procedures.
-
-Individual provider, box, guest, dependency, and hardware combinations may still require host-specific troubleshooting.
+The repository is actively developed, with core lab workflows maintained through automated checks and documented validation procedures. Individual provider, box, guest, dependency, and hardware combinations may still require host-specific troubleshooting.
 
 Review each lab README for its current validation status, supported profiles, provider requirements, and known limitations.
 
@@ -671,8 +672,7 @@ For additional security information, see:
 
 ## Known limitations
 
-- Full-profile deployments require substantial CPU, RAM, and storage.
-- Full deployments generally target 32 GB or more RAM and approximately 200 GB free disk space.
+- Full-profile deployments may require 32 GB or more host RAM and approximately 200 GB or more free disk space, depending on the selected lab, provider, and deployment profile.
 - KVM/QEMU with libvirt requires a compatible Linux host.
 - VirtualBox support targets compatible Intel/AMD x86_64 hosts.
 - Apple Silicon / ARM64 hosts have no currently supported deployment path.
