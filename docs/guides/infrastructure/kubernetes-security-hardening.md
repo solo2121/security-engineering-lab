@@ -985,7 +985,7 @@ tail -f /var/log/k3s-audit.log | jq '.'
 ```bash
 # Find all secret reads
 cat /var/log/k3s-audit.log | jq \
-  'select(.objectRef.resource == "secrets" and .verb == "get") | 
+  'select(.objectRef.resource == "secrets" and .verb == "get") |
    {user: .user.username, secret: .objectRef.name, namespace: .objectRef.namespace, time: .requestReceivedTimestamp}'
 
 # Find all exec events (interactive shell access)

@@ -777,8 +777,8 @@ VAGRANT_LOG=debug vagrant <command> 2>&1 | tee debug.log
 ---
 
 ## License
- 
+
 This workflow documentation is licensed under the MIT License. See `../LICENSE` for details.
- 
+
 **Last Updated:** 2026-06-13  
 **Version:** 1.0

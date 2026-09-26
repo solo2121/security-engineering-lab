@@ -240,7 +240,7 @@ Vagrant.configure("2") do |config|
   config.vm.network "forwarded_port", guest: 6443, host: 6443   # Kubernetes API
   
   # Synced folder for project files
-  config.vm.synced_folder ".", "/home/vagrant/lab", type: "nfs", 
+  config.vm.synced_folder ".", "/home/vagrant/lab", type: "nfs",
     nfs_version: 4, nfs_udp: false
   
   # KVM/libvirt provider configuration
@@ -255,28 +255,28 @@ Vagrant.configure("2") do |config|
   # Provision with basic tools and Docker
   config.vm.provision "shell", inline: <<-SHELL
     set -e
-    
+
     echo "==> Installing system dependencies..."
     apt-get update
     apt-get install -y \
       curl wget git ca-certificates gnupg lsb-release \
       python3 python3-pip python3-venv \
       jq yq htop build-essential
-    
+
     echo "==> Installing Docker..."
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
       gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    
+
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
       https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" | \
       tee /etc/apt/sources.list.d/docker.list
-    
+
     apt-get update
     apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-    
+
     systemctl enable --now docker
     usermod -aG docker vagrant
-    
+
     echo "==> Vagrant provisioning complete!"
   SHELL
 end
@@ -730,9 +730,9 @@ resource "kubernetes_network_policy" "prod_isolation" {
 
   spec {
     pod_selector {}
-    
+
     policy_types = ["Ingress", "Egress"]
-    
+
     ingress {
       from {
         pod_selector {
@@ -742,7 +742,7 @@ resource "kubernetes_network_policy" "prod_isolation" {
         }
       }
     }
-    
+
     egress {
       to {
         namespace_selector {
@@ -1618,22 +1618,22 @@ jobs:
     permissions:
       contents: read
       packages: write
-    
+
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
-    
+
     - name: Log in to Container Registry
       uses: docker/login-action@v2
       with:
         registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-    
+
     - name: Extract metadata
       id: meta
       uses: docker/metadata-action@v4
@@ -1643,7 +1643,7 @@ jobs:
           type=ref,event=branch
           type=sha,prefix={{branch}}-
           type=semver,pattern={{version}}
-    
+
     - name: Build and push Docker image
       uses: docker/build-push-action@v4
       with:
@@ -1657,17 +1657,17 @@ jobs:
   scan:
     needs: build
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Run Trivy scan
       uses: aquasecurity/trivy-action@master
       with:
         image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
         format: sarif
         output: trivy-results.sarif
-    
+
     - name: Upload Trivy results
       uses: github/codeql-action/upload-sarif@v2
       with:
@@ -1677,11 +1677,11 @@ jobs:
     needs: [build, scan]
     runs-on: ubuntu-latest
     if: success()
-    
+
     steps:
     - name: Install cosign
       uses: sigstore/cosign-installer@v3
-    
+
     - name: Sign container image
       env:
         COSIGN_EXPERIMENTAL: 1
@@ -1693,18 +1693,18 @@ jobs:
     needs: [build, scan, sign]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    
+
     steps:
     - uses: actions/checkout@v4
       with:
         repository: ${{ secrets.GITOPS_REPO }}
         token: ${{ secrets.GITOPS_PAT }}
-    
+
     - name: Update image in GitOps repo
       run: |
         yq eval -i '.image.tag = "${{ github.sha }}"' \
           apps/devops-app/overlays/prod/kustomization.yaml
-        
+
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add apps/devops-app/overlays/prod/kustomization.yaml

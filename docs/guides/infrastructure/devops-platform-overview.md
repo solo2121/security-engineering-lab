@@ -11,37 +11,37 @@
 ## Table of Contents
 
 - Lab Overview
-    
+
 - 0. Local Lab Setup (Vagrant + KVM)
-        
+
 - System Requirements
-    
+
 - 1. System Preparation
-        
+
 - 2. Docker
-        
+
 - 3. kubectl
-        
+
 - 4. Minikube
-        
+
 - 5. Jenkins
-        
+
 - 6. Prometheus
-        
+
 - 7. Grafana
-        
+
 - 8. Architecture
-        
+
 - 9. DevOps Workflow
-        
+
 - 10. Hands-On Labs
-        
+
 - 11. Troubleshooting
-        
+
 - 12. Cleanup
-        
+
 - 13. Next Steps: Beyond This Overview
-        
+
 
 ---
 
@@ -50,15 +50,15 @@
 A fully structured end-to-end DevOps lab using:
 
 - CI/CD: Jenkins
-    
+
 - Containers: Docker
-    
+
 - Orchestration: Minikube (Kubernetes)
-    
+
 - Monitoring: Prometheus
-    
+
 - Visualization: Grafana
-    
+
 
 Ideal for learning real DevOps workflows, CI/CD pipelines, and building a strong portfolio project.
 
@@ -69,13 +69,13 @@ Ideal for learning real DevOps workflows, CI/CD pipelines, and building a strong
 This lab is designed for:
 
 - Ubuntu 24.04 LTS (primary tested version)
-    
+
 - Ubuntu 24.10+
-    
+
 - Future Ubuntu LTS releases (including 26.04+)
-    
+
 - Debian-based systems with minor adjustments
-    
+
 
 This project avoids hardcoded OS versions to ensure long-term compatibility.
 
@@ -127,15 +127,15 @@ end
 # System Requirements
 
 - 8 GB RAM minimum (16 GB recommended)
-    
+
 - 4 CPU cores minimum
-    
+
 - KVM enabled virtualization
-    
+
 - 20+ GB free disk space
-    
+
 - Ubuntu/Debian host system
-    
+
 
 ---
 
@@ -344,7 +344,7 @@ http://localhost:3000
 Default login:
 
 - admin / admin
-    
+
 
 ---
 
@@ -385,21 +385,21 @@ Grafana (visualization)
 # 9. DevOps Workflow
 
 1. Code push to Git repository
-    
+
 2. Jenkins pipeline triggered
-    
+
 3. Build and test application
-    
+
 4. Build Docker image
-    
+
 5. Push image to registry
-    
+
 6. Deploy to Kubernetes
-    
+
 7. Monitor with Prometheus
-    
+
 8. Visualize with Grafana
-    
+
 
 ---
 
@@ -434,31 +434,31 @@ Grafana Dashboard
 Core:
 
 - Jenkins pipeline creation
-    
+
 - Multi-tier application deployment
-    
+
 - Ingress configuration
-    
+
 
 Monitoring:
 
 - Node Exporter setup
-    
+
 - Grafana dashboards (ID 1860)
-    
+
 - Alerts configuration
-    
+
 
 Advanced:
 
 - Helm deployments
-    
+
 - Canary deployments
-    
+
 - Security scanning with Trivy
-    
+
 - Persistent volumes
-    
+
 
 ---
 
@@ -519,7 +519,7 @@ including:
 
 This overview intentionally stops short of those phases so it stays a quick,
 linear read; the complete guide picks up exactly where this one ends.
-    
+
   
 
 ---
