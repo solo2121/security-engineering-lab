@@ -493,7 +493,7 @@ _Predates repository tagging. This is not a Git tag._
 
 ## Versioning Policy
 
-Repository releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html) in the form `vMAJOR.MINOR.PATCH` and are published as annotated Git tags. Versions stay below `1.0.0` while the project is in active development. See [docs/project/release-process.md](docs/project/release-process.md).
+Repository releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html) in the form `vMAJOR.MINOR.PATCH` and are published as annotated Git tags. Versioning continues from the existing `v1.1` tag. See [docs/project/release-process.md](docs/project/release-process.md).
 
 Version numbers on entries dated before the first repository tag are **lab revisions** for a single lab. They are not Git tags.
 

@@ -62,6 +62,7 @@ you're not sure where to look.
 |---|---|
 | [`project/portfolio.md`](project/portfolio.md) | Portfolio-style project summary |
 | [`project/roadmap.md`](project/roadmap.md) | Planned improvements and future lab development |
+| [`project/release-process.md`](project/release-process.md) | How tags and GitHub Releases are created |
 
 ---
 

@@ -8,7 +8,8 @@ from a commit that satisfies the checklist below.
 ## Versioning scheme
 
 - Repository releases use Semantic Versioning in the form `vMAJOR.MINOR.PATCH`.
-- While the project is in active development, versions stay below `1.0.0`.
+- Versioning continues from the existing `v1.1` tag. Versions are never
+  lowered or reused.
   - `MINOR` increases for new labs, new lab profiles, or substantial scenario
     additions.
   - `PATCH` increases for fixes, documentation corrections, and provisioning
@@ -28,17 +29,25 @@ Server Hardening lab). These are lab revisions, not Git tags. Release notes
 for a repository tag list the lab revisions included in that release.
 Lab revisions are not used as tag names.
 
-## Criteria for 1.0.0
+## Existing tags
 
-`v1.0.0` is reserved for a state where all of the following are true:
+- `v1.1` is an annotated tag from 2026-01-23 that predates this document. It
+  is kept as is.
+- `portfolio-start` and `pre-cleanup-2026-06-14` are lightweight historical
+  markers, not releases. They are kept as is.
+- Published tags are never moved or deleted.
+
+## Release gates
+
+A release is only published when all of the following are true:
 
 - Each lab listed as supported has been deployed from a clean clone on the
   documented primary provider, and the result is recorded.
-- No lab listed as supported is marked experimental.
 - Known issues listed in `CHANGELOG.md` for supported labs are fixed or have
-  documented, tested workarounds.
-- CI passes on the release commit, and the manual deployment evidence above is
-  linked from the release notes.
+  documented workarounds.
+- CI passes on the release commit, and the deployment evidence is linked from
+  the release notes.
+- Labs marked experimental are labeled as such in the release notes.
 
 ## Pre-release checklist
 
@@ -86,8 +95,8 @@ If the tag was created locally and has not been pushed, it can be removed
 with `git tag -d "$VERSION"` and recreated. Once pushed, publish a new patch
 release instead of changing the tag.
 
-Create the GitHub Release from the pushed tag and mark it as a pre-release
-while the version is below `1.0.0`.
+Create the GitHub Release from the pushed tag. Mark it as a pre-release if
+any included lab or validation step is incomplete.
 
 ## Release notes template
 
