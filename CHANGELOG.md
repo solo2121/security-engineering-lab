@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - **`KALI_BOX` / `KALI_BOX_VERSION` environment variables for
   `active-directory/base` and `active-directory/vlan-segmented`.** The
   attacker VM (still named `kali`) can now run an alternate
@@ -37,8 +38,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   previously hardcoded `VAGRANT_DEFAULT_PROVIDER=libvirt` in
   `build_vagrant_environment()`, silently ignoring any VirtualBox
   selection made at the Vagrantfile level; this is fixed.
+- `docs/architecture/emergency-isolation-runbook.md` — home-lab runbook for
+  the scenario where a lab VM, network, or bridge is suspected of reaching
+  the real internet or a trusted network unexpectedly: containment,
+  evidence preservation, credential rotation, destroy-vs-restore guidance,
+  and a reconnection checklist. Linked from `docs/README.md` and
+  cross-referenced from `docs/security-scope.md`'s Lab Isolation
+  Requirements section. Not a substitute for an enterprise incident-response
+  plan.
+- `SECURITY.md` — `## Repository-Level Controls (GitHub Settings)` section,
+  distinguishing controls verifiable from this repository's own content
+  (Dependabot config, SHA-pinned Actions, `detect-secrets` baseline) from
+  controls that live in GitHub repository settings and can't be confirmed
+  by reading the repository (branch protection/rulesets, secret scanning
+  and push protection, Dependabot alerts, code scanning, Actions
+  permissions). Doesn't claim any of the settings-based controls are
+  currently enabled — only names them as items to verify directly in
+  GitHub.
+- `scripts/check_doc_references.py` (+ `tests/python/test_check_doc_references.py`) — scans doc-index bullets/tables (e.g. `` - **`docs/foo.md`** – ... ``) for backtick-quoted filenames that don't resolve to a real file on disk. `markdown-link-check` only validates real `[text](path)` Markdown links, so a plain-text filename reference like the stale `docs/network-map.md` in `labs/security/README.md` could go unnoticed indefinitely; this closes that gap. Wired into `make docs-refs`, a new blocking step in the `check-doc-links` CI job (it's local and deterministic, unlike the informational `markdown-link-check` step), and a new local pre-commit hook.
+- `## Provisioning Philosophy` section in `docs/architecture/architecture.md` — states explicitly why each lab uses a single Vagrantfile with inline shell provisioners instead of Ansible roles (single-host lab, fewer dependencies to install, provisioning logic co-located with what it provisions), and links to the roadmap item that would revisit this if the labs grow enough to justify it.
+- `scripts/README.md` — index for `check-prerequisites.sh` and `validate_lab.py`, matching the README convention already used by `assets/`, `docs/`, `labs/`, `tests/`, and `tools/`. Linked from the root `README.md` documentation hub table.
+- `## Lab Documentation` section in each lab's `README.md` (`labs/infrastructure/devops-linux-lab/`, `labs/security/ad-pentest/`, `labs/security/ad-pentest-vlan/`), linking to every file under that lab's own `docs/`. Previously `devops-linux-lab/docs/*.md` (6 files) and `ad-pentest/docs/attack-guide.md` + `docs/lab-credentials.md` were not linked from their lab README at all, and `ad-pentest-vlan/docs/*.md` only appeared inside an ASCII directory tree rather than as clickable links.
+- `quickstart-examples.md` entry in `docs/setup/README.md` — the file was already linked from `docs/README.md` and `docs/architecture/architecture.md`, but missing from its own section's index.
+- **CI:** Added caching for apt packages and Vagrant plugins to the `validate-vagrantfiles` job, significantly reducing its runtime.
+- `tests/python/` — pytest unit tests for Python tooling logic (argument parsing, data structures).
+- `tests/bash/` — bats unit tests for Bash script helper functions and configuration tables.
+- `run-tests` CI job running pytest and bats on every push/PR.
+- `check-doc-links` CI job that scans all markdown files for broken links and reports findings; informational only, does not fail the build (external link rot and rate limits are expected).
+- `.pre-commit-config.yaml` — shellcheck, flake8, detect-secrets, and markdown-link-check hooks for local commit-time validation. Unlike the CI job, the local `markdown-link-check` hook blocks the commit so broken internal links are caught before they're pushed.
+- `.secrets.baseline` — audited baseline of intentional lab credentials (AD pentest creds, Vagrantfile test passwords, LocalStack fake AWS key) so `detect-secrets` only flags genuinely new findings.
 
 ### Changed
+
 - **Unified `Vagrantfile` architecture for `active-directory/base` and
   `active-directory/vlan-segmented`.** Both labs previously shipped two
   provider-specific Vagrantfiles (`Vagrantfile` for libvirt,
@@ -81,8 +112,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   VLAN lab's README was similarly one level too shallow; and
   `vlan-segmented/docs/requirements.md`'s link to
   `docs/setup/troubleshooting.md` was one level too shallow.
-
-### Changed
 - **Documentation sync for the `active-directory/` rename and `LAB_PROFILE`
   rollout.** `labs/security/ad-pentest/` and `labs/security/ad-pentest-vlan/`
   were renamed to `labs/security/active-directory/base/` and
@@ -125,27 +154,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   subdirectories that don't exist yet. Reworded to describe the directory's
   actual (currently empty) state instead of implying that content is
   already there.
-
-### Added
-- `docs/architecture/emergency-isolation-runbook.md` — home-lab runbook for
-  the scenario where a lab VM, network, or bridge is suspected of reaching
-  the real internet or a trusted network unexpectedly: containment,
-  evidence preservation, credential rotation, destroy-vs-restore guidance,
-  and a reconnection checklist. Linked from `docs/README.md` and
-  cross-referenced from `docs/security-scope.md`'s Lab Isolation
-  Requirements section. Not a substitute for an enterprise incident-response
-  plan.
-- `SECURITY.md` — `## Repository-Level Controls (GitHub Settings)` section,
-  distinguishing controls verifiable from this repository's own content
-  (Dependabot config, SHA-pinned Actions, `detect-secrets` baseline) from
-  controls that live in GitHub repository settings and can't be confirmed
-  by reading the repository (branch protection/rulesets, secret scanning
-  and push protection, Dependabot alerts, code scanning, Actions
-  permissions). Doesn't claim any of the settings-based controls are
-  currently enabled — only names them as items to verify directly in
-  GitHub.
-
-### Changed
 - `docs/setup/installation.md` — the "Recommended host resources" section
   now gives concrete minimum/recommended RAM and disk figures per lab
   (sourced from `minimal-resource-deployment.md` and
@@ -180,8 +188,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.github/workflows/ci.yml` / `Makefile` — the Python coverage step was informational only (`|| true`, couldn't fail the build). Changed to `--cov-fail-under=80`, an enforced minimum. Current coverage is 85%, so this has headroom for normal work while still catching a real regression.
 - `tools/security/reconnaissance/amass-scan.sh` — added `set -Eeuo pipefail` to match the strict-mode convention used by every other script in `tools/`. This required initializing `DOMAIN=""` and `OUTPUT_DIR=""` up front, since both were previously read (`[ -z "$DOMAIN" ]`) before ever being assigned a default — harmless without `-u`, but would have aborted with "unbound variable" the moment strict mode was turned on.
 - `tools/security/reconnaissance/amass-scan.sh` — fixed a pre-existing bug where every error path (`Domain argument is required`, `Unknown option`, `Too many arguments`) exited with status `0` instead of `1`. All three called `show_help()`, which unconditionally did `exit 0` internally, so the `exit 1` written right after each call was dead code. Moved the `exit 0` out of `show_help()` and into the one call site that legitimately wants it (`-h`/`--help`). Verified `--help` (0), no-args (1), `-s` with no value (1), too many args (1), and an unknown flag (1) all now return the correct exit code.
+- `assets/README.md` now documents the expected purpose of each asset category (diagrams, screenshots, icons, banners, logos) so contributors know where new asset types belong before adding a subfolder.
 
 ### Fixed
+
 - `docs/README.md` — `guides/security/domain-compromise-walkthrough.md` was
   a real, linked-to file (from `docs/project/learning-path.md`) but was
   missing from the Security guides table in the docs index. Added.
@@ -198,25 +208,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `CONTRIBUTING.md` referenced `pylint` as the required Python linter in three places (Local Setup command, Code Standards, PR Checklist), but CI, the `Makefile`, and `.pre-commit-config.yaml` all actually enforce `flake8`. Updated the doc to match what's enforced.
 - `requirements-dev.txt` was almost entirely unpinned and missing a trailing newline. Added `>=` version floors for every entry (`flake8`/`detect-secrets` pinned to match the exact versions already used in `.pre-commit-config.yaml`; the rest floored at current stable releases), and added the missing trailing newline.
 - Added a one-line reminder to inspect the script before piping to a shell above each `curl | bash` / `curl | sh` install command in `docs/guides/infrastructure/kubernetes-security-hardening.md`, `docs/guides/infrastructure/complete-devops-platform-guide.md`, `docs/guides/security/ad-mitre-log-source-playbook.md`, and `docs/guides/security/llm-security-compliance-lab.md`. Commands themselves are unchanged.
-
-### Added
-- `scripts/check_doc_references.py` (+ `tests/python/test_check_doc_references.py`) — scans doc-index bullets/tables (e.g. `` - **`docs/foo.md`** – ... ``) for backtick-quoted filenames that don't resolve to a real file on disk. `markdown-link-check` only validates real `[text](path)` Markdown links, so a plain-text filename reference like the stale `docs/network-map.md` in `labs/security/README.md` could go unnoticed indefinitely; this closes that gap. Wired into `make docs-refs`, a new blocking step in the `check-doc-links` CI job (it's local and deterministic, unlike the informational `markdown-link-check` step), and a new local pre-commit hook.
-- `## Provisioning Philosophy` section in `docs/architecture/architecture.md` — states explicitly why each lab uses a single Vagrantfile with inline shell provisioners instead of Ansible roles (single-host lab, fewer dependencies to install, provisioning logic co-located with what it provisions), and links to the roadmap item that would revisit this if the labs grow enough to justify it.
-- `scripts/README.md` — index for `check-prerequisites.sh` and `validate_lab.py`, matching the README convention already used by `assets/`, `docs/`, `labs/`, `tests/`, and `tools/`. Linked from the root `README.md` documentation hub table.
-- `## Lab Documentation` section in each lab's `README.md` (`labs/infrastructure/devops-linux-lab/`, `labs/security/ad-pentest/`, `labs/security/ad-pentest-vlan/`), linking to every file under that lab's own `docs/`. Previously `devops-linux-lab/docs/*.md` (6 files) and `ad-pentest/docs/attack-guide.md` + `docs/lab-credentials.md` were not linked from their lab README at all, and `ad-pentest-vlan/docs/*.md` only appeared inside an ASCII directory tree rather than as clickable links.
-- `quickstart-examples.md` entry in `docs/setup/README.md` — the file was already linked from `docs/README.md` and `docs/architecture/architecture.md`, but missing from its own section's index.
-- **CI:** Added caching for apt packages and Vagrant plugins to the `validate-vagrantfiles` job, significantly reducing its runtime.
-- `tests/python/` — pytest unit tests for Python tooling logic (argument parsing, data structures).
-- `tests/bash/` — bats unit tests for Bash script helper functions and configuration tables.
-- `run-tests` CI job running pytest and bats on every push/PR.
-- `check-doc-links` CI job that scans all markdown files for broken links and reports findings; informational only, does not fail the build (external link rot and rate limits are expected).
-- `.pre-commit-config.yaml` — shellcheck, flake8, detect-secrets, and markdown-link-check hooks for local commit-time validation. Unlike the CI job, the local `markdown-link-check` hook blocks the commit so broken internal links are caught before they're pushed.
-- `.secrets.baseline` — audited baseline of intentional lab credentials (AD pentest creds, Vagrantfile test passwords, LocalStack fake AWS key) so `detect-secrets` only flags genuinely new findings.
-
-### Changed
-- `assets/README.md` now documents the expected purpose of each asset category (diagrams, screenshots, icons, banners, logos) so contributors know where new asset types belong before adding a subfolder.
-
-### Fixed
 - `pyproject.toml` — `ruff`, `black`, and `mypy` were configured against `target-version = "py311"` / `python_version = "3.11"`, while `docs/dependencies.md` documents "Required: Python 3.12+" and CI installs Python 3.12 in every job. Bumped all three tool configs to target 3.12 to match what's actually required and installed, rather than leaving the linting/type-checking config silently out of sync with the documented minimum version.
 - `.secrets.baseline` was stale: it still listed findings under old filenames (`docs/guides/infrastructure/Complete-DevOps-Platform-Guide.md`, `labs/security/ad-pentest/docs/ATTACK_GUIDE.md`, `labs/security/ad-pentest/docs/LAB_CREDENTIALS.md`, `labs/security/ad-pentest-vlan/docs/ATTACK_GUIDE.md`) from before those files were renamed to kebab-case, and had no entries for the current filenames or for `docs/guides/security/domain-compromise-walkthrough.md` / `labs/infrastructure/devops-linux-lab/Vagrantfile`. This meant `detect-secrets` (in both the pre-commit hook and the CI `security` job) would treat the already-known, already-reviewed lab credentials in those files as brand-new findings the next time anyone touched them. Regenerated the baseline with `detect-secrets scan --baseline .secrets.baseline`.
 - Removed a stale `docs/archive/` exclude filter from `.secrets.baseline` and `.pre-commit-config.yaml` (`detect-secrets` hook); `docs/archive/` was deleted in a prior commit and the filter matched nothing.
@@ -229,6 +220,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Synced `labs/infrastructure/devops-linux-lab/README.md`, `docs/lab-guide.md`, `labs/security/ad-pentest/README.md` (+ `docs/attack-guide.md`, `docs/lab-credentials.md`), `labs/security/ad-pentest-vlan/README.md` (+ `docs/attack-guide.md`), `labs/security/README.md`, and the top-level `README.md` with the current state of all three Vagrantfiles.
 
 ### Planned
+
 - Additional AD CS attack scenarios.
 - Ansible role automation for the DevOps lab.
 
@@ -463,7 +455,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.0] - 2026-06-13 — Initial Public Release
+## Initial Public Release - 2026-06-13
+
+_Predates repository tagging. This is not a Git tag._
 
 ### Added
 - Repository structure with `labs/`, `security/`, `sysadmin/`, and `docs/`.
@@ -498,6 +492,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## Versioning Policy
+
+Repository releases use [Semantic Versioning](https://semver.org/spec/v2.0.0.html) in the form `vMAJOR.MINOR.PATCH` and are published as annotated Git tags. Versions stay below `1.0.0` while the project is in active development. See [docs/project/release-process.md](docs/project/release-process.md).
+
+Version numbers on entries dated before the first repository tag are **lab revisions** for a single lab. They are not Git tags.
 
 - **MAJOR** — Incompatible changes to lab architecture or workflow.
 - **MINOR** — New VMs, tools, or features added.

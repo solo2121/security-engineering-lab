@@ -6,7 +6,7 @@ For a log of what has already been released, see [`CHANGELOG.md`](../../CHANGELO
 
 ## Near-term
 
-- [ ] Add a recorded demo (asciinema or GIF) to the README showing `vagrant up` provisioning and an Active Directory attack chain in action.
+- [ ] Add an attack-chain demo (asciinema or GIF) showing an Active Directory attack path end to end. Deployment demos for the AD base, DevOps, and segmented AD labs are already in the README (`assets/demos/`).
 - [x] Expand automated test coverage across additional `sysadmin/` and `security/` scripts — added `user-audit.sh` (`tools/sysadmin/system-hardening/user-audit.sh`, covered by `tests/bash/test_user_audit.bats`), joining `log-analyzer.sh`, `setup-vlans.sh`, and `port-scanner.py`. Many other `sysadmin/` and `security/` scripts still have no tests — contributions toward closing that gap are welcome.
 
 ## Mid-term
@@ -25,7 +25,7 @@ For a log of what has already been released, see [`CHANGELOG.md`](../../CHANGELO
 ## Not Planned
 
 - Multi-cloud parity (AWS/Azure/GCP simultaneously): the labs are designed around local KVM/libvirt as the primary environment. Cloud support, if added, would begin with a single provider rather than multiple.
-- Windows-based host support: the tooling assumes a Linux host with Vagrant, libvirt, and KVM, so this is unlikely to change.
+- libvirt/KVM on non-Linux hosts: libvirt requires a Linux host. VirtualBox workflows on compatible Intel/AMD x86_64 Windows and macOS hosts are maintained separately; see the root README.
 
 ---
 
