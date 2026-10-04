@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Subscription xmlns="http://schemas.microsoft.com/2006/03/windows/events/subscription">
+  <SubscriptionId>LabBaseline</SubscriptionId>
+  <SubscriptionType>SourceInitiated</SubscriptionType>
+  <Description>Lab baseline: Sysmon, key Security events, PowerShell logging, NTLM audit, service installs.</Description>
+  <Enabled>true</Enabled>
+  <Uri>http://schemas.microsoft.com/wbem/wsman/1/windows/EventLog</Uri>
+  <ConfigurationMode>Custom</ConfigurationMode>
+  <Delivery Mode="Push">
+    <Batching>
+      <MaxItems>5</MaxItems>
+      <MaxLatencyTime>5000</MaxLatencyTime>
+    </Batching>
+    <PushSettings>
+      <Heartbeat Interval="60000"/>
+    </PushSettings>
+  </Delivery>
+  <Query>
+    <![CDATA[
+<QueryList>
+  <Query Id="0">
+    <Select Path="Microsoft-Windows-Sysmon/Operational">*</Select>
+    <Select Path="Security">*[System[(EventID=4624 or EventID=4625 or EventID=4648 or EventID=4662 or EventID=4672 or EventID=4697 or EventID=4698 or EventID=4720 or EventID=4724 or EventID=4728 or EventID=4732 or EventID=4768 or EventID=4769 or EventID=4771 or EventID=4776 or EventID=4886 or EventID=4887 or EventID=5136)]]</Select>
+    <Select Path="System">*[System[Provider[@Name='Service Control Manager'] and (EventID=7045)]]</Select>
+    <Select Path="Microsoft-Windows-PowerShell/Operational">*[System[(EventID=4103 or EventID=4104)]]</Select>
+    <Select Path="Microsoft-Windows-NTLM/Operational">*</Select>
+  </Query>
+</QueryList>
+    ]]>
+  </Query>
+  <ReadExistingEvents>false</ReadExistingEvents>
+  <TransportName>HTTP</TransportName>
+  <ContentFormat>RenderedText</ContentFormat>
+  <Locale Language="en-US"/>
+  <LogFile>ForwardedEvents</LogFile>
+  <PublisherName>Microsoft-Windows-EventCollector</PublisherName>
+  <AllowedSourceNonDomainComputers></AllowedSourceNonDomainComputers>
+  <AllowedSourceDomainComputers>O:NSG:NSD:(A;;GA;;;DC)S:</AllowedSourceDomainComputers>
+</Subscription>

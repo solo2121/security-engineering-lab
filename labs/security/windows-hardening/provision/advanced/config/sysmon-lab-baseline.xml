@@ -1,0 +1,82 @@
+<Sysmon schemaversion="4.90">
+  <!--
+    Lab fallback baseline for the Windows Server Hardening lab.
+    Used when the SwiftOnSecurity / sysmon-modular download is unavailable or
+    rejected by the installed Sysmon version. Deliberately small and readable:
+    it targets the techniques exercised by the AD pentest lab.
+    This is NOT a replacement for a maintained community baseline.
+  -->
+  <HashAlgorithms>sha256,imphash</HashAlgorithms>
+  <EventFiltering>
+
+    <!-- Event 1: log every process creation (small lab, full visibility). -->
+    <RuleGroup name="Process creation" groupRelation="or">
+      <ProcessCreate onmatch="exclude"/>
+    </RuleGroup>
+
+    <!-- Event 3: outbound connections from common living-off-the-land binaries. -->
+    <RuleGroup name="Network connections" groupRelation="or">
+      <NetworkConnect onmatch="include">
+        <Image condition="end with any">\powershell.exe;\pwsh.exe;\cmd.exe;\rundll32.exe;\regsvr32.exe;\mshta.exe;\wscript.exe;\cscript.exe;\certutil.exe;\bitsadmin.exe</Image>
+      </NetworkConnect>
+    </RuleGroup>
+
+    <!-- Event 6: unsigned driver loads. -->
+    <RuleGroup name="Unsigned drivers" groupRelation="or">
+      <DriverLoad onmatch="exclude">
+        <Signed condition="is">true</Signed>
+      </DriverLoad>
+    </RuleGroup>
+
+    <!-- Event 8: remote thread creation (injection). -->
+    <RuleGroup name="Remote threads" groupRelation="or">
+      <CreateRemoteThread onmatch="exclude"/>
+    </RuleGroup>
+
+    <!-- Event 10: process access to LSASS (credential dumping). -->
+    <RuleGroup name="LSASS access" groupRelation="or">
+      <ProcessAccess onmatch="include">
+        <TargetImage condition="is">C:\Windows\System32\lsass.exe</TargetImage>
+      </ProcessAccess>
+    </RuleGroup>
+    <RuleGroup name="LSASS access: known system noise" groupRelation="or">
+      <ProcessAccess onmatch="exclude">
+        <SourceImage condition="is any">C:\Windows\System32\wininit.exe;C:\Windows\System32\csrss.exe;C:\Windows\System32\services.exe;C:\Windows\System32\svchost.exe;C:\Windows\System32\wbem\WmiPrvSE.exe</SourceImage>
+        <Rule name="Defender platform" groupRelation="and">
+          <SourceImage condition="begin with">C:\ProgramData\Microsoft\Windows Defender\Platform\</SourceImage>
+          <SourceImage condition="end with">\MsMpEng.exe</SourceImage>
+        </Rule>
+      </ProcessAccess>
+    </RuleGroup>
+
+    <!-- Event 11: executable or script content dropped in user-writable paths. -->
+    <RuleGroup name="File creation" groupRelation="or">
+      <FileCreate onmatch="include">
+        <Rule name="Executable content in user-writable path" groupRelation="and">
+          <TargetFilename condition="contains any">\Users\;\Temp\;\ProgramData\;\PerfLogs\</TargetFilename>
+          <TargetFilename condition="end with any">.exe;.dll;.ps1;.bat;.cmd;.vbs;.js;.hta;.lnk</TargetFilename>
+        </Rule>
+      </FileCreate>
+    </RuleGroup>
+
+    <!-- Events 12/13/14: common persistence locations. -->
+    <RuleGroup name="Registry persistence" groupRelation="or">
+      <RegistryEvent onmatch="include">
+        <TargetObject condition="contains any">\CurrentVersion\Run;\CurrentVersion\RunOnce;\Winlogon\;\Image File Execution Options\</TargetObject>
+      </RegistryEvent>
+    </RuleGroup>
+
+    <!-- Events 17/18: named pipes used by remote execution tooling. -->
+    <RuleGroup name="Named pipes" groupRelation="or">
+      <PipeEvent onmatch="include">
+        <PipeName condition="contains any">\PSEXESVC;\paexec;\remcom;\csexec</PipeName>
+      </PipeEvent>
+    </RuleGroup>
+
+    <!-- Events 19/20/21: WMI event subscriptions (persistence). -->
+    <RuleGroup name="WMI" groupRelation="or">
+      <WmiEvent onmatch="exclude"/>
+    </RuleGroup>
+
+  </EventFiltering>
+</Sysmon>
