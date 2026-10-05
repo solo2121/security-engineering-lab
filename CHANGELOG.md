@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Opt-in advanced controls for `windows-hardening`: Windows LAPS, Sysmon
+  with Windows Event Forwarding, and Credential Guard.** Set
+  `HARDENING_ADVANCED=1` to prepare AD for Windows LAPS (schema, OU, GPO) and
+  move `win-member` into the managed OU, install Sysmon with the
+  SwiftOnSecurity baseline (bundled fallback) on both VMs, and forward events
+  to a WEF collector on `win-member`. `HARDENING_CREDENTIAL_GUARD=1`
+  additionally attempts Credential Guard/VBS on `win-member`, but only after
+  a preflight (member server, UEFI, Secure Boot, nested virtualization) and
+  it reports `SKIP` or `FAIL` instead of claiming protection it cannot
+  verify. Off by default, so existing behaviour is unchanged. Experimental:
+  statically validated only. See
+  `labs/security/windows-hardening/docs/advanced-controls.md`.
 - **`KALI_BOX` / `KALI_BOX_VERSION` environment variables for
   `active-directory/base` and `active-directory/vlan-segmented`.** The
   attacker VM (still named `kali`) can now run an alternate

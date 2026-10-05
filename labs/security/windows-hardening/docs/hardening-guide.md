@@ -283,17 +283,15 @@ it is:
   If you extend this lab toward `LAB_PROFILE=full` parity with the AD
   pentest lab, template-permission hardening (removing low-priv enroll
   rights, requiring manager approval on sensitive templates) belongs here.
-- **LAPS / local administrator password rotation** — not yet implemented.
-- **Credential Guard** — deliberately not enabled in this MVP; it has
-  hardware/firmware prerequisites (Secure Boot, virtualization-based
-  security) that don't reliably apply inside a nested-virtualization lab
-  VM, so it would likely fail silently and give false confidence rather
-  than real protection here.
-- **Sysmon deployment** — the AD pentest lab's detection guide documents
-  Sysmon installation and config
-  ([`detection-and-blue-team.md` §2](../../../../docs/guides/security/detection-and-blue-team.md#2-sysmon-deployment)),
-  but this lab's provisioner doesn't install it automatically yet. Follow
-  that section manually if you want Sysmon telemetry on `dc01-hardened`.
+- **LAPS, Sysmon + WEF, and Credential Guard** — not part of the default
+  baseline above, but available as opt-in controls (`HARDENING_ADVANCED=1`);
+  see [`advanced-controls.md`](advanced-controls.md) for what each does, how
+  to verify it, and its limits. They have not been validated end to end.
+  Credential Guard needs UEFI, Secure Boot, and nested virtualization in the
+  guest; it is skipped with an explicit reason when those are missing,
+  instead of being reported as protection that isn't running. Manual Sysmon
+  steps remain documented in
+  [`detection-and-blue-team.md` §2](../../../../docs/guides/security/detection-and-blue-team.md#2-sysmon-deployment).
 - **ZeroLogon / PetitPotam / NoPac / Shadow Credentials / RBCD
   mitigations** — these are largely patch-level and configuration-specific
   mitigations (Netlogon secure channel enforcement, EPA on AD CS web

@@ -19,7 +19,7 @@ ADV = LAB / "provision" / "advanced"
 CONFIG = ADV / "config"
 
 EXPECTED_SCRIPTS = [
-    "01-Join-LabDomain.ps1",
+    "01-Move-To-LabOu.ps1",
     "02-Enable-WindowsLaps-DC.ps1",
     "03-Apply-And-Verify-Laps.ps1",
     "10-Install-Sysmon.ps1",
@@ -73,7 +73,7 @@ def test_wef_subscription_is_source_initiated_and_covers_sysmon() -> None:
 def test_vagrant_helper_is_opt_in_and_reads_secrets_from_env() -> None:
     text = (ADV / "vagrant_advanced.rb").read_text(encoding="utf-8")
     assert 'flag?("HARDENING_ADVANCED"' in text
-    assert 'env.fetch("LAB_DOMAIN_ADMIN_PASSWORD", "")' in text
+    assert 'settings.fetch(:admin_password)' in text
     for name in EXPECTED_SCRIPTS:
         assert name in text, f"{name} is not wired into vagrant_advanced.rb"
 
@@ -82,3 +82,10 @@ def test_documentation_exists() -> None:
     doc = LAB / "docs" / "advanced-controls.md"
     assert doc.is_file()
     assert "Credential Guard" in doc.read_text(encoding="utf-8")
+
+
+def test_vagrantfile_is_wired_to_the_helper() -> None:
+    text = (LAB / "Vagrantfile").read_text(encoding="utf-8")
+    assert re.search(r"require_relative ['\"]provision/advanced/vagrant_advanced['\"]", text)
+    assert "AdvancedControls.apply_dc(" in text
+    assert "AdvancedControls.apply_member(" in text

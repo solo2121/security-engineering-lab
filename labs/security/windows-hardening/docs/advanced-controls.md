@@ -9,81 +9,69 @@ These controls are **off by default**. Nothing changes for an existing
 
 | Control | Type | Default when `HARDENING_ADVANCED=1` | Needs |
 | --- | --- | --- | --- |
-| Windows LAPS | Mitigation | On | A member server (the local-admin password of a DC is not what LAPS protects here) |
+| Windows LAPS | Mitigation | On | `LAB_PROFILE=full` (the member server is the machine whose password is managed) |
 | Sysmon | Detection | On | Internet for the first install (Sysinternals), or a pre-seeded host |
-| Windows Event Forwarding | Detection | On | A collector (the member server) and a source (every machine) |
+| Windows Event Forwarding | Detection | On | `LAB_PROFILE=full` (`win-member` is the collector; both VMs are sources) |
 | Credential Guard / VBS | Mitigation | **Off**; also needs `HARDENING_CREDENTIAL_GUARD=1` | Nested virtualization and UEFI/Secure Boot in the guest; member server only |
 
 ## Topology
 
+No new VM is added. The existing two-VM `LAB_PROFILE=full` layout is used:
+
 ```
-dc01-hardened   domain controller        LAPS schema/OU/GPO, Sysmon, WEF source
-srv01-hardened  member server (LabServers OU)
-                                          LAPS client, WEF collector, Sysmon,
-                                          Credential Guard (opt-in)
+dc01-hardened  domain controller   LAPS schema/OU/GPO, Sysmon, WEF source
+win-member     member server       moved into the LabServers OU; LAPS client,
+                                   WEF collector, Sysmon, Credential Guard (opt-in)
 ```
 
-`srv01-hardened` is one extra VM. It plays three roles to keep the footprint
-small. For a larger lab, split the collector onto its own VM and point
-`LAB_COLLECTOR_FQDN` at it.
+`win-member` plays three roles to keep the footprint small. For a larger lab,
+split the collector onto its own VM and change `collector_fqdn` in the
+Vagrantfile's `ADVANCED_SETTINGS`. In the default `minimal` profile only the DC
+exists, so only the LAPS preparation and Sysmon are applied; forwarding and the
+LAPS client need `LAB_PROFILE=full`.
 
 ## Prerequisites
 
-- The `vagrant-reload` plugin (reboots between steps).
-- A Vagrant version that supports `env:` on the shell provisioner for Windows
-  guests (2.3 or later is recommended).
-- A Windows Server 2019/2022 box with the **April 2023 or later cumulative
-  update** (needed for built-in Windows LAPS). The LAPS script stops with a
-  clear message if the cmdlets are missing.
+- The `vagrant-reload` plugin (the lab already requires it).
+- A Windows Server 2022 box with the **April 2023 or later cumulative update**
+  (needed for built-in Windows LAPS). The LAPS script stops with a clear
+  message if the cmdlets are missing.
+- Internet access from the guests for the first Sysmon install (the Sysinternals
+  download and, by default, the community config).
+- `win-member` memory defaults to 4096 MB when `HARDENING_ADVANCED=1` (2048 MB
+  otherwise). Override with `WIN_MEMBER_MEMORY`.
 
-## Configuration (host environment)
+## Usage
 
-Export these before `vagrant up`. Do not commit values; the domain admin
-password in particular must only ever live in your shell.
-
-| Variable | Required | Meaning |
-| --- | --- | --- |
-| `HARDENING_ADVANCED` | yes | `1` enables LAPS, Sysmon, and WEF |
-| `HARDENING_CREDENTIAL_GUARD` | no | `1` also attempts Credential Guard on the member server |
-| `LAB_DOMAIN` | yes | AD DNS name of the hardened lab domain |
-| `LAB_DC_IP` | yes | IP of `dc01-hardened` on the lab network |
-| `LAB_DOMAIN_ADMIN_PASSWORD` | yes | Password of the domain admin used to join and verify |
-| `LAB_DOMAIN_ADMIN` | no | Defaults to `Administrator` |
-| `LAB_SERVERS_OU` | no | Defaults to `LabServers` |
-| `LAB_COLLECTOR_FQDN` | no | Defaults to `srv01-hardened.<LAB_DOMAIN>` |
-| `SYSMON_CONFIG_SOURCE` | no | `swift` (default), `modular`, or `bundled` |
-| `SYSMON_CONFIG_SHA256` | no | Pin the downloaded config; a mismatch is fatal |
-| `HARDENING_STRICT` | no | `1` makes verification failures fail `vagrant up` |
-
-## Wiring into the Vagrantfile
-
-The helper lives in `provision/advanced/vagrant_advanced.rb`. Add it to the lab
-`Vagrantfile`:
-
-```ruby
-require_relative "provision/advanced/vagrant_advanced"
-
-# Inside the existing dc01-hardened definition, AFTER the existing provisioners
-# (domain promotion and phase4-hardening-baseline must run first):
-AdvancedControls.apply_dc(node)
-
-# A new member server definition, using the same box and private network
-# as dc01-hardened:
-config.vm.define "srv01-hardened" do |node|
-  node.vm.hostname = "srv01-hardened"
-  # box, private-network IP, CPU/RAM (4 GB RAM recommended) as for dc01-hardened
-  AdvancedControls.apply_member(node)
-end
-```
-
-Bring the DC up first so the LabServers OU and the LAPS GPO exist before the
-member server joins:
+The Vagrantfile is already wired to `provision/advanced/vagrant_advanced.rb`.
+Enable the controls with environment variables on the host; no other change is
+needed:
 
 ```bash
-export HARDENING_ADVANCED=1 LAB_DOMAIN=... LAB_DC_IP=... LAB_DOMAIN_ADMIN_PASSWORD=...
-vagrant up dc01-hardened
-vagrant up srv01-hardened
+cd labs/security/windows-hardening
+export HARDENING_ADVANCED=1
+LAB_PROFILE=full vagrant up --provider=libvirt   # dc01-hardened first, then win-member
 ```
+
+Add `HARDENING_CREDENTIAL_GUARD=1` to also attempt Credential Guard (see
+section 4 for why it may skip). For an already-running lab, run
+`vagrant provision <vm>` for each VM instead of rebuilding it, DC first.
+
+## Configuration
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `HARDENING_ADVANCED` | unset | `1` enables LAPS, Sysmon, and WEF |
+| `HARDENING_CREDENTIAL_GUARD` | unset | `1` also attempts Credential Guard on `win-member` |
+| `HARDENED_DOMAIN_ADMIN_PASSWORD` | the lab's documented domain admin password | Used to move `win-member` into the OU, to verify LAPS escrow, and as a fallback for the schema extension |
+| `LAB_SERVERS_OU` | `LabServers` | OU that holds LAPS-managed servers |
+| `SYSMON_CONFIG_SOURCE` | `swift` | `swift`, `modular`, or `bundled` |
+| `SYSMON_CONFIG_SHA256` | unset | Pin the downloaded config; a mismatch is fatal |
+| `HARDENING_STRICT` | `0` | `1` makes verification failures fail `vagrant up` |
+
+The domain name, DC IP, and collector name come from the Vagrantfile constants
+(`HARDENED_DOMAIN_NAME`, `DC01_HARDENED_IP`, and `win-member`), so they follow
+any overrides you already use.
 
 ---
 
@@ -93,10 +81,11 @@ vagrant up srv01-hardened
 `LabServers` OU, grants computers in it permission to write their own password
 (`Set-LapsADComputerSelfPermission`), and links a GPO that enables Windows LAPS
 with AD backup, a 20-character complex password, and a 30-day rotation. The
-member server joins into that OU. The built-in Administrator is managed; the
-`vagrant` account is deliberately not, so rotation cannot lock Vagrant out.
-If the domain functional level is 2016 or higher, AD password encryption is
-enabled as well.
+lab's own provisioner joins `win-member` into the default Computers container,
+which cannot have a GPO linked, so `01-Move-To-LabOu.ps1` moves its computer
+object into the OU. The built-in Administrator is managed; the `vagrant`
+account is deliberately not, so rotation cannot lock Vagrant out. If the domain
+functional level is 2016 or higher, AD password encryption is enabled as well.
 
 **Why:** A shared local administrator password means one compromised machine
 gives an attacker administrative access to every machine that shares it. LAPS
@@ -105,25 +94,25 @@ in AD with access controlled by ACLs.
 
 **Attack it mitigates:** Lateral movement by reusing a local administrator
 credential or hash across machines (pass-the-hash with a shared local admin).
-Compare with the flat, shared-credential assumptions in the AD pentest lab's
-[attack guide](../../active-directory/base/docs/attack-guide.md).
+Compare with the credential attacks in the AD pentest lab's
+[attack guide](../../active-directory/base/docs/attack-guide.md#5-credential-attacks).
 
 **How to verify:** The provisioner prints `PASS` when the escrow is confirmed.
-Manually, from a domain-joined machine with the LAPS module and appropriate
-rights:
+Manually, on `dc01-hardened` (or any machine with the LAPS module and
+appropriate rights):
 
 ```powershell
-Get-LapsADPassword -Identity srv01-hardened -AsPlainText
+Get-LapsADPassword -Identity win-member -AsPlainText
 # Expect: Account Administrator, a 20-character password, and a future ExpirationTimestamp
 ```
 
-On the member server, `Get-WinEvent -LogName Microsoft-Windows-LAPS/Operational`
+On `win-member`, `Get-WinEvent -LogName Microsoft-Windows-LAPS/Operational`
 shows policy processing and the AD update.
 
 **Cost/trade-off:** Domain admins can read these passwords by default; in a
 real deployment, scope the read permission with `Set-LapsADReadPasswordPermission`.
-LAPS here does not manage the DC's DSRM password (possible with Windows LAPS but
-out of scope for this change).
+LAPS here does not manage the DC's DSRM password (possible with Windows LAPS
+but out of scope for this change).
 
 ## 2. Sysmon with a community baseline
 
@@ -147,8 +136,8 @@ execution pipes (Events 17/18).
 **How to verify:**
 
 ```powershell
-Get-Service Sysmon64                      # Running
-Get-Content C:\ProgramData\LabSysmon\state.json   # which config is active, and its SHA-256
+Get-Service Sysmon64                              # Running
+Get-Content C:\ProgramData\LabSysmon\state.json   # active config and its SHA-256
 Get-WinEvent -LogName Microsoft-Windows-Sysmon/Operational -MaxEvents 5
 ```
 
@@ -159,19 +148,20 @@ attribution terms of any community config before redistributing it.
 
 ## 3. Windows Event Forwarding
 
-**Control:** `srv01-hardened` enables the Windows Event Collector service and
+**Control:** `win-member` enables the Windows Event Collector service and
 registers a source-initiated subscription (`LabBaseline`, see
 `provision/advanced/config/wef-subscription.xml`) that accepts Domain Computers.
 Every machine sets the Subscription Manager policy to the collector, lets
 `NETWORK SERVICE` read the Security and Sysmon logs through Event Log Readers,
 and enables PowerShell script block logging. Forwarded: all Sysmon events,
-selected Security events (4624/4625/4648/4662/4672/4697/4698/4720/4724/4728/
-4732/4768/4769/4771/4776/4886/4887/5136), service installs (7045), PowerShell
-4103/4104, and NTLM audit events. They land in `ForwardedEvents` on the
-collector.
+selected Security events (4624, 4625, 4648, 4662, 4672, 4697, 4698, 4720, 4724,
+4728, 4732, 4768, 4769, 4771, 4776, 4886, 4887, 5136), service installs (7045),
+PowerShell 4103/4104, and NTLM audit events. They land in `ForwardedEvents` on
+the collector.
 
 **Why:** Logs that stay on the machine an attacker controls can be cleared or
-ignored. Central collection gives one place to look and survives local tampering.
+ignored. Central collection gives one place to look and survives local
+tampering.
 
 **Attack it detects:** Kerberoasting (4769), AS-REP roasting (4768), DCSync
 (4662), AD CS abuse (4886/4887), and the Sysmon-based detections above, all
@@ -195,8 +185,8 @@ quickly; it is capped at 512 MB. If forwarding does not start, run
 
 ## 4. Credential Guard / VBS (opt-in, preflight-gated)
 
-**Control:** When `HARDENING_CREDENTIAL_GUARD=1`, the member server is
-configured for virtualization-based security and Credential Guard
+**Control:** When `HARDENING_CREDENTIAL_GUARD=1`, `win-member` is configured for
+virtualization-based security and Credential Guard
 (`EnableVirtualizationBasedSecurity=1`, `RequirePlatformSecurityFeatures=1`,
 `LsaCfgFlags=2`, which is enabled **without** a UEFI lock so it is reversible).
 Before changing anything, the script checks that the machine is not a DC, is
@@ -224,25 +214,26 @@ privilege escalation. Pair with the Sysmon Event 10 detection above.
 **Cost/trade-off and limits:**
 
 - Not supported on domain controllers, so it is never applied to `dc01-hardened`.
-- Needs hardware virtualization exposed to the guest. On libvirt this means
-  `host-passthrough` CPU mode with nested virtualization enabled on the host,
-  UEFI firmware (OVMF), and Secure Boot. Many Windows Vagrant boxes are BIOS
-  based and will `SKIP`. The libvirt UEFI/Secure Boot and VirtualBox
-  nested-virtualization setup is host specific and is **not** validated by
-  this repository's CI.
+- Needs hardware virtualization exposed to the guest and UEFI with Secure Boot.
+  The lab already sets `host-passthrough` and `nested = true` on libvirt, but it
+  does not configure UEFI firmware, and a Windows image installed under BIOS
+  cannot be switched to UEFI afterwards. With the current
+  `peru/windows-server-2022-standard-x64-eval` box, expect a `SKIP` that names
+  the firmware as the reason. Making it run requires a UEFI-based Windows box
+  plus OVMF/Secure Boot settings on the VM; that setup is host specific and is
+  **not** validated by this repository's CI.
 - Credential Guard blocks some legacy authentication (unconstrained Kerberos
   delegation, NTLMv1, and others). Test your workloads.
-- The "no false confidence" rule: a configured-but-not-running result is
-  reported as `FAIL`, never as success.
+- A configured-but-not-running result is reported as `FAIL`, never as success.
 
 ## Troubleshooting
 
 | Symptom | Likely cause |
 | --- | --- |
 | LAPS script reports a missing `LAPS` module | Base box lacks the April 2023 or later update |
-| `Update-LapsADSchema` access denied | Provisioning account is not in Schema Admins |
-| Domain join fails | DC not provisioned first, wrong `LAB_DC_IP`, or the OU is missing |
-| LAPS verify times out | Computer is not in the LabServers OU or the GPO is not linked there |
+| `Update-LapsADSchema` access denied | The provisioning account is not in Schema Admins; the script retries as the domain admin over loopback WinRM, so check `HARDENED_DOMAIN_ADMIN_PASSWORD` |
+| Move to OU fails | `dc01-hardened` was not provisioned with `HARDENING_ADVANCED=1` first (it creates the OU), or the admin password override is wrong |
+| LAPS verify times out | The computer is not in the LabServers OU or the GPO is not linked there |
 | Sysmon falls back to `bundled` | No internet in the guest, or Sysmon rejected the downloaded schema version |
-| No forwarded events | Source not rebooted/WinRM not restarted, FQDN does not resolve, or TCP 5985 blocked |
+| No forwarded events | Source not rebooted/WinRM not restarted, `win-member.<domain>` does not resolve, or TCP 5985 blocked |
 | Credential Guard `SKIP` | See the reason printed; usually BIOS firmware, no Secure Boot, or no nested virtualization |

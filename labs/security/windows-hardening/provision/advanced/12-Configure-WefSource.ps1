@@ -37,7 +37,7 @@ function Invoke-Native {
 }
 
 if ([string]::IsNullOrWhiteSpace($CollectorFqdn)) {
-    throw 'Missing LAB_COLLECTOR_FQDN (or set LAB_DOMAIN so the default srv01-hardened.<domain> can be derived).'
+    throw 'Missing LAB_COLLECTOR_FQDN (the Vagrantfile passes win-member.<domain> by default).'
 }
 
 # 1. Subscription manager --------------------------------------------------------

@@ -22,6 +22,11 @@
 #                         test lateral-movement resistance against a second
 #                         host (2 VMs).
 #
+# Optional advanced controls (off by default): HARDENING_ADVANCED=1 adds
+# Windows LAPS, Sysmon with Windows Event Forwarding, and (separately opt-in
+# via HARDENING_CREDENTIAL_GUARD=1) Credential Guard. See
+# docs/advanced-controls.md. With the flag unset, nothing below changes.
+#
 # What this lab is: a Windows Server 2022 domain controller built with the
 # same base box and AD-promotion pattern as
 # labs/security/active-directory/base/Vagrantfile, but with CIS-benchmark-
@@ -62,6 +67,8 @@ DOMAIN_NETBIOS = ENV.fetch('HARDENED_DOMAIN_NETBIOS', 'HARDENED')
 LAB_SUBNET = ENV.fetch('HARDENED_LAB_SUBNET', '172.29.128.0/24')
 LAB_NET = ENV.fetch('HARDENED_LAB_NET', 'winhardening0')
 
+require_relative 'provision/advanced/vagrant_advanced'
+
 VM_IPS = {
   dc01_hardened: ENV.fetch('DC01_HARDENED_IP', '172.29.128.21'),
   win_member: ENV.fetch('WIN_MEMBER_IP', '172.29.128.31')
@@ -69,7 +76,7 @@ VM_IPS = {
 
 VM_MEMORY = {
   dc01_hardened: ENV.fetch('DC01_HARDENED_MEMORY', 4096).to_i,
-  win_member: ENV.fetch('WIN_MEMBER_MEMORY', 2048).to_i
+  win_member: ENV.fetch('WIN_MEMBER_MEMORY', AdvancedControls.enabled? ? 4096 : 2048).to_i
 }
 
 VM_CPUS = {
@@ -111,6 +118,17 @@ puts ""
 
 VAGRANT_DEFAULT_PASSWORD = ENV.fetch("VAGRANT_DEFAULT_PASSWORD", "vagrant")
 VAGRANT_UPDATED_PASSWORD = ENV.fetch("VAGRANT_UPDATED_PASSWORD", "Vagrant123!")
+
+# Advanced controls (opt-in; see docs/advanced-controls.md). Reuses the lab's
+# existing domain-admin credential, the same one phase1-domain-join uses.
+ADVANCED_SETTINGS = {
+  domain: DOMAIN_NAME,
+  dc_ip: VM_IPS[:dc01_hardened],
+  admin: 'Administrator',
+  admin_password: ENV.fetch('HARDENED_DOMAIN_ADMIN_PASSWORD', 'Passw0rd!'),
+  collector_fqdn: "win-member.#{DOMAIN_NAME}",
+  collector: profile_includes?('win-member')
+}.freeze
 
 if PROVIDER == :libvirt
   ENV['LIBVIRT_DEFAULT_URI'] = 'qemu:///system'
@@ -434,6 +452,10 @@ Vagrant.configure("2") do |config|
       "DC hardening complete" | Out-File C:\\DC-FINAL.txt -Force
       Log "[SUCCESS] Phase 4 hardening baseline complete"
     SHELL
+
+    # Opt-in advanced controls (LAPS, Sysmon, WEF source). Keep this LAST so
+    # AD promotion and the hardening baseline have already run.
+    AdvancedControls.apply_dc(vm.vm, ADVANCED_SETTINGS)
   end
 
   # ==========================================================================
@@ -487,6 +509,10 @@ Vagrant.configure("2") do |config|
         "Member baseline applied" | Out-File C:\\MEMBER-FINAL.txt -Force
         Write-Host "[SUCCESS] Member baseline complete"
       SHELL
+
+      # Opt-in advanced controls (LAPS client, WEF collector, Sysmon,
+      # Credential Guard). Keep this LAST: it needs the domain join to be done.
+      AdvancedControls.apply_member(vm.vm, ADVANCED_SETTINGS)
     end
   end
 end

@@ -41,7 +41,7 @@ if (Get-Command -Name Invoke-LapsPolicyProcessing -ErrorAction SilentlyContinue)
     Invoke-LapsPolicyProcessing
 }
 
-$entry    = New-Object System.DirectoryServices.DirectoryEntry("LDAP://$DcIp", "$Domain\$AdminUser", $AdminPassword)
+$entry    = New-Object System.DirectoryServices.DirectoryEntry("LDAP://$DcIp", "$AdminUser@$Domain", $AdminPassword)
 $searcher = New-Object System.DirectoryServices.DirectorySearcher($entry)
 $searcher.Filter = "(&(objectCategory=computer)(sAMAccountName=$env:COMPUTERNAME`$))"
 [void]$searcher.PropertiesToLoad.Add('msLAPS-PasswordExpirationTime')

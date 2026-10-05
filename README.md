@@ -678,7 +678,7 @@ For additional security information, see:
 - Apple Silicon / ARM64 hosts have no currently supported deployment path.
 - Windows-based labs use Microsoft evaluation media; users are responsible for complying with applicable Microsoft licensing terms.
 - The Windows Server Hardening lab is an experimental `v0.1.0` MVP with less real-world testing than the other labs.
-- The Windows Server Hardening lab does not yet cover AD CS hardening, LAPS, Credential Guard, or automated Sysmon deployment. See its [hardening guide](./labs/security/windows-hardening/docs/hardening-guide.md) for the complete list of known gaps.
+- The Windows Server Hardening lab does not yet cover AD CS hardening. LAPS, Sysmon with Windows Event Forwarding, and Credential Guard are available as opt-in, experimental controls (`HARDENING_ADVANCED=1`); see its [advanced controls guide](./labs/security/windows-hardening/docs/advanced-controls.md). See its [hardening guide](./labs/security/windows-hardening/docs/hardening-guide.md) for the complete list of known gaps.
 - Third-party Vagrant boxes may change independently.
 - CI validates repository quality and selected provider workflows but does not fully deploy every environment on every push.
 - The project is designed primarily for a single-host laboratory architecture.

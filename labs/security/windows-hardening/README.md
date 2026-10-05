@@ -20,6 +20,7 @@ recognize and apply the corresponding fixes — then verify they hold.
 - [Who this is for](#who-this-is-for)
 - [What's included](#whats-included)
 - [Lab profiles](#lab-profiles)
+- [Advanced controls](#advanced-controls)
 - [Prerequisites](#prerequisites)
 - [Quick start](#quick-start)
 - [Validating the hardening](#validating-the-hardening)
@@ -53,6 +54,22 @@ of controls applied and why each one matters.
 vagrant up                    # dc01-hardened only (default, "minimal")
 LAB_PROFILE=full vagrant up   # dc01-hardened + win-member
 ```
+
+## Advanced controls
+
+Opt-in and off by default:
+
+```bash
+export HARDENING_ADVANCED=1
+LAB_PROFILE=full vagrant up --provider=libvirt
+```
+
+This adds Windows LAPS, Sysmon with Windows Event Forwarding (`win-member` is
+the collector), and, with `HARDENING_CREDENTIAL_GUARD=1`, a preflight-gated
+Credential Guard attempt. See
+[`docs/advanced-controls.md`](docs/advanced-controls.md) for what each control
+does, how to verify it, and its limits. `win-member` gets 4 GB of RAM by
+default when these controls are enabled.
 
 ## Prerequisites
 
@@ -158,6 +175,10 @@ just stronger than the intentionally-weak AD pentest lab baseline.
   against this lab's `dc01-hardened` to confirm each mitigation holds is a
   manual exercise for now (see `docs/hardening-guide.md`) — there's no
   cross-lab automation for it.
+- **Advanced controls are experimental.** LAPS, Sysmon + WEF, and Credential
+  Guard (`HARDENING_ADVANCED=1`) have had static validation only, not
+  end-to-end runs on real hardware. Credential Guard needs a UEFI/Secure Boot
+  guest and is expected to skip with the current BIOS-based base box.
 
 ## Reset and cleanup
 
