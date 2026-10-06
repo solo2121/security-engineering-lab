@@ -7,7 +7,7 @@
 # already pinned in .pre-commit-config.yaml, so local `pip install` and the
 # pre-commit hook run the same tool version.
 
-pylint>=4.0.9
+pylint>=4.1.2
 pytest>=9.1.1
 pytest-cov>=7.1.0
 flake8==7.4.1
