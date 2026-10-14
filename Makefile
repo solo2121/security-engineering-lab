@@ -48,6 +48,8 @@ typecheck:
 test:
 	@echo "==> pytest"
 	pytest tests/python/ -v
+	@echo "==> pytest (windows-hardening advanced controls, static checks)"
+	pytest tests/test_windows_hardening_advanced.py -v
 	@echo "==> bats"
 	bats tests/bash/
 
@@ -65,11 +67,11 @@ validate:
 
 validate-virtualbox:
 	@echo "==> vagrant validate (active-directory/base, VirtualBox)"
-	cd labs/security/active-directory/base && vagrant validate --provider=virtualbox
+	cd labs/security/active-directory/base && VAGRANT_DEFAULT_PROVIDER=virtualbox vagrant validate
 	@echo "==> vagrant validate (active-directory/vlan-segmented, VirtualBox)"
-	cd labs/security/active-directory/vlan-segmented && vagrant validate --provider=virtualbox
+	cd labs/security/active-directory/vlan-segmented && VAGRANT_DEFAULT_PROVIDER=virtualbox vagrant validate
 	@echo "==> vagrant validate (devops-linux-lab, VirtualBox)"
-	cd labs/infrastructure/devops-linux-lab && vagrant validate --provider=virtualbox
+	cd labs/infrastructure/devops-linux-lab && VAGRANT_DEFAULT_PROVIDER=virtualbox vagrant validate
 
 validate-repo:
 	@echo "==> repository health validation (scripts/validate_lab.py)"

@@ -19,7 +19,7 @@ Lab 2's `Vagrantfile` already supports three resource profiles via the
 |---|---|---|
 | `minimal` (default) | `devops-1` (k3s control plane) + `worker-1` | ~10 GiB |
 | `dev` | `minimal` + `node1` + `node2` (Ansible targets) | ~12 GiB |
-| `full` | every defined VM (control plane, 2 workers, 4 OS labs, 2 Ansible nodes, kind lab, k3d lab, CI/CD server) | ~30 GiB |
+| `full` | every defined VM (control plane, 2 workers, 4 OS labs, 2 Ansible nodes, kind lab, k3d lab, CI/CD server) | ~34 GiB |
 
 ```bash
 cd labs/infrastructure/devops-linux-lab
@@ -48,7 +48,7 @@ build a custom subset:
 |---|---|---|
 | `devops-1` | k3s control plane | 8192 MB |
 | `worker-1`, `worker-2` | k3s workers | 2048 MB each |
-| `ubuntu-lab`, `rocky-lab`, `alma-lab`, `suse-lab` | OS hardening labs | 1024 MB each |
+| `ubuntu-lab`, `rocky-lab`, `alma-lab`, `suse-lab` | OS hardening labs | 2048 MB each |
 | `node1`, `node2` | Ansible targets | 1024 MB each |
 | `kind-lab` | Kind cluster | 4096 MB |
 | `k3d-lab` | k3d cluster | 4096 MB |
@@ -56,8 +56,10 @@ build a custom subset:
 
 ## Lab 1 (Active Directory pentest lab) — selective VM startup
 
-Lab 1's `Vagrantfile` doesn't have a profile system, but its startup banner
-documents a tested minimal set for 32 GiB hosts:
+Lab 1's `Vagrantfile` has a `LAB_PROFILE` system (`minimal`, `ad`, `web`,
+`cloud`, `llm`, `full`; default `ad`) — see the
+[AD base lab README](../../../labs/security/active-directory/base/README.md#lab-profiles).
+Its startup banner also documents a tested minimal set for 32 GiB hosts:
 
 | VM | Role | Memory |
 |---|---|---|
@@ -72,11 +74,13 @@ documents a tested minimal set for 32 GiB hosts:
 `db01`, `linux01`, `print01`, `metasploitable2`, `juice-shop`) totals
 **~29.5 GiB** and is recommended on hosts with 32 GiB+.
 
-Start only the subset you need with `vagrant up <name>`:
+VMs outside the active profile are never defined, so `llm01` and
+`cloud-pentest` require a profile that includes them (`full`). Start only
+the subset you need by naming the VMs:
 
 ```bash
 cd labs/security/active-directory/base
-vagrant up kali dc01 win10 ca01-esc llm01 cloud-pentest
+LAB_PROFILE=full vagrant up kali dc01 win10 ca01-esc llm01 cloud-pentest
 ```
 
 If you're primarily practicing AD attack paths (Kerberoasting, ACL abuse,

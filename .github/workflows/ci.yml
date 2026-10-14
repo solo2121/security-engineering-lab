@@ -455,6 +455,11 @@ jobs:
       - name: Run Python unit tests
         run: pytest tests/python/ -v
 
+      - name: Run Windows hardening static tests
+        # Static, host-independent checks (files exist, XML well formed,
+        # scripts ASCII-only and fail-fast, no hard-coded secrets).
+        run: pytest tests/test_windows_hardening_advanced.py -v
+
       - name: "Python coverage report (enforced minimum: 80%)"
         run: |
           pytest tests/python/ --cov=. --cov-report=term-missing --cov-fail-under=80

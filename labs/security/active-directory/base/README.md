@@ -475,7 +475,7 @@ hosts where libvirt isn't available or desired).
 ```bash
 git clone https://github.com/solo2121/security-engineering-lab.git
 cd security-engineering-lab/labs/security/active-directory/base
-vagrant validate --provider=virtualbox
+VAGRANT_DEFAULT_PROVIDER=virtualbox vagrant validate
 vagrant up --provider=virtualbox
 vagrant status
 ```

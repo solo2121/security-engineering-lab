@@ -9,8 +9,8 @@ A practical guide for using Ansible against the Linux nodes in the DevOps lab. I
 | node1 | 192.168.121.30 | Ubuntu 24.04 | Ansible managed node |
 | node2 | 192.168.121.31 | Ubuntu 24.04 | Ansible managed node |
 | ubuntu-lab | 192.168.121.20 | Ubuntu 24.04 | Linux practice node |
-| rocky-lab | 192.168.121.21 | Rocky Linux 10 | Linux practice node |
-| alma-lab | 192.168.121.22 | AlmaLinux 10 | Linux practice node |
+| rocky-lab | 192.168.121.21 | Rocky Linux 9.6 | Linux practice node |
+| alma-lab | 192.168.121.22 | AlmaLinux 9.6 | Linux practice node |
 | suse-lab | 192.168.121.23 | openSUSE Leap 15.6 | Linux practice node |
 
 SSH keys are automatically distributed from `devops-1` to all nodes during provisioning.

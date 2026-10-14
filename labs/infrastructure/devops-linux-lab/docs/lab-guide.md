@@ -36,12 +36,12 @@
 | devops-1 | .114 | k3s control plane and all services | 8192 MB | 4 |
 | worker-1 | .11 | k3s worker agent | 2048 MB | 2 |
 | worker-2 | .12 | k3s worker agent | 2048 MB | 2 |
-| kind-lab | .200 | Kind cluster inside Docker | 4096 MB | 2 |
-| k3d-lab | .201 | K3d cluster inside Docker | 4096 MB | 2 |
-| ubuntu-lab | .20 | Ubuntu 24.04 practice node | 1024 MB | 1 |
-| rocky-lab | .21 | Rocky Linux 10 practice node | 1024 MB | 1 |
-| alma-lab | .22 | AlmaLinux 10 practice node | 1024 MB | 1 |
-| suse-lab | .23 | openSUSE Leap 15.6 practice node | 1024 MB | 1 |
+| kind-lab | .40 | Kind cluster inside Docker | 4096 MB | 2 |
+| k3d-lab | .41 | K3d cluster inside Docker | 4096 MB | 2 |
+| ubuntu-lab | .20 | Ubuntu 24.04 practice node | 2048 MB | 2 |
+| rocky-lab | .21 | Rocky Linux 9.6 practice node | 2048 MB | 2 |
+| alma-lab | .22 | AlmaLinux 9.6 practice node | 2048 MB | 2 |
+| suse-lab | .23 | openSUSE Leap 15.6 practice node | 2048 MB | 2 |
 | node1 | .30 | Ansible managed node | 1024 MB | 1 |
 | node2 | .31 | Ansible managed node | 1024 MB | 1 |
 | cicd-server | .50 | Gitea + Jenkins + SonarQube + Vault + ZAP | 4096 MB | 2 |

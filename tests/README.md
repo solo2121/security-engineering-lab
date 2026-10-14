@@ -8,8 +8,9 @@ locally before committing.
 
 ```
 tests/
-├── python/   # pytest unit tests for Python tooling
-└── bash/     # bats unit tests for Bash scripts
+├── python/                              # pytest unit tests for Python tooling
+├── bash/                                # bats unit tests for Bash scripts
+└── test_windows_hardening_advanced.py   # static checks for the windows-hardening advanced controls
 ```
 
 ## Running the Python tests
@@ -17,6 +18,7 @@ tests/
 ```bash
 pip install -r requirements-dev.txt
 pytest tests/python/ -v
+pytest tests/test_windows_hardening_advanced.py -v
 ```
 
 ## Running the Bash tests

@@ -81,8 +81,8 @@ Host (Linux, KVM/libvirt)
 │
 ├── Linux Practice Nodes
 │   ├── ubuntu-lab  (Ubuntu 24.04)
-│   ├── rocky-lab   (Rocky Linux 10)
-│   ├── alma-lab    (AlmaLinux 10)
+│   ├── rocky-lab   (Rocky Linux 9.6)
+│   ├── alma-lab    (AlmaLinux 9.6)
 │   └── suse-lab    (openSUSE Leap 15.6)
 │
 ├── CI/CD Server
@@ -102,12 +102,12 @@ Host (Linux, KVM/libvirt)
 | devops-1 | auto-detected .114 | K3s control plane + all services | 8192 MB | 4 |
 | worker-1 | auto-detected .11 | K3s worker agent | 2048 MB | 2 |
 | worker-2 | auto-detected .12 | K3s worker agent | 2048 MB | 2 |
-| kind-lab | auto-detected .200 | Kind cluster (Docker) | 4096 MB | 2 |
-| k3d-lab | auto-detected .201 | K3d cluster (Docker) | 4096 MB | 2 |
-| ubuntu-lab | auto-detected .20 | Linux practice | 1024 MB | 1 |
-| rocky-lab | auto-detected .21 | Linux practice | 1024 MB | 1 |
-| alma-lab | auto-detected .22 | Linux practice | 1024 MB | 1 |
-| suse-lab | auto-detected .23 | Linux practice | 1024 MB | 1 |
+| kind-lab | auto-detected .40 | Kind cluster (Docker) | 4096 MB | 2 |
+| k3d-lab | auto-detected .41 | K3d cluster (Docker) | 4096 MB | 2 |
+| ubuntu-lab | auto-detected .20 | Linux practice | 2048 MB | 2 |
+| rocky-lab | auto-detected .21 | Linux practice | 2048 MB | 2 |
+| alma-lab | auto-detected .22 | Linux practice | 2048 MB | 2 |
+| suse-lab | auto-detected .23 | Linux practice | 2048 MB | 2 |
 | node1 | auto-detected .30 | Ansible managed node | 1024 MB | 1 |
 | node2 | auto-detected .31 | Ansible managed node | 1024 MB | 1 |
 | cicd-server | auto-detected .50 | Gitea + Jenkins + SonarQube + Vault + ZAP | 4096 MB | 2 |

@@ -68,14 +68,15 @@ IPs are auto-detected from the libvirt network at runtime. The base is derived f
 | devops-1 | .114 | 192.168.121.114 |
 | worker-1 | .11 | 192.168.121.11 |
 | worker-2 | .12 | 192.168.121.12 |
-| kind-lab | .200 | 192.168.121.200 |
-| k3d-lab | .201 | 192.168.121.201 |
+| kind-lab | .40 | 192.168.121.40 |
+| k3d-lab | .41 | 192.168.121.41 |
 | ubuntu-lab | .20 | 192.168.121.20 |
 | rocky-lab | .21 | 192.168.121.21 |
 | alma-lab | .22 | 192.168.121.22 |
 | suse-lab | .23 | 192.168.121.23 |
 | node1 | .30 | 192.168.121.30 |
 | node2 | .31 | 192.168.121.31 |
+| cicd-server | .50 | 192.168.121.50 |
 
 Actual IPs depend on your libvirt configuration. Check `MASTER_IP` in the Vagrant startup output for the real address.
 

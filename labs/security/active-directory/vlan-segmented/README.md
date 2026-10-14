@@ -223,7 +223,7 @@ hosts, since VirtualBox is Intel/AMD (x86_64) only.
 ```bash
 git clone https://github.com/solo2121/security-engineering-lab.git
 cd security-engineering-lab/labs/security/active-directory/vlan-segmented
-vagrant validate --provider=virtualbox
+VAGRANT_DEFAULT_PROVIDER=virtualbox vagrant validate
 vagrant up --provider=virtualbox
 vagrant status
 ```
