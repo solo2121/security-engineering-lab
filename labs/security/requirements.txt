@@ -11,6 +11,6 @@ requests>=2.34.2
 # Used by: labs/security/active-directory/base/scripts/lab_attack_automation.py
 # Install with: pip install -r labs/security/requirements.txt
 
-aiohttp>=3.14.3
+aiohttp>=3.14.5
 colorama>=0.4.6
 urllib3>=2.8.0
