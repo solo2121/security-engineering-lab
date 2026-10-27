@@ -88,29 +88,6 @@ jobs:
           vagrant plugin install vagrant-libvirt
           vagrant plugin list
 
-      - name: Install VirtualBox (CLI only)
-        run: |
-          set -eux
-          export DEBIAN_FRONTEND=noninteractive
-          wget -qO- https://www.virtualbox.org/download/oracle_vbox_2016.asc \
-            | sudo gpg --dearmor --yes -o /usr/share/keyrings/oracle-virtualbox-2016.gpg
-          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" \
-            | sudo tee /etc/apt/sources.list.d/virtualbox.list
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            -o Acquire::Retries=5 \
-            -o Acquire::http::Timeout=30 \
-            -o Acquire::https::Timeout=30 \
-            virtualbox-7.1 || sudo dpkg --configure -a || true
-          echo "/usr/lib/virtualbox" >> "$GITHUB_PATH"
-          export PATH="$PATH:/usr/lib/virtualbox"
-          if ! command -v VBoxManage >/dev/null; then
-            dpkg -l 'virtualbox*' || true
-            dpkg -L virtualbox-7.1 | grep -i vboxmanage || true
-            echo "VBoxManage not found" >&2
-            exit 1
-          fi
-          VBoxManage --version
       - name: Validate AD Pentest Vagrantfile
         run: vagrant validate
         working-directory: labs/security/active-directory/base
@@ -132,9 +109,9 @@ jobs:
   # ---------------------------------------------------------------------------
   # Job 1b: Validate all three VirtualBox Vagrantfiles
   #
-  # `vagrant validate` checks the Vagrantfile statically; it does not boot a
-  # VM or require the VirtualBox executable or kernel driver. Installing only
-  # Vagrant keeps this job fast and avoids unnecessary DKMS builds.
+  # `vagrant validate` does not boot a VM, but Vagrant still checks that the
+  # selected provider is usable, which requires `VBoxManage` on the PATH.
+  # Only the VirtualBox CLI package is installed (no Qt GUI, no DKMS build).
   # ---------------------------------------------------------------------------
   validate-vagrantfiles-virtualbox:
     name: Validate Vagrantfiles (VirtualBox)
@@ -163,6 +140,29 @@ jobs:
           vagrant plugin install vagrant-hostmanager
           vagrant plugin install vagrant-vbguest
           vagrant plugin list
+
+      - name: Install VirtualBox (CLI only)
+        run: |
+          set -eux
+          export DEBIAN_FRONTEND=noninteractive
+          wget -qO- https://www.virtualbox.org/download/oracle_vbox_2016.asc \
+            | sudo gpg --dearmor --yes -o /usr/share/keyrings/oracle-virtualbox-2016.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" \
+            | sudo tee /etc/apt/sources.list.d/virtualbox.list
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            -o Acquire::Retries=5 \
+            -o Acquire::http::Timeout=30 \
+            -o Acquire::https::Timeout=30 \
+            virtualbox-7.1 || sudo dpkg --configure -a || true
+          echo "/usr/lib/virtualbox" >> "$GITHUB_PATH"
+          export PATH="$PATH:/usr/lib/virtualbox"
+          if ! command -v VBoxManage >/dev/null; then
+            dpkg -l 'virtualbox*' || true
+            echo "VBoxManage not found" >&2
+            exit 1
+          fi
+          VBoxManage --version
 
       - name: Validate AD Pentest VirtualBox Vagrantfile
         # active-directory/base uses a single unified Vagrantfile
