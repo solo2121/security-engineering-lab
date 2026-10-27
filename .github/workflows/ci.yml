@@ -109,9 +109,9 @@ jobs:
   # ---------------------------------------------------------------------------
   # Job 1b: Validate all three VirtualBox Vagrantfiles
   #
-  # GitHub-hosted ubuntu-latest runners ship VirtualBox preinstalled, so
-  # unlike the libvirt job above, no provider install step is needed here —
-  # just Vagrant itself (the VirtualBox provider is built in).
+  # `vagrant validate` checks the Vagrantfile statically; it does not boot a
+  # VM or require the VirtualBox executable or kernel driver. Installing only
+  # Vagrant keeps this job fast and avoids unnecessary DKMS builds.
   # ---------------------------------------------------------------------------
   validate-vagrantfiles-virtualbox:
     name: Validate Vagrantfiles (VirtualBox)
@@ -121,30 +121,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Install VirtualBox
-        # GitHub-hosted ubuntu-latest runners do not ship VirtualBox
-        # preinstalled. Install it from Oracle's official repository.
-        # The kernel driver (vboxdrv) isn't needed for `vagrant validate`
-        # (it only parses the Vagrantfile and checks the provider is
-        # present), but we still install build-essential/dkms/headers so
-        # the package configures cleanly.
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y wget gnupg lsb-release build-essential dkms "linux-headers-$(uname -r)"
-          wget --retry-connrefused --tries=5 --waitretry=5 -qO /tmp/oracle_vbox_2016.asc \
-            https://download.virtualbox.org/virtualbox/debian/oracle_vbox_2016.asc
-          grep -q 'BEGIN PGP PUBLIC KEY BLOCK' /tmp/oracle_vbox_2016.asc || {
-            echo "::error::Downloaded file is not a valid PGP public key (fetch likely blocked or truncated); aborting." >&2
-            exit 1
-          }
-          sudo gpg --yes --dearmor -o /usr/share/keyrings/oracle-virtualbox-2016.gpg /tmp/oracle_vbox_2016.asc
-          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] \
-            https://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" \
-            | sudo tee /etc/apt/sources.list.d/virtualbox.list
-          sudo apt-get update -qq
-          sudo apt-get install -y virtualbox
-          VBoxManage --version
 
       - name: Install Vagrant
         run: |
