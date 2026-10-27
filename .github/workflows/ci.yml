@@ -90,7 +90,8 @@ jobs:
 
       - name: Install VirtualBox (CLI only)
         run: |
-          set -euo pipefail
+          set -eux
+          export DEBIAN_FRONTEND=noninteractive
           wget -qO- https://www.virtualbox.org/download/oracle_vbox_2016.asc \
             | sudo gpg --dearmor --yes -o /usr/share/keyrings/oracle-virtualbox-2016.gpg
           echo "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" \
@@ -100,7 +101,15 @@ jobs:
             -o Acquire::Retries=5 \
             -o Acquire::http::Timeout=30 \
             -o Acquire::https::Timeout=30 \
-            virtualbox-7.1
+            virtualbox-7.1 || sudo dpkg --configure -a || true
+          echo "/usr/lib/virtualbox" >> "$GITHUB_PATH"
+          export PATH="$PATH:/usr/lib/virtualbox"
+          if ! command -v VBoxManage >/dev/null; then
+            dpkg -l 'virtualbox*' || true
+            dpkg -L virtualbox-7.1 | grep -i vboxmanage || true
+            echo "VBoxManage not found" >&2
+            exit 1
+          fi
           VBoxManage --version
       - name: Validate AD Pentest Vagrantfile
         run: vagrant validate
