@@ -88,6 +88,20 @@ jobs:
           vagrant plugin install vagrant-libvirt
           vagrant plugin list
 
+      - name: Install VirtualBox (CLI only)
+        run: |
+          set -euo pipefail
+          wget -qO- https://www.virtualbox.org/download/oracle_vbox_2016.asc \
+            | sudo gpg --dearmor --yes -o /usr/share/keyrings/oracle-virtualbox-2016.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" \
+            | sudo tee /etc/apt/sources.list.d/virtualbox.list
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            -o Acquire::Retries=5 \
+            -o Acquire::http::Timeout=30 \
+            -o Acquire::https::Timeout=30 \
+            virtualbox-7.1
+          VBoxManage --version
       - name: Validate AD Pentest Vagrantfile
         run: vagrant validate
         working-directory: labs/security/active-directory/base
