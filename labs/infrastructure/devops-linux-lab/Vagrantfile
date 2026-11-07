@@ -535,19 +535,19 @@ Vagrant.configure("2") do |config|
   # The master writes /vagrant/.k3s_token and /vagrant/.cluster_state.json and
   # the workers read them, so /vagrant must be shared read-write between VMs.
   # The libvirt default (rsync) only copies host -> guest once, so files written
-  # by the master never reach the workers. Use NFS when the host has an NFS
-  # server, otherwise 9p. Override with SYNC_TYPE=nfs|9p|rsync|virtiofs.
+  # by the master never reach the workers. NFS is used on libvirt, which needs an
+  # NFS server on the host (Debian/Ubuntu: nfs-kernel-server, Fedora: nfs-utils).
+  # Override with SYNC_TYPE=nfs|rsync|virtiofs.
   if PROVIDER == :libvirt
-    sync_type = ENV['SYNC_TYPE'] ||
-                (system("command -v exportfs >/dev/null 2>&1") ? "nfs" : "9p")
+    sync_type = ENV['SYNC_TYPE'] || "nfs"
+    if sync_type == "nfs" && !system("command -v exportfs >/dev/null 2>&1")
+      abort("ERROR: libvirt synced folder needs an NFS server on the host (exportfs not found).\n" \
+            "  Debian/Ubuntu: sudo apt install nfs-kernel-server\n" \
+            "  Fedora/RHEL:   sudo dnf install nfs-utils && sudo systemctl enable --now nfs-server")
+    end
     puts "Synced folder type: #{sync_type}"
-    case sync_type
-    when "nfs"
+    if sync_type == "nfs"
       config.vm.synced_folder ".", "/vagrant", type: "nfs", nfs_version: 4, nfs_udp: false
-    when "9p"
-      config.vm.synced_folder ".", "/vagrant", type: "9p", accessmode: "mapped", mount: true
-    when "virtiofs"
-      config.vm.synced_folder ".", "/vagrant", type: "virtiofs"
     else
       config.vm.synced_folder ".", "/vagrant", type: sync_type
     end
