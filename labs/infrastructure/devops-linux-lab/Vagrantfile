@@ -190,7 +190,11 @@ end
 #   export MASTER_IP="192.168.200.50"  # Uses specific IP for master
 # =============================================================================
 
-NETWORK_BASE = ENV['NETWORK_BASE'] || DEFAULT_NETWORK_BASE
+# When only MASTER_IP is given, derive NETWORK_BASE from it so the master and
+# the workers always land on the same /24. Otherwise the workers would be
+# placed on the auto-detected network and could never reach the master.
+NETWORK_BASE = ENV['NETWORK_BASE'] ||
+               (ENV['MASTER_IP'] ? ENV['MASTER_IP'].split('.')[0..2].join('.') : DEFAULT_NETWORK_BASE)
 
 def vm_ip(octet)
   "#{NETWORK_BASE}.#{octet}"
@@ -198,6 +202,11 @@ end
 
 # Allow environment override for master IP
 MASTER_IP = ENV['MASTER_IP'] || vm_ip(114)
+
+unless MASTER_IP.start_with?("#{NETWORK_BASE}.")
+  abort("ERROR: MASTER_IP (#{MASTER_IP}) is not inside NETWORK_BASE (#{NETWORK_BASE}.0/24). " \
+        "Workers would not be able to reach the master. Fix or unset NETWORK_BASE/MASTER_IP.")
+end
 
 puts "Network base: #{NETWORK_BASE}"
 puts "Master IP: #{MASTER_IP}"
@@ -523,7 +532,28 @@ hosts_entries = all_vms.map { |n, c| "#{c[:ip]} #{n}" }.join("\n")
 # =============================================================================
 Vagrant.configure("2") do |config|
   config.vm.box_check_update = false
-  config.vm.synced_folder ".", "/vagrant", disabled: false
+  # The master writes /vagrant/.k3s_token and /vagrant/.cluster_state.json and
+  # the workers read them, so /vagrant must be shared read-write between VMs.
+  # The libvirt default (rsync) only copies host -> guest once, so files written
+  # by the master never reach the workers. Use NFS when the host has an NFS
+  # server, otherwise 9p. Override with SYNC_TYPE=nfs|9p|rsync|virtiofs.
+  if PROVIDER == :libvirt
+    sync_type = ENV['SYNC_TYPE'] ||
+                (system("command -v exportfs >/dev/null 2>&1") ? "nfs" : "9p")
+    puts "Synced folder type: #{sync_type}"
+    case sync_type
+    when "nfs"
+      config.vm.synced_folder ".", "/vagrant", type: "nfs", nfs_version: 4, nfs_udp: false
+    when "9p"
+      config.vm.synced_folder ".", "/vagrant", type: "9p", accessmode: "mapped", mount: true
+    when "virtiofs"
+      config.vm.synced_folder ".", "/vagrant", type: "virtiofs"
+    else
+      config.vm.synced_folder ".", "/vagrant", type: sync_type
+    end
+  else
+    config.vm.synced_folder ".", "/vagrant", disabled: false
+  end
   config.ssh.connect_timeout = 600
   config.vm.boot_timeout = 1200
 
@@ -2273,8 +2303,22 @@ EOF
           sed -i '/ swap / s/^/#/' /etc/fstab 2>/dev/null || true
 
           echo "Waiting for master cluster ready signal..."
+          WAIT_TIMEOUT="${WAIT_TIMEOUT:-900}"
+          WAITED=0
           until [ -f "$CLUSTER_STATE" ] && grep -q '"cluster_ready": true' "$CLUSTER_STATE" 2>/dev/null; do
-            echo " Waiting for cluster ready..."; sleep 8
+            if [ "$WAITED" -ge "$WAIT_TIMEOUT" ]; then
+              echo "ERROR: Timed out after ${WAIT_TIMEOUT}s waiting for $CLUSTER_STATE"
+              if nc -z -w3 "$MASTER" 6443 2>/dev/null; then
+                echo "  Master API ${MASTER}:6443 is reachable, so /vagrant is probably not shared"
+                echo "  read-write with the master. Check the synced folder type (SYNC_TYPE=nfs|9p)."
+              else
+                echo "  Master API ${MASTER}:6443 is NOT reachable from this worker."
+                echo "  Check that devops-1 uses ${MASTER} (vagrant ssh devops-1 -c 'ip -4 -br addr')."
+              fi
+              exit 1
+            fi
+            echo " Waiting for cluster ready... (${WAITED}s/${WAIT_TIMEOUT}s)"; sleep 8
+            WAITED=$((WAITED + 8))
           done
           sleep 15
 
