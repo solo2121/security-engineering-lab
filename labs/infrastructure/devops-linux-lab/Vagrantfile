@@ -532,13 +532,16 @@ hosts_entries = all_vms.map { |n, c| "#{c[:ip]} #{n}" }.join("\n")
 # =============================================================================
 Vagrant.configure("2") do |config|
   config.vm.box_check_update = false
-  # Default: unchanged behaviour (Vagrant picks the synced folder type).
-  # The master writes /vagrant/.k3s_token and /vagrant/.cluster_state.json and
-  # the workers read them, so /vagrant must be shared read-write between VMs.
-  # With the libvirt rsync default that is not the case; opt in to a shared type
-  # with SYNC_TYPE=nfs|virtiofs (nfs needs an NFS server on the host).
-  if PROVIDER == :libvirt && ENV['SYNC_TYPE']
-    sync_type = ENV['SYNC_TYPE']
+  # /vagrant is a one-way rsync copy (host -> guest) on libvirt. The type is set
+  # explicitly because, when it is left out, Vagrant picks whichever type it finds
+  # usable on the host, which can be a 9p share that root inside the VM cannot
+  # write to ("/vagrant/lab.env: Permission denied"). Because rsync is one-way,
+  # files the master writes (.k3s_token, .cluster_state.json) are pulled back to
+  # the host by a trigger on devops-1 below, and the workers receive them when
+  # they boot. Start devops-1 first, then the workers.
+  # SYNC_TYPE=nfs|virtiofs|9p overrides this for hosts that support it.
+  if PROVIDER == :libvirt
+    sync_type = ENV['SYNC_TYPE'] || "rsync"
     puts "Synced folder type: #{sync_type}"
     if sync_type == "nfs"
       config.vm.synced_folder ".", "/vagrant", type: "nfs", nfs_version: 4, nfs_udp: false
@@ -615,6 +618,27 @@ EOF
       else
         vm.vm.network "private_network", ip: cfg[:ip]
         vm.vm.network "forwarded_port", guest: 22, host: 2200 + cfg[:ip].split('.').last.to_i, host_ip: "127.0.0.1"
+      end
+
+      # rsync is one-way (host -> guest), so copy the files the master writes in
+      # /vagrant back to the host once it is up; workers pick them up when they boot.
+      if PROVIDER == :libvirt && cfg[:role] == "master" && ENV['SYNC_TYPE'].to_s.empty?
+        vm.trigger.after :up do |t|
+          t.name = "Pull cluster handoff files from #{name} to host"
+          t.ruby do |_env, machine|
+            %w[.cluster_state.json .k3s_token .cluster_ready].each do |f|
+              data = +""
+              begin
+                machine.communicate.execute("cat /vagrant/#{f} 2>/dev/null", error_check: false) do |type, out|
+                  data << out if type == :stdout
+                end
+              rescue StandardError => e
+                puts "Could not read #{f} from #{name}: #{e.message}"
+              end
+              File.write(File.join(__dir__, f), data) unless data.empty?
+            end
+          end
+        end
       end
 
       # Provider-specific hardware configuration
@@ -2304,7 +2328,7 @@ EOF
               echo "ERROR: Timed out after ${WAIT_TIMEOUT}s waiting for $CLUSTER_STATE"
               if nc -z -w3 "$MASTER" 6443 2>/dev/null; then
                 echo "  Master API ${MASTER}:6443 is reachable, so /vagrant is probably not shared"
-                echo "  read-write with the master. Check the synced folder type (SYNC_TYPE=nfs|virtiofs)."
+                echo "  read-write with the master. Start devops-1 first, then the workers, so they receive the files at boot."
               else
                 echo "  Master API ${MASTER}:6443 is NOT reachable from this worker."
                 echo "  Check that devops-1 uses ${MASTER} (vagrant ssh devops-1 -c 'ip -4 -br addr')."
