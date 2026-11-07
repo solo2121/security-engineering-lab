@@ -532,19 +532,13 @@ hosts_entries = all_vms.map { |n, c| "#{c[:ip]} #{n}" }.join("\n")
 # =============================================================================
 Vagrant.configure("2") do |config|
   config.vm.box_check_update = false
+  # Default: unchanged behaviour (Vagrant picks the synced folder type).
   # The master writes /vagrant/.k3s_token and /vagrant/.cluster_state.json and
   # the workers read them, so /vagrant must be shared read-write between VMs.
-  # The libvirt default (rsync) only copies host -> guest once, so files written
-  # by the master never reach the workers. NFS is used on libvirt, which needs an
-  # NFS server on the host (Debian/Ubuntu: nfs-kernel-server, Fedora: nfs-utils).
-  # Override with SYNC_TYPE=nfs|rsync|virtiofs.
-  if PROVIDER == :libvirt
-    sync_type = ENV['SYNC_TYPE'] || "nfs"
-    if sync_type == "nfs" && !system("command -v exportfs >/dev/null 2>&1")
-      abort("ERROR: libvirt synced folder needs an NFS server on the host (exportfs not found).\n" \
-            "  Debian/Ubuntu: sudo apt install nfs-kernel-server\n" \
-            "  Fedora/RHEL:   sudo dnf install nfs-utils && sudo systemctl enable --now nfs-server")
-    end
+  # With the libvirt rsync default that is not the case; opt in to a shared type
+  # with SYNC_TYPE=nfs|virtiofs (nfs needs an NFS server on the host).
+  if PROVIDER == :libvirt && ENV['SYNC_TYPE']
+    sync_type = ENV['SYNC_TYPE']
     puts "Synced folder type: #{sync_type}"
     if sync_type == "nfs"
       config.vm.synced_folder ".", "/vagrant", type: "nfs", nfs_version: 4, nfs_udp: false
@@ -2310,7 +2304,7 @@ EOF
               echo "ERROR: Timed out after ${WAIT_TIMEOUT}s waiting for $CLUSTER_STATE"
               if nc -z -w3 "$MASTER" 6443 2>/dev/null; then
                 echo "  Master API ${MASTER}:6443 is reachable, so /vagrant is probably not shared"
-                echo "  read-write with the master. Check the synced folder type (SYNC_TYPE=nfs|9p)."
+                echo "  read-write with the master. Check the synced folder type (SYNC_TYPE=nfs|virtiofs)."
               else
                 echo "  Master API ${MASTER}:6443 is NOT reachable from this worker."
                 echo "  Check that devops-1 uses ${MASTER} (vagrant ssh devops-1 -c 'ip -4 -br addr')."
