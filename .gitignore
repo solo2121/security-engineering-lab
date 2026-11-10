@@ -205,4 +205,6 @@ temp/
 # ==========================================================
 
 .gitconfig
-.gitconfig.local
+.gitconfig.locallabs/infrastructure/devops-linux-lab/.cluster_state.json
+labs/infrastructure/devops-linux-lab/.k3s_token
+labs/infrastructure/devops-linux-lab/.cluster_state.json
