@@ -524,7 +524,13 @@ cicd_server = {
 }
 
 all_vms = cluster.merge(linux_labs).merge(ansible_nodes).merge(kind_labs).merge(k3d_labs).merge(cicd_server)
-vms_to_start = all_vms.select { |name, _| should_start?(name, LAB_PROFILE, START_VMS) }
+# Machines named explicitly on the command line (vagrant up ubuntu-lab,
+# vagrant ssh ubuntu-lab, vagrant status rocky-lab, ...) are always defined,
+# whatever LAB_PROFILE is. Without this, any VM outside the active profile
+# fails with "The machine with the name '<vm>' was not found configured for
+# this Vagrant environment."
+cli_vms = ARGV.select { |arg| all_vms.key?(arg) }
+vms_to_start = all_vms.select { |name, _| should_start?(name, LAB_PROFILE, START_VMS | cli_vms) }
 hosts_entries = all_vms.map { |n, c| "#{c[:ip]} #{n}" }.join("\n")
 
 # =============================================================================

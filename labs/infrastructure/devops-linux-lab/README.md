@@ -256,6 +256,14 @@ LAB_PROFILE=full vagrant up
 START_VMS=kind-lab,k3d-lab vagrant up
 ```
 
+A VM can also be started by naming it directly, regardless of the active
+profile:
+
+```bash
+vagrant up ubuntu-lab
+vagrant ssh ubuntu-lab
+```
+
 ---
 
 ## Lab Manager
