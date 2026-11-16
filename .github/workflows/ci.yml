@@ -145,8 +145,33 @@ jobs:
         run: |
           set -eux
           export DEBIAN_FRONTEND=noninteractive
-          wget -qO- https://www.virtualbox.org/download/oracle_vbox_2016.asc \
-            | sudo gpg --dearmor --yes -o /usr/share/keyrings/oracle-virtualbox-2016.gpg
+          KEY_URL=https://www.virtualbox.org/download/oracle_vbox_2016.asc
+          KEY_FPR=B9F8D658297AF3EFC18D5CDFA2F683C52980AECF
+          KEY_FILE="$(mktemp)"
+          # A quiet wget piped straight into gpg hides HTTP failures: a failed
+          # download feeds empty/HTML data to gpg ("no valid OpenPGP data found").
+          # Download with failure detection and retries, and check the file is a
+          # real key before using it.
+          ok=0
+          for attempt in 1 2 3 4 5; do
+            if curl -fsSL --retry 3 --retry-all-errors --retry-delay 5 \
+                 -o "$KEY_FILE" "$KEY_URL" \
+               && gpg --batch --show-keys "$KEY_FILE" >/dev/null 2>&1; then
+              ok=1
+              break
+            fi
+            echo "Oracle key download attempt ${attempt}/5 failed" >&2
+            sleep $((attempt * 5))
+          done
+          if [ "$ok" -eq 1 ]; then
+            sudo gpg --batch --yes --dearmor \
+              -o /usr/share/keyrings/oracle-virtualbox-2016.gpg "$KEY_FILE"
+          else
+            echo "Falling back to keyserver for ${KEY_FPR}" >&2
+            gpg --batch --keyserver hkps://keyserver.ubuntu.com --recv-keys "$KEY_FPR"
+            gpg --batch --export "$KEY_FPR" \
+              | sudo tee /usr/share/keyrings/oracle-virtualbox-2016.gpg >/dev/null
+          fi
           echo "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" \
             | sudo tee /etc/apt/sources.list.d/virtualbox.list
           sudo apt-get update -qq
