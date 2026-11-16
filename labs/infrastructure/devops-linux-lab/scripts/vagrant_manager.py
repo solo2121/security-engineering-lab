@@ -128,6 +128,7 @@ _VAGRANT_STATES = (
 STATE_ICONS = {
     "running": "[green]▶[/green]",
     "poweroff": "[red]■[/red]",
+    "shutoff": "[red]■[/red]",
     "not_created": "[yellow]○[/yellow]",
     "saved": "[yellow]⏸[/yellow]",
     "aborted": "[red]![/red]",
@@ -179,6 +180,13 @@ def get_machine_states(
 
     Vagrant's machine-readable output is more reliable than parsing
     the human-readable status table.
+
+    The Vagrantfile only defines the VMs selected by LAB_PROFILE (the
+    default "minimal" profile defines just devops-1 and worker-1), and
+    `vagrant status` only reports defined machines. The query therefore
+    runs with every VM defined; otherwise running VMs outside the active
+    profile (ubuntu-lab, rocky-lab, ...) are missing from the output and
+    are wrongly displayed as "not_created".
     """
     states: dict[str, str] = {}
 
@@ -193,6 +201,7 @@ def get_machine_states(
                 "--machine-readable",
             ],
             cwd=vagrantfile.parent,
+            env=build_vagrant_environment(include_all_vms=True),
             capture_output=True,
             text=True,
             check=False,
@@ -332,16 +341,25 @@ def require_vagrant() -> bool:
     return False
 
 
-def build_vagrant_environment() -> dict[str, str]:
+def build_vagrant_environment(
+    include_all_vms: bool = False,
+) -> dict[str, str]:
     """
     Build the environment used by child Vagrant processes.
 
     HARBOR_PASS is intentionally passed through the environment rather
     than command-line arguments so it does not appear in process args.
+
+    When include_all_vms is True, LAB_PROFILE is forced to "full" so the
+    Vagrantfile defines every lab VM. Use it for commands that must see
+    machines regardless of the active profile (status, halt-all).
     """
     env = os.environ.copy()
 
     env["VAGRANT_DEFAULT_PROVIDER"] = SELECTED_PROVIDER
+
+    if include_all_vms:
+        env["LAB_PROFILE"] = "full"
 
     if HARBOR_PASS:
         env["HARBOR_PASS"] = HARBOR_PASS
@@ -387,7 +405,13 @@ def run_vagrant(
         f"[bold cyan]vagrant {action}[/bold cyan] {label}"
     )
 
-    env = build_vagrant_environment()
+    # Status and halt without an explicit VM must cover every machine,
+    # not only the ones in the active LAB_PROFILE.
+    env = build_vagrant_environment(
+        include_all_vms=(
+            vm is None and action in ("status", "halt")
+        )
+    )
 
     stdin_arg = (
         None
