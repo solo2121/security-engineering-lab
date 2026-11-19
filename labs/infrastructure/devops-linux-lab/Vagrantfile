@@ -130,37 +130,56 @@ check_system_resources
 # =============================================================================
 # PROVIDER-SPECIFIC NETWORK DETECTION
 # =============================================================================
+# Read a libvirt network definition WITHOUT ever asking for a password.
+#
+# This Vagrantfile is evaluated on every Vagrant command (up, halt, status,
+# ssh, ...), so anything here that needs sudo would prompt for the system
+# password again each time sudo's credential cache expires (about 15 minutes).
+# That is why `vagrant halt` used to ask for the password "after a while".
+#
+# Members of the "libvirt" group can talk to the system daemon directly, so
+# no sudo is needed. "-c qemu:///system" is required: without it a normal
+# user's virsh looks at the per-user session daemon and does not see the
+# vagrant-libvirt network.
+#
+# "sudo -n" is only a fallback for hosts where the user is not yet in the
+# libvirt group. It never prompts: it fails immediately and we move on to the
+# default network address instead.
+def virsh_net_dumpxml(name)
+  [
+    "virsh -c qemu:///system net-dumpxml #{name}",
+    "sudo -n virsh -c qemu:///system net-dumpxml #{name}"
+  ].each do |cmd|
+    begin
+      output = `#{cmd} 2>/dev/null </dev/null`
+      return output if $?.success? && !output.empty?
+    rescue => e
+      puts "Warning: virsh lookup failed (#{e})"
+    end
+  end
+  nil
+end
+
 def detect_libvirt_network
-  begin
-    output = `sudo virsh net-dumpxml vagrant-libvirt 2>/dev/null`
-    if $?.success? && !output.empty?
+  %w[vagrant-libvirt default].each do |net_name|
+    begin
+      output = virsh_net_dumpxml(net_name)
+      next if output.nil?
+
       doc = REXML::Document.new(output)
       ip_element = REXML::XPath.first(doc, "//ip")
-      if ip_element
-        network = ip_element.attribute('address').value
-        prefix = ip_element.attribute('netmask').value
-        prefix_length = prefix ? IPAddr.new(prefix).to_i.to_s(2).count('1') : 24
-        return "#{network}/#{prefix_length}"
-      end
+      next unless ip_element
+
+      network = ip_element.attribute('address').value
+      prefix = ip_element.attribute('netmask').value
+      prefix_length = prefix ? IPAddr.new(prefix).to_i.to_s(2).count('1') : 24
+      return "#{network}/#{prefix_length}"
+    rescue => e
+      puts "Warning: Could not detect libvirt network '#{net_name}': #{e}"
     end
-  rescue => e
-    puts "Warning: Could not detect vagrant-libvirt network: #{e}"
   end
-  begin
-    output = `sudo virsh net-dumpxml default 2>/dev/null`
-    if $?.success? && !output.empty?
-      doc = REXML::Document.new(output)
-      ip_element = REXML::XPath.first(doc, "//ip")
-      if ip_element
-        network = ip_element.attribute('address').value
-        prefix = ip_element.attribute('netmask').value
-        prefix_length = prefix ? IPAddr.new(prefix).to_i.to_s(2).count('1') : 24
-        return "#{network}/#{prefix_length}"
-      end
-    end
-  rescue => e
-    puts "Warning: Could not detect default network: #{e}"
-  end
+  puts "Note: could not read the libvirt network (is your user in the 'libvirt' group?). " \
+       "Using 192.168.121.0/24. Override with NETWORK_BASE or MASTER_IP."
   "192.168.121.0/24"
 end
 
