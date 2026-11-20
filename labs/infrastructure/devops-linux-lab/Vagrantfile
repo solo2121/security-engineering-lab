@@ -288,8 +288,20 @@ JENKINS_AGENT_PORT = 50000
 # =============================================================================
 harbor_pass = ENV['HARBOR_PASS']
 
+# Only these VMs use the Harbor password: devops-1 installs Harbor and
+# cicd-server logs in to it. Every other VM (Linux labs, workers, Ansible
+# nodes, Kind/K3d) never needs it, so provisioning them must not prompt.
+# Keep in sync with HARBOR_VMS in scripts/vagrant_manager.py.
+HARBOR_VMS = %w[devops-1 cicd-server].freeze
+
+# VM names given on the command line (everything that is not a flag or the
+# subcommand). No names means the command applies to every VM, which
+# includes the Harbor VMs.
+vm_args = ARGV.reject { |arg| arg.start_with?('-') || %w[up provision reload].include?(arg) }
+harbor_needed = vm_args.empty? || vm_args.any? { |arg| HARBOR_VMS.include?(arg) }
+
 if harbor_pass.nil? || harbor_pass.empty?
-  if $stdin.tty? && ARGV.any? { |arg| arg == 'up' || arg == 'provision' || arg == 'reload' }
+  if $stdin.tty? && harbor_needed && ARGV.any? { |arg| arg == 'up' || arg == 'provision' || arg == 'reload' }
     if ARGV.include?('--provision') || ARGV.include?('provision')
       puts "\n" + "="*60
       puts "  HARBOR REGISTRY PASSWORD REQUIRED"

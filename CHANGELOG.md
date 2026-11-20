@@ -204,6 +204,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `devops-linux-lab` — provisioning a VM that does not use Harbor (for
+  example `ubuntu-lab`, `rocky-lab`, `alma-lab`, `suse-lab`, workers, Ansible
+  nodes, Kind/K3d) no longer asks for the Harbor admin password. The
+  `[U]`, `[R]` and `[P]` actions in `scripts/vagrant_manager.py` and the
+  password prompt in the `Vagrantfile` now apply only to `devops-1` (which
+  installs Harbor) and `cicd-server` (which logs in to it), via a shared
+  `HARBOR_VMS` list in both files. Commands with no explicit VM still prompt.
 - `docs/README.md` — `guides/security/domain-compromise-walkthrough.md` was
   a real, linked-to file (from `docs/project/learning-path.md`) but was
   missing from the Security guides table in the docs index. Added.

@@ -279,7 +279,8 @@ the Vagrantfile's own default. Override with `--provider virtualbox` or
 `--provider libvirt`, or set `VAGRANT_DEFAULT_PROVIDER`.
 
 Groups available from the menu:
-- DevOps (requires Harbor password once per session).
+- DevOps (requires Harbor password once per session). Only `devops-1` and
+  `cicd-server` use Harbor; provisioning any other VM never asks for it.
 - Workers.
 - Ansible nodes.
 - Linux labs.

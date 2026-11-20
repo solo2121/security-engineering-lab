@@ -11,6 +11,9 @@ Features:
 - Fixed HARBOR_PASS environment propagation
 - Session cache prevents repeated Harbor password prompts
 - Start (T) does not require Harbor credentials
+- Harbor password is requested only for the VMs that use Harbor
+  (see HARBOR_VMS); Linux labs, workers, Ansible nodes and the Kind/K3d
+  labs never prompt for it
 - Provisioning actions prompt only once per session
 - CI/CD server group included
 - Supports both KVM/libvirt and VirtualBox against the lab's unified
@@ -112,6 +115,24 @@ ALL_VMS = tuple(
     for group in VM_GROUPS.values()
     for vm in group
 )
+
+# VMs whose provisioning actually uses the Harbor admin password.
+#
+# devops-1 installs Harbor itself; cicd-server is a Harbor client that
+# logs in to push images. Every other VM (Linux labs, workers, Ansible
+# nodes, Kind/K3d) never touches Harbor, so provisioning them must not
+# ask for the password. Keep in sync with the Vagrantfile's HARBOR_VMS.
+HARBOR_VMS = ("devops-1", "cicd-server")
+
+
+def vm_needs_harbor(vm: str | None) -> bool:
+    """
+    Return True if provisioning `vm` requires the Harbor password.
+
+    vm=None means "every VM" (no explicit target), which always includes
+    the Harbor VMs.
+    """
+    return vm is None or vm in HARBOR_VMS
 
 # Known Vagrant states.
 _VAGRANT_STATES = (
@@ -595,7 +616,20 @@ def vm_menu(
             f"State: {state}"
         )
 
-        if HARBOR_PASS and HARBOR_PROMPT_DONE:
+        needs_harbor = vm_needs_harbor(vm)
+
+        # Only VMs that use Harbor ever ask for its password.
+        pw_note = (
+            "(password needed once)"
+            if needs_harbor
+            else "(no password)"
+        )
+
+        if not needs_harbor:
+            console.print(
+                "Harbor: [bright_black]not used by this VM[/bright_black]"
+            )
+        elif HARBOR_PASS and HARBOR_PROMPT_DONE:
             console.print(
                 "Harbor: [green]configured (session)[/green]"
             )
@@ -613,8 +647,7 @@ def vm_menu(
             "\n[cyan][S] SSH (no password needed)[/cyan]"
         )
         console.print(
-            "[cyan][U] Up with Provision "
-            "(password needed once)[/cyan]"
+            f"[cyan][U] Up with Provision {pw_note}[/cyan]"
         )
         console.print(
             "[cyan][T] Start "
@@ -624,12 +657,10 @@ def vm_menu(
             "[cyan][H] Halt (no password)[/cyan]"
         )
         console.print(
-            "[cyan][R] Reload with Provision "
-            "(password needed once)[/cyan]"
+            f"[cyan][R] Reload with Provision {pw_note}[/cyan]"
         )
         console.print(
-            "[cyan][P] Provision only "
-            "(password needed once)[/cyan]"
+            f"[cyan][P] Provision only {pw_note}[/cyan]"
         )
         console.print(
             "[cyan][D] Destroy (no password)[/cyan]"
@@ -654,7 +685,7 @@ def vm_menu(
             )
 
         elif choice == "U":
-            if ensure_harbor_pass_once():
+            if not needs_harbor or ensure_harbor_pass_once():
                 run_vagrant(
                     "up",
                     vagrantfile,
@@ -677,7 +708,7 @@ def vm_menu(
             )
 
         elif choice == "R":
-            if ensure_harbor_pass_once():
+            if not needs_harbor or ensure_harbor_pass_once():
                 run_vagrant(
                     "reload",
                     vagrantfile,
@@ -686,7 +717,7 @@ def vm_menu(
                 )
 
         elif choice == "P":
-            if ensure_harbor_pass_once():
+            if not needs_harbor or ensure_harbor_pass_once():
                 run_vagrant(
                     "provision",
                     vagrantfile,
@@ -1020,9 +1051,16 @@ def main() -> int:
 
             return 1
 
+        # Only ask for the Harbor password when at least one target
+        # uses Harbor (no explicit targets means every VM).
+        needs_harbor = not targets or any(
+            vm_needs_harbor(vm)
+            for vm in targets
+        )
+
         # Determine provisioning behavior.
         if args.action == "provision":
-            if not ensure_harbor_pass_once():
+            if needs_harbor and not ensure_harbor_pass_once():
                 return 1
 
             extra = None
@@ -1031,7 +1069,7 @@ def main() -> int:
             args.action in {"up", "reload"}
             and args.provision
         ):
-            if not ensure_harbor_pass_once():
+            if needs_harbor and not ensure_harbor_pass_once():
                 return 1
 
             extra = ["--provision"]
