@@ -12,7 +12,9 @@ This repository is actively maintained and tested on:
 - Ubuntu 24.04 LTS
 - Debian 12
 
-Other Debian-based systems may work, but they are not officially supported.
+Other Linux distributions, including the Fedora/RHEL-family hosts covered in the Installation Guide, may work but are not officially supported.
+
+Provider and host-platform support (KVM/libvirt, VirtualBox, and the Apple Silicon status) is described in the README under *Provider compatibility*.
 
 ---
 

@@ -323,6 +323,7 @@ See the [Installation Guide](./docs/setup/installation.md) for provider-specific
 ### Host requirements
 
 - **Linux host:** Required for KVM/QEMU with libvirt full-lab workflows
+- **Tested Linux distributions:** Ubuntu 22.04 LTS, Ubuntu 24.04 LTS, and Debian 12 (see [SECURITY.md](SECURITY.md)). Fedora/RHEL-family install steps are documented in the Installation Guide but are not listed among the tested distributions
 - **Linux, macOS, or Windows host:** Supported with VirtualBox on compatible Intel/AMD x86_64 hardware
 - **CPU architecture:** Existing Windows Server and most current Vagrant box workflows require Intel/AMD x86_64 compatibility
 - **Hardware virtualization:** Intel VT-x or AMD-V enabled in BIOS/UEFI where applicable

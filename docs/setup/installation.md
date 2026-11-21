@@ -91,7 +91,7 @@ VirtualBox provider (Linux, macOS, Windows):
 
 ### Recommended Linux distros
 
-The labs should work best on Debian-based or Fedora/RHEL-based Linux hosts. Libvirt/KVM support is Linux-specific; VirtualBox is available on all three major desktop operating systems.
+The labs should work best on Debian-based or Fedora/RHEL-based Linux hosts. Libvirt/KVM support is Linux-specific; VirtualBox is available on all three major desktop operating systems. Ubuntu 22.04 LTS, Ubuntu 24.04 LTS, and Debian 12 are the tested distributions (see [SECURITY.md](../../SECURITY.md)); other distributions are not officially supported.
 
 ### Choosing a provider
 
