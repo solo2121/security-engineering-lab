@@ -40,10 +40,10 @@ It is designed to be **runnable, not static**: each lab includes deployable infr
   - [See it in action](#see-it-in-action)
     - [Active Directory base lab](#active-directory-base-lab)
     - [DevOps/DevSecOps lab](#devopsdevsecops-lab)
-    - [Segmented Active Directory lab](#segmented-active-directory-lab)
+    - [Segmented Active Directory lab (OPNsense deployment)](#segmented-active-directory-lab-opnsense-deployment)
   - [Lab environments](#lab-environments)
     - [Active Directory Security Lab](#active-directory-security-lab)
-    - [Segmented Active Directory Lab](#segmented-active-directory-lab-1)
+    - [Segmented Active Directory Lab](#segmented-active-directory-lab)
     - [DevOps/DevSecOps platform lab](#devopsdevsecops-platform-lab)
     - [Windows Server Hardening Lab](#windows-server-hardening-lab)
   - [Provider compatibility](#provider-compatibility)
@@ -136,7 +136,7 @@ For the recommended progression from Active Directory fundamentals through segme
 Clone the repository and validate your host:
 
 ```bash
-git clone [https://github.com/solo2121/security-engineering-lab.git](https://github.com/solo2121/security-engineering-lab.git)
+git clone https://github.com/solo2121/security-engineering-lab.git
 cd security-engineering-lab
 ./scripts/check-prerequisites.sh --all
 ```
@@ -204,7 +204,7 @@ A complete Linux DevSecOps deployment, from K3s bootstrap through Harbor image s
 |---|---|---|
 | ![K3s node Ready and kubectl API ready, with Ingress NGINX installing via Helm](./assets/demos/devops1-01-k3s-ready-ingress.gif) | ![Container images being pulled, tagged, and pushed into the air-gapped Harbor registry](./assets/demos/devops1-02-harbor-seeding.gif) | ![Authorized DevSecOps security-test scenarios deploying successfully, ending with Harbor login succeeding](./assets/demos/devops1-03-attack-vectors.gif) |
 
-### Segmented Active Directory lab
+### Segmented Active Directory lab (OPNsense deployment)
 
 A complete OPNsense deployment for the segmented Active Directory lab, from initial boot through reload and interface assignment.
 

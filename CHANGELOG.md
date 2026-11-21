@@ -232,6 +232,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **README Quick start `git clone` command.** The command contained Markdown
+  link syntax inside the code block, so copying it into a shell failed with a
+  syntax error. It is now a plain `git clone <url>` command.
+- **Duplicate README heading.** The two "Segmented Active Directory lab"
+  headings differed only by letter case, which forced a fragile `-1` anchor in
+  the table of contents. The demo heading now reads "Segmented Active Directory
+  lab (OPNsense deployment)" and the table of contents links were updated.
 - `devops-linux-lab` — provisioning a VM that does not use Harbor (for
   example `ubuntu-lab`, `rocky-lab`, `alma-lab`, `suse-lab`, workers, Ansible
   nodes, Kind/K3d) no longer asks for the Harbor admin password. The
