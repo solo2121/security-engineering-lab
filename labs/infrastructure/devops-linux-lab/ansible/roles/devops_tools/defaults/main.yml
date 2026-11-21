@@ -5,6 +5,8 @@ devops_tools_install_kubectl: false
 devops_tools_kubectl_version: "v1.31.0"
 
 devops_tools_install_helm: false
+# Pinned release; keep in sync with HELM_VERSION in the lab Vagrantfile.
+devops_tools_helm_version: "v3.22.1"
 
 devops_tools_install_kind: false
 devops_tools_kind_version: "v0.24.0"

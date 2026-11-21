@@ -18,7 +18,8 @@
     - name: Download and install Helm
       ansible.builtin.shell: |
         set -o pipefail
-        curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+        curl -fsSL https://raw.githubusercontent.com/helm/helm/{{ devops_tools_helm_version }}/scripts/get-helm-3 \
+          | DESIRED_VERSION={{ devops_tools_helm_version }} bash
       args:
         executable: /bin/bash
       when: devops_tools_helm_check.rc != 0

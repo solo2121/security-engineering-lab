@@ -264,6 +264,7 @@ OPENTOFU_VERSION = "1.8.0"
 KIND_VERSION = "v0.24.0"
 K3D_VERSION = "v5.7.5"
 KUBECTL_VERSION = "v1.31.0"
+HELM_VERSION = "v3.22.1"
 
 # CI/CD Tools Versions
 GITEA_VERSION = "1.24.3"
@@ -1006,7 +1007,7 @@ EOF
           grep -q "source /etc/bash_completion.d/kubectl" /home/vagrant/.bashrc 2>/dev/null || echo 'source /etc/bash_completion.d/kubectl' >> /home/vagrant/.bashrc
           grep -q "alias k=" /home/vagrant/.bashrc 2>/dev/null || echo "alias k='kubectl'" >> /home/vagrant/.bashrc
 
-          command -v helm >/dev/null 2>&1 || curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          command -v helm >/dev/null 2>&1 || curl -fsSL https://raw.githubusercontent.com/helm/helm/#{HELM_VERSION}/scripts/get-helm-3 | DESIRED_VERSION=#{HELM_VERSION} bash
 
           if [ "${FAST_BOOT}" != "true" ]; then
             echo "Installing Ingress NGINX ${INGRESS_NGINX_VERSION}..."
@@ -2545,7 +2546,7 @@ EOF
 
           if ! command -v helm >/dev/null 2>&1; then
             echo "Installing helm..."
-            curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+            curl -fsSL https://raw.githubusercontent.com/helm/helm/#{HELM_VERSION}/scripts/get-helm-3 | DESIRED_VERSION=#{HELM_VERSION} bash
           fi
 
           mkdir -p /opt/k3d
