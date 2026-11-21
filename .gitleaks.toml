@@ -1,24 +1,21 @@
+# Gitleaks configuration (optional, for manual local scans).
+#
+# The enforced scanner for this repository is detect-secrets (see
+# .pre-commit-config.yaml and the detect-secrets-scan job in
+# .github/workflows/ci.yml), which compare against .secrets.baseline.
+# This file only affects people who run gitleaks by hand.
+#
+# Intentional lab credentials (documented in each lab's lab-credentials.md
+# and in SECURITY.md) are deliberately NOT allowlisted by value or keyword,
+# because broad allowlists can hide real leaks. Expect gitleaks to report lab
+# bait such as the LocalStack/AWS "leaked credentials" examples, and review
+# findings instead of suppressing them wholesale.
+
 [extend]
 useDefault = true
 
-# The previous version of this file used `[[rules]] ... ignore = true`,
-# which gitleaks does not support: `[[rules]]` always defines a NEW
-# detection rule, and an unrecognized `ignore` key is silently dropped.
-# The result was the opposite of what was intended — these lab-only
-# strings were being reported as leaks instead of being allowlisted.
-#
-# The correct mechanism is a top-level [allowlist] table.
 [allowlist]
-description = "Known lab-only credentials and generated files, intentionally committed as test/lab data"
+description = "detect-secrets baseline stores hashes only"
 paths = [
-  # Hashed values from `detect-secrets scan`, not raw secrets.
   '''\.secrets\.baseline$''',
-]
-regexes = [
-  '''JoinP@ss!''',
-  '''LabAdmin123!''',
-  '''Passw0rd!''',
-  '''Vagrant123!''',
-  '''opnsense''',
-  '''DOMAIN_JOIN_PASS''',
 ]
