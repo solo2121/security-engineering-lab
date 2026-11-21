@@ -49,6 +49,7 @@ Check each script before execution and confirm the target is within your authori
 
 - Do not scan public IP ranges without written authorization.
 - Do not run credential, exploit, wireless, or packet-capture tooling on networks you do not control.
+- `exploitation/exploit.py` asks for an authorization acknowledgement at startup. Type the phrase when prompted, or set `EXPLOIT_LAB_ACK=I_AM_AUTHORIZED` for scripted runs inside your lab.
 - Keep testing inside isolated VMs or lab VLANs.
 - Treat generated output as sensitive until reviewed.
 - Prefer defense, validation, and remediation notes alongside offensive findings.
