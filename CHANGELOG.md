@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Authorization acknowledgement for
+  `tools/security/exploitation/exploit.py`.** The helper now asks the operator
+  to type an explicit authorization phrase at startup and refuses to run
+  non-interactively unless `EXPLOIT_LAB_ACK=I_AM_AUTHORIZED` is set. Covered
+  by `tests/python/test_exploit_guard.py`, which is skipped when `requests` is
+  not installed. See `tools/security/README.md`.
 - **Opt-in advanced controls for `windows-hardening`: Windows LAPS, Sysmon
   with Windows Event Forwarding, and Credential Guard.** Set
   `HARDENING_ADVANCED=1` to prepare AD for Windows LAPS (schema, OU, GPO) and
@@ -82,6 +88,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Pinned the Helm and k3d installer scripts in `devops-linux-lab`.** Both
+  scripts were previously piped to a shell straight from the upstream `main`
+  branch. The Helm installer is now fetched from a release tag
+  (`HELM_VERSION` in the Vagrantfile and `devops_tools_helm_version` in the
+  Ansible role, currently `v3.22.1`) and told to install that version, and the
+  k3d installer is fetched from the tag matching `K3D_VERSION` /
+  `devops_tools_k3d_version`.
+- **Simplified `.gitleaks.toml`.** The regex allowlist entries matched nothing
+  in the tree or in history and were removed. The file now states that
+  detect-secrets is the enforced scanner and that gitleaks is optional.
+- **Replaced the Stripe-format bait value in the DevOps lab's seeded
+  `.env.production`** with a clearly fake value that does not match the live
+  key format, so scanners and the detect-secrets baseline gate stop flagging
+  it.
+- **Aligned supported-environment wording** in `SECURITY.md`, `README.md`, and
+  `docs/setup/installation.md`: Ubuntu 22.04 LTS, Ubuntu 24.04 LTS, and
+  Debian 12 are the tested distributions; other distributions are not
+  officially supported.
+- **Corrected `docs/project/portfolio.md`.** Added the Windows hardening and
+  LLM labs to the lab table, fixed the role mapping for `tools/security/audit/`
+  (which only contains the Cisco switch audit script), removed a bullet that
+  no lab content supports, and added an evidence section.
 - **Unified `Vagrantfile` architecture for `active-directory/base` and
   `active-directory/vlan-segmented`.** Both labs previously shipped two
   provider-specific Vagrantfiles (`Vagrantfile` for libvirt,
