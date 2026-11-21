@@ -44,7 +44,8 @@
     - name: Download and install k3d
       ansible.builtin.shell: |
         set -o pipefail
-        curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG={{ devops_tools_k3d_version }} bash
+        curl -fsSL https://raw.githubusercontent.com/k3d-io/k3d/{{ devops_tools_k3d_version }}/install.sh \
+          | TAG={{ devops_tools_k3d_version }} bash
       args:
         executable: /bin/bash
       when: devops_tools_k3d_check.rc != 0

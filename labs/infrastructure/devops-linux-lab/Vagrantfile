@@ -2542,7 +2542,7 @@ EOF
           fi
 
           echo "Installing k3d ${K3D_VERSION}..."
-          curl -fsSL https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=${K3D_VERSION} bash
+          curl -fsSL "https://raw.githubusercontent.com/k3d-io/k3d/${K3D_VERSION}/install.sh" | TAG=${K3D_VERSION} bash
 
           if ! command -v helm >/dev/null 2>&1; then
             echo "Installing helm..."
