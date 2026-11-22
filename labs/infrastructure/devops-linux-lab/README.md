@@ -266,6 +266,41 @@ vagrant ssh ubuntu-lab
 
 ---
 
+## Provisioning Scripts
+
+The `Vagrantfile` defines the VMs, profiles, networks and providers. What each
+VM runs at boot lives in [`provision/`](provision/) as plain shell files, not
+as inline heredocs:
+
+```text
+provision/
+├── common/    # lab.env, /etc/hosts, base packages, enable Docker
+├── master/    # 01 base + K3s + Harbor, 02 enterprise tools, 03 DevSecOps attack vectors
+├── worker/    # worker-join
+└── kind/  k3d/  ansible/  cicd/    # per-lab-VM setup
+```
+
+Edit a script and run `vagrant provision <vm>` as before; there is no build
+step. Values only known at `vagrant up` time (IPs, tool versions, ports, the
+Harbor password, …) are `@@NAME@@` placeholders. The `Vagrantfile` fills them
+in with `render_provision` and sends the result to Vagrant as an inline
+script, so the guest receives what the old heredocs produced. A placeholder
+without a value, or a value that is never used, stops the `Vagrantfile` from
+loading (and fails `vagrant validate`) instead of failing mid-provision.
+
+- **Adding or changing a script.** Put the file under `provision/`, reference
+  it with `render_provision("dir/name.sh", NAME: value)`, and keep the
+  `@@NAME@@` list and the keyword arguments in step.
+- **Shell scripts are linted.** CI runs `shellcheck` on every `*.sh`. Lines
+  that start with `# shellcheck` exist only for the linter and are removed
+  before the script is sent to the guest.
+- **Secrets scanning.** The intentionally fake credentials in these files are
+  recorded per file in the repository's `.secrets.baseline`, so moving a
+  script or adding a deliberately fake credential means updating that
+  baseline too.
+
+---
+
 ## Lab Manager
 
 Use the included manager script instead of typing raw vagrant commands:

@@ -262,6 +262,7 @@ Relative to:
 ```text
 .
 ├── Vagrantfile
+├── provision/
 ├── scripts/
 ├── configs/
 ├── docs/
@@ -274,9 +275,44 @@ Key components:
 | Path | Purpose |
 |---|---|
 | `Vagrantfile` | VM definitions, profiles, networking — unified for both KVM/libvirt (default) and VirtualBox, select with `--provider`. See [VirtualBox Provider](#virtualbox-provider) |
+| `provision/` | PowerShell and shell scripts each VM runs at boot (OPNsense, DC01 phases, member servers, Linux VMs). See [Provisioning Scripts](#provisioning-scripts) |
 | `scripts/` | Lab automation and management tools |
 | `configs/` | Service and VM configuration files |
 | `diagrams/` | Network architecture diagrams |
+
+### Provisioning Scripts
+
+The `Vagrantfile` defines VMs, VLANs and providers; what each VM runs at boot
+lives in [`provision/`](provision/) as plain `.ps1` / `.sh` files rather than
+inline heredocs:
+
+```text
+provision/
+├── opnsense/        # init (config.xml, interfaces, DHCP) and verify
+├── windows/         # shared: static IP, Defender, internet isolation,
+│   │                #   wait-for-DC, domain join
+│   └── fragments/   # provider-specific snippets spliced into static-ip
+├── dc01/            # phase0 … phase6: WinRM, AD promotion, full DC config
+├── ca01-esc/  db01/  win10/  print01/    # Windows member / target VMs
+└── kali/  linux/  llm01/  cloud-pentest/  juice-shop/    # Linux VMs, shared /etc/hosts
+```
+
+Edit a script and run `vagrant provision <vm>` as before; there is no build
+step. Values only known at `vagrant up` time (IPs, domain, VM name, …) are
+`@@NAME@@` placeholders that the `Vagrantfile` fills in with
+`render_provision` and sends to Vagrant as an inline script, so the guest
+receives what the old heredocs produced. A placeholder without a value, or a
+value never used, stops the `Vagrantfile` from loading (and fails
+`vagrant validate`) instead of failing mid-provision.
+
+CI runs `shellcheck` on every `*.sh`; `# shellcheck …` lines at the top of a
+script are for the linter only and are removed before the script is sent to the
+VM. The intentionally weak lab credentials in these files are recorded per file
+in the repository's `.secrets.baseline`, so moving a script or adding a
+deliberately fake credential means updating that baseline too.
+
+The libvirt network XML templates stay in the `Vagrantfile` because they are
+Ruby data used while it loads, not guest scripts.
 
 ---
 
@@ -746,6 +782,11 @@ Full deployment:
 ---
 
 ## Changelog
+
+### Unreleased
+
+Changed:
+- The inline PowerShell and shell provisioners moved out of the `Vagrantfile` into [`provision/`](#provisioning-scripts). The scripts each VM receives are unchanged, with one exception: the OPNsense scripts began with an indented `#!/bin/sh` line that never acted as a shebang, and it was dropped. The `Vagrantfile` shrank from about 2,470 to about 960 lines.
 
 ### v2.1.5 (2026-07-31)
 

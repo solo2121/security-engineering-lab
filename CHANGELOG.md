@@ -88,6 +88,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **DevOps/DevSecOps lab: provisioning scripts moved out of the Vagrantfile.**
+  The 14 inline shell heredocs (common setup, K3s + Harbor master, enterprise
+  tools, DevSecOps attack vectors, worker join, Kind, K3d, Ansible nodes,
+  CI/CD server) now live under `labs/infrastructure/devops-linux-lab/provision/`
+  and are loaded by the same `render_provision` helper. The old and new
+  Vagrantfile render identical scripts for both providers, all three profiles
+  and awkward Harbor passwords (spaces, quotes, `$`, backtick, `;`). The
+  Vagrantfile shrank from about 2,950 to about 790 lines, the scripts are now
+  covered by the existing `shellcheck` gate, and `.secrets.baseline` follows
+  the fake lab credentials to their new files.
+
+- **Active Directory VLAN-segmented lab: provisioning scripts moved out of the
+  Vagrantfile.** Same change as the base lab: the 24 inline PowerShell/shell
+  heredocs (OPNsense, DC01 phases, member servers, Linux VMs) now live under
+  `labs/security/active-directory/vlan-segmented/provision/` and are loaded by
+  the same `render_provision` helper. The old and new Vagrantfile render the
+  same scripts for both providers and all five profiles; the one intended
+  difference is that two OPNsense scripts lost an indented `#!/bin/sh` line
+  that never acted as a shebang. The Vagrantfile shrank from about 2,470 to
+  about 960 lines; `.secrets.baseline` follows the fake lab credentials to
+  their new files. The libvirt network XML templates stay in the Vagrantfile.
+
 - **Active Directory base lab: provisioning scripts moved out of the
   Vagrantfile.** The 25 inline PowerShell/shell heredocs now live as files
   under `labs/security/active-directory/base/provision/`, loaded by a small
