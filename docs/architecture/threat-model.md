@@ -13,7 +13,7 @@ Each lab below is modeled the same way:
 - **Assets** — what an attacker inside the lab is ultimately after.
 - **Trust boundaries** — where isolation is enforced, and where it isn't.
 - **Assumed attacker** — starting position, capabilities, and goal. None of these labs model an attacker with no starting foothold; each assumes the attacker already has a specific, stated level of access.
-- **Attack surface** — the specific, implemented techniques available (not a wishlist — everything listed here is a real, working scenario in the Vagrantfile).
+- **Attack surface** — the specific, implemented techniques available (not a wishlist — everything listed here is a real, working scenario in the lab's Vagrantfile or its `provision/` scripts).
 - **Explicitly out of scope** — what this lab does not model, so it isn't mistaken for a gap.
 
 ---

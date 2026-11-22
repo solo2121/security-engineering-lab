@@ -128,9 +128,10 @@ Project-level documentation for architecture, safe use, setup, and workflows. Lo
 
 ## Provisioning Philosophy
 
-Each lab is provisioned by a single Vagrantfile with inline shell/PowerShell
-provisioners rather than a separate Ansible (or other config-management)
-control layer. This is a deliberate choice for this project, not an
+Each lab is provisioned by Vagrant with shell/PowerShell provisioners rather
+than a separate Ansible (or other config-management) control layer. The
+scripts are either inline in the lab's Vagrantfile or, in the base Active
+Directory lab, plain files under `provision/` that the Vagrantfile loads. This is a deliberate choice for this project, not an
 oversight:
 
 - **Single-host home lab, not a fleet.** There is one control point
@@ -143,14 +144,15 @@ oversight:
   Ansible as a hard dependency would mean another tool, another version to
   pin, and another thing that can drift from what's documented.
 - **Provisioning logic stays next to what it provisions.** Everything a VM
-  needs is defined in one file per lab (`labs/*/*/Vagrantfile`), which
-  keeps the "what does this VM actually run at boot" answer in one place
-  instead of split across a Vagrantfile, an inventory file, and a set of
-  roles.
+  needs lives in the lab's own directory: the Vagrantfile and, for the base
+  Active Directory lab, the `provision/` scripts beside it. The "what does
+  this VM actually run at boot" answer stays inside one lab directory
+  instead of being split across a Vagrantfile, an inventory file, and a set
+  of roles.
 
-The trade-off is real and intentional: the Vagrantfiles are long
-(1,000–2,700 lines) and provisioning steps are procedural bash rather than
-declarative, idempotent roles. That's an acceptable cost here because each
+The trade-off is real and intentional: the Vagrantfiles that still embed
+their scripts are long (roughly 500–2,900 lines) and provisioning steps are
+procedural shell/PowerShell rather than declarative, idempotent roles. That's an acceptable cost here because each
 VM is rebuilt from scratch (`vagrant destroy && vagrant up`) far more often
 than it's incrementally reconfigured — the properties Ansible is best at
 (idempotent, incremental convergence on long-lived hosts) aren't the

@@ -20,6 +20,7 @@ Enterprise-grade Active Directory penetration testing lab built with Vagrant, su
 - [Learning Objectives](#learning-objectives)
 - [Lab Architecture](#lab-architecture)
 - [Lab Profiles](#lab-profiles)
+- [Provisioning Scripts](#provisioning-scripts)
 - [Quick Start](#quick-start)
 - [VirtualBox Provider](#virtualbox-provider)
 - [Platform-Specific Guides](#platform-specific-guides)
@@ -344,6 +345,46 @@ There is also a lower-level libvirt admin tool for pool, network, and domain man
 ```
 
 Use `libvirt-manager.sh` when you need to inspect or clean up libvirt resources directly — storage pools, virtual networks, domain snapshots, and disk images — outside of Vagrant's control.
+
+---
+
+## Provisioning Scripts
+
+The `Vagrantfile` defines the VMs, networks and providers. What each VM runs
+at boot lives in [`provision/`](provision/), as ordinary PowerShell (`.ps1`)
+and shell (`.sh`) files, not as inline heredocs:
+
+```text
+provision/
+├── windows/        # shared helpers: static IP, Defender, internet isolation,
+│   │               #   wait-for-DC, domain join, health check
+│   └── fragments/  # provider-specific snippets spliced into those helpers
+├── dc01/           # phase0 … phase6: WinRM, AD promotion, full DC config
+├── db01/  ca01-esc/  win10/  print01/        # Windows member / target VMs
+├── kali/  linux/  linux01/  llm01/           # Linux VMs and shared /etc/hosts
+└── metasploitable2/  juice-shop/  cloud-pentest/
+```
+
+Edit a script with any editor, then run `vagrant provision <vm>` (or
+`vagrant up`) as before; no build step is involved.
+
+- **Placeholders.** Values only known at `vagrant up` time (IPs, domain name,
+  hostname, …) appear as `@@NAME@@`. The `Vagrantfile` fills them in with
+  `render_provision` and passes the result to Vagrant as an inline script,
+  so the guest receives exactly what the old heredocs produced. A placeholder
+  without a value, or a value that is never used, stops the `Vagrantfile`
+  from loading (and fails `vagrant validate`) instead of failing mid-provision.
+- **Adding or changing a script.** Put the file under `provision/`, reference
+  it with `render_provision("dir/name.ps1", NAME: value)`, and keep the
+  `@@NAME@@` list and the keyword arguments in step.
+- **Shell scripts are linted.** CI runs `shellcheck` on every `*.sh`. The first
+  line `# shellcheck shell=bash` (and any `# shellcheck disable=…` line) exists
+  only for the linter; the loader removes those lines before the script is sent
+  to the guest.
+- **Secrets scanning.** The intentionally weak lab credentials in these files
+  are recorded per file in the repository's `.secrets.baseline` (the
+  `detect-secrets` gate in CI and pre-commit). Moving a script, or adding a
+  deliberately fake credential, means updating that baseline too.
 
 ---
 
@@ -909,6 +950,9 @@ In-depth docs for this lab live under [`docs/`](docs/):
 ## Changelog
 
 ### v1.14 (unreleased)
+
+**Changed:**
+- The inline PowerShell and shell provisioners moved out of the `Vagrantfile` into [`provision/`](#provisioning-scripts). The rendered scripts are unchanged. The `Vagrantfile` shrank from about 2,630 to about 960 lines, and the scripts can now be reviewed, diffed and linted as files.
 
 **Added:**
 - `KALI_BOX` / `KALI_BOX_VERSION` environment variables let the attacker VM run an alternate Debian-based pentesting distribution — for example Parrot Security — instead of Kali Linux, without changing the VM name (`kali`), hostname, or IP. Defaults are unchanged (`kalilinux/rolling`, `2026.1.0`). See [Configuration](#configuration).

@@ -359,7 +359,7 @@ This validates host dependencies and enables lab-specific plugin checks. For the
 [![Enterprise Infrastructure Architecture](./assets/diagrams/architecture-overview.png)](./assets/diagrams/)
 
 > [!NOTE]
-> The DevOps/DevSecOps lab uses Ansible and Terraform/OpenTofu. The Active Directory and Windows Hardening labs use self-contained Vagrantfiles with inline shell and PowerShell provisioners.
+> The DevOps/DevSecOps lab uses Ansible and Terraform/OpenTofu. The Active Directory and Windows Hardening labs are provisioned by Vagrant with shell and PowerShell provisioners. The base Active Directory lab keeps those scripts as files under [`provision/`](./labs/security/active-directory/base/provision/); the other labs still embed theirs in the Vagrantfile.
 >
 > See [Provisioning Philosophy](./docs/architecture/architecture.md#provisioning-philosophy) for the design rationale.
 

@@ -88,6 +88,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Active Directory base lab: provisioning scripts moved out of the
+  Vagrantfile.** The 25 inline PowerShell/shell heredocs now live as files
+  under `labs/security/active-directory/base/provision/`, loaded by a small
+  `render_provision` helper that fills `@@NAME@@` placeholders. The scripts
+  the guests receive are unchanged for both providers (checked by rendering
+  the old and new Vagrantfile and comparing every provisioner). The
+  Vagrantfile shrank from about 2,630 to about 960 lines, the shell scripts
+  are now covered by the existing `shellcheck` gate, and `.secrets.baseline`
+  follows the intentionally fake lab credentials to their new files. Docs
+  updated accordingly (root README, architecture, threat model, lab README).
+
 - **Pinned the Helm and k3d installer scripts in `devops-linux-lab`.** Both
   scripts were previously piped to a shell straight from the upstream `main`
   branch. The Helm installer is now fetched from a release tag
