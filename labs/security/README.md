@@ -131,7 +131,8 @@ See [`active-directory/vlan-segmented/README.md`](active-directory/vlan-segmente
 - **`docs/attack-guide.md`** – Complete attack reference (14+ sections).
 - **`docs/lab-credentials.md`** – All seeded credentials and service accounts.
 - **`docs/dc01-deployment-validation.md`** – Recorded validation of a successful `dc01` deployment (static IP, AD promotion, scenario configuration).
-- **`Vagrantfile`** – Full provisioning (v1.13 – FLAT NETWORK – OPTIMIZED), unified for both KVM/libvirt and VirtualBox (select with `--provider`).
+- **`Vagrantfile`** – Lab definition (v1.14 – FLAT NETWORK – PROFILE-BASED), unified for both KVM/libvirt and VirtualBox (select with `--provider`).
+- **`provision/`** – The PowerShell and shell scripts each VM runs, kept as reviewable files.
 - **`scripts/lab_attack_automation.py`** – Optional automated attack chain.
 
 ### VLAN Enterprise Lab (`active-directory/vlan-segmented/`)
@@ -139,7 +140,8 @@ See [`active-directory/vlan-segmented/README.md`](active-directory/vlan-segmente
 - **`README.md`** – Lab overview, VLAN topology, setup guide.
 - **`docs/attack-guide.md`** – VLAN-specific attack paths and scenarios.
 - **`docs/lab-credentials.md`** – Credentials for the VLAN environment.
-- **`Vagrantfile`** – Provisioning with VLAN configuration (v2.1.6), unified for both KVM/libvirt and VirtualBox (select with `--provider`).
+- **`Vagrantfile`** – Lab definition with VLAN configuration (v2.1.6), unified for both KVM/libvirt and VirtualBox (select with `--provider`).
+- **`provision/`** – The scripts each VM runs (OPNsense, Windows, Linux), kept as reviewable files.
 
 ---
 

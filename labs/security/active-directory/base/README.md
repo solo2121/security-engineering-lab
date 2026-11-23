@@ -1,4 +1,4 @@
-# Active Directory Penetration Testing Lab (KVM/libvirt + VirtualBox) v1.13
+# Active Directory Penetration Testing Lab (KVM/libvirt + VirtualBox) v1.14
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Platform](https://img.shields.io/badge/platform-KVM%2Flibvirt%20%7C%20VirtualBox-blue)](https://www.linux-kvm.org/)
@@ -568,7 +568,7 @@ Both providers pull the same Vagrant Cloud boxes (`kalilinux/rolling`, `generic/
 - Not supported on Apple Silicon / ARM hosts (see Requirements above).
 - Network isolation uses a VirtualBox internal network (`virtualbox__intnet`) rather than libvirt's isolated `vagrant0` bridge; behavior is equivalent for this lab but the underlying VirtualBox networking model differs.
 
-### Troubleshooting
+### VirtualBox troubleshooting
 
 | Issue | Cause | Solution |
 |---|---|---|

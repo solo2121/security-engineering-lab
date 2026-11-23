@@ -247,7 +247,7 @@ to run VMs with a VirtualBox GUI console instead of headless (no effect
 under libvirt).
 
 **Troubleshooting:** see the [VirtualBox Provider troubleshooting
-table](../base/README.md#troubleshooting) in the base lab's README — the
+table](../base/README.md#virtualbox-troubleshooting) in the base lab's README — the
 same VirtualBox-level issues (missing `VBoxManage`, `vboxusers` group,
 internal-network conflicts, Guest Additions mismatches) apply here.
 

@@ -206,7 +206,7 @@ fail to start.
 **Troubleshooting:** VirtualBox-specific issues (missing `VBoxManage`,
 `vboxusers` group permissions, internal-network conflicts, Guest Additions
 mismatches) are the same as documented in the [AD Pentest Lab's VirtualBox
-Provider troubleshooting table](../../security/active-directory/base/README.md#troubleshooting).
+Provider troubleshooting table](../../security/active-directory/base/README.md#virtualbox-troubleshooting).
 
 ---
 
