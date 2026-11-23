@@ -40,7 +40,7 @@ Each lab includes deployable infrastructure, provisioning automation, health val
   - [See it in action](#see-it-in-action)
     - [Active Directory base lab](#active-directory-base-lab)
     - [DevOps/DevSecOps lab](#devopsdevsecops-lab)
-    - [Segmented Active Directory lab](#segmented-active-directory-lab)
+    - [Segmented Active Directory lab (OPNsense deployment)](#segmented-active-directory-lab-opnsense-deployment)
   - [Lab environments](#lab-environments)
     - [Active Directory Security Lab](#active-directory-security-lab)
     - [Segmented Active Directory Lab](#segmented-active-directory-lab)
@@ -86,7 +86,7 @@ Each lab includes deployable infrastructure, provisioning automation, health val
 | Lab | Default VMs | Host RAM (minimum / recommended) | Free disk | Best for |
 |---|---:|---:|---:|---|
 | [Active Directory Security Lab](./labs/security/active-directory/base/) | 6; up to 11 with `LAB_PROFILE=full` | 16 GB / 32 GB+ | 200 GB+ | Core AD attack paths and defensive validation |
-| [Segmented Active Directory Lab](./labs/security/active-directory/vlan-segmented/) | 7; up to 12 with `LAB_PROFILE=full` | 16 GB / 32 GB+ | 80 GB+ | Segmentation, routing, and lateral-movement controls |
+| [Segmented Active Directory Lab](./labs/security/active-directory/vlan-segmented/) | 3 to 7, chosen from host RAM; up to 12 with `LAB_PROFILE=full` | 16 GB / 32 GB+ | 80 GB+ | Segmentation, routing, and lateral-movement controls |
 | [DevOps/DevSecOps Platform Lab](./labs/infrastructure/devops-linux-lab/) | 2; up to 12 with `LAB_PROFILE=full` | 16 GB / 32 GB+ | 200 GB+ | Kubernetes, GitOps, observability, and runtime security |
 | [Windows Server Hardening Lab](./labs/security/windows-hardening/) | 1; 2 with `LAB_PROFILE=full` | 8 GB / 16 GB+ | 60 GB+ | Defensive hardening mapped to AD attack techniques |
 
@@ -95,7 +95,7 @@ Each lab includes deployable infrastructure, provisioning automation, health val
 >
 > The Active Directory Security Lab includes an optional `llm` profile that deploys the OWASP Top 10 for LLM Applications (2025) training lab.
 >
-> The Segmented Active Directory Lab figures reflect its default `ad` profile. Its `full` profile requires approximately 32 GB minimum and 48 GB+ recommended host RAM.
+> When `LAB_PROFILE` is not set, the Segmented Active Directory Lab picks a profile from host RAM: `minimal` (3 VMs) below 20 GB, `ad` (7 VMs) from 20 GB, and `full` (12 VMs) from 40 GB. The RAM and disk figures above reflect the `ad` profile; set `LAB_PROFILE=ad` explicitly on a smaller host that meets that profile's minimum. The `full` profile requires approximately 32 GB minimum and 48 GB+ recommended host RAM.
 >
 > The DevOps/DevSecOps Platform Lab defaults to `LAB_PROFILE=minimal` unless overridden. Review the selected lab README for complete profile-by-profile requirements.
 >
@@ -137,7 +137,7 @@ For the recommended progression from Active Directory fundamentals through segme
 Clone the repository and validate your host:
 
 ```bash
-git clone [https://github.com/solo2121/security-engineering-lab.git](https://github.com/solo2121/security-engineering-lab.git)
+git clone https://github.com/solo2121/security-engineering-lab.git
 cd security-engineering-lab
 ./scripts/check-prerequisites.sh --all
 ```
@@ -161,7 +161,7 @@ Check VM state:
 vagrant status
 ```
 
-Each supported lab includes a Python-based `vagrant_manager.py` for interactive or scripted VM management. Run it from the selected lab directory:
+The Active Directory, Segmented Active Directory, and DevOps/DevSecOps labs each include a Python-based `vagrant_manager.py` for interactive or scripted VM management (the Windows Server Hardening Lab uses plain `vagrant` commands). Run it from the selected lab directory:
 
 ```bash
 python3 scripts/vagrant_manager.py
@@ -205,7 +205,7 @@ A complete Linux DevSecOps deployment, from K3s bootstrap through Harbor image s
 |---|---|---|
 | ![K3s node Ready and kubectl API ready, with Ingress NGINX installing via Helm](./assets/demos/devops1-01-k3s-ready-ingress.gif) | ![Container images being pulled, tagged, and pushed into the air-gapped Harbor registry](./assets/demos/devops1-02-harbor-seeding.gif) | ![Authorized DevSecOps security-test scenarios deploying successfully, ending with Harbor login succeeding](./assets/demos/devops1-03-attack-vectors.gif) |
 
-### Segmented Active Directory lab
+### Segmented Active Directory lab (OPNsense deployment)
 
 A complete OPNsense deployment for the Segmented Active Directory Lab, from initial boot through reload and interface assignment.
 
@@ -290,7 +290,7 @@ KVM/QEMU with libvirt is the primary development provider for this project and i
 | DevOps/DevSecOps Platform Lab | Supported | Supported | Not supported |
 | Active Directory Security Lab | Supported | Supported | Not supported |
 | Segmented Active Directory Lab | Supported | Supported | Not supported |
-| Windows Server Hardening Lab | Supported | Supported | Not supported |
+| Windows Server Hardening Lab (experimental) | Supported | Supported | Not supported |
 | DevSecOps Lite — ARM64 | Not applicable | Not applicable | Planned |
 
 The Segmented Active Directory Lab uses separate libvirt networks and isolated VirtualBox internal networks to model segmentation boundaries. VirtualBox networking provides logical isolation but does not reproduce physical IEEE 802.1Q VLAN tagging.
@@ -360,7 +360,7 @@ This validates host dependencies and enables lab-specific plugin checks. For the
 [![Enterprise Infrastructure Architecture](./assets/diagrams/architecture-overview.png)](./assets/diagrams/)
 
 > [!NOTE]
-> The DevOps/DevSecOps Platform Lab uses Ansible and Terraform/OpenTofu. The Active Directory and Windows Server Hardening labs are provisioned by Vagrant with shell and PowerShell provisioners. The Active Directory Security Lab keeps those scripts as files under [`provision/`](./labs/security/active-directory/base/provision/); the remaining labs currently embed provisioning logic in their `Vagrantfile`s.
+> The DevOps/DevSecOps Platform Lab uses Ansible and Terraform/OpenTofu. The Active Directory and Windows Server Hardening labs are provisioned by Vagrant with shell and PowerShell provisioners, as is the DevOps lab's own VM build. The Active Directory labs ([base](./labs/security/active-directory/base/provision/), [segmented](./labs/security/active-directory/vlan-segmented/provision/)) and the [DevOps lab](./labs/infrastructure/devops-linux-lab/provision/) keep those scripts as files under `provision/`; the Windows Server Hardening lab currently embeds its provisioning logic in its `Vagrantfile`.
 >
 > See [Provisioning Philosophy](./docs/architecture/architecture.md#provisioning-philosophy) for the design rationale.
 
