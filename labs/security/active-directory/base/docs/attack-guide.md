@@ -795,7 +795,7 @@ aws --endpoint-url=http://172.28.128.80:4566 iam attach-user-policy \
 
 ## 11. LLM Security Testing
 
-`llm01` runs the OWASP Top 10 for LLM Applications (2025 numbering, mapped to 2026) training lab — see
+`llm01` runs the OWASP Top 10 for LLM Applications training lab — see
 [`llm-lab/README.md`](../llm-lab/README.md) for full docs, the safety model, and the
 per-category endpoint/test table. `GET /owasp/categories` on the running service lists
 the authoritative current category set (self-verifying, so this guide can't silently
