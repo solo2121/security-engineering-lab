@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Secure baseline for the LLM lab.** `llm-lab` now starts in `secure` mode by
+  default and serves an authenticated `/secure` API: deny-by-default roles,
+  per-user rate limits and token budgets, prompt-injection scoring, PII and
+  credential redaction, a pluggable gateway (offline mock or local Ollama) and a
+  tamper-evident audit log. The vulnerable scenarios are unchanged and are
+  mounted with `LLM_LAB_MODE=lab`, which the `llm01` systemd unit now sets.
+  Adds a Dockerfile, a hardened `docker-compose.yml`, `.env.example`, 32 tests,
+  and `docs/` (architecture, threat model, OWASP 2026 coverage, test matrix,
+  runbook, roadmap). `GET /owasp/categories` now also returns the OWASP Top 10
+  for LLM Applications 2026 mapping.
 - **Authorization acknowledgement for
   `tools/security/exploitation/exploit.py`.** The helper now asks the operator
   to type an explicit authorization phrase at startup and refuses to run

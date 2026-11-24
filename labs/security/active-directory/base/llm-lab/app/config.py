@@ -18,6 +18,12 @@ LAB_NAME = "OWASP Top 10 for LLM Applications — Training Lab"
 LAB_TAXONOMY_VERSION = "OWASP Top 10 for LLM Applications 2025"
 LAB_TAXONOMY_SOURCE = "https://genai.owasp.org/initiatives/top-10-for-llm-and-genai/"
 
+# Run mode. "secure" (the default) mounts only the secure baseline API under
+# /secure. "lab" also mounts the intentionally vulnerable scenario endpoints
+# for training; the llm01 VM's systemd unit and the compose "lab" profile set
+# it explicitly. Anything else is treated as "secure".
+LAB_MODE = "lab" if os.environ.get("LLM_LAB_MODE", "secure").strip().lower() == "lab" else "secure"
+
 # ---------------------------------------------------------------------------
 # Filesystem layout — everything the app is allowed to touch lives under
 # LAB_ROOT/data/sandbox. Nothing outside this tree is ever read or written

@@ -1,0 +1,54 @@
+# Local, isolated deployment. Ports bind to 127.0.0.1 only.
+#
+#   cp .env.example .env   # then set real keys in .env
+#   docker compose up -d --build                      # secure mode (default)
+#   docker compose --profile lab up -d --build        # also start the vulnerable lab
+#   docker compose --profile ollama up -d             # optional local model
+#   docker compose down -v                            # teardown
+x-hardened: &hardened
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  tmpfs: ["/tmp"]
+  restart: unless-stopped
+
+services:
+  llm-lab:
+    <<: *hardened
+    build: .
+    image: llm-lab:secure
+    env_file: [.env]
+    environment:
+      LLM_LAB_MODE: secure
+    ports: ["127.0.0.1:8000:8000"]
+    networks: [lab-frontend, lab-backend]
+
+  # Intentionally vulnerable training target. Never enable outside an isolated host.
+  llm-lab-vulnerable:
+    <<: *hardened
+    profiles: [lab]
+    build: .
+    image: llm-lab:vulnerable
+    env_file: [.env]
+    environment:
+      LLM_LAB_MODE: lab
+    ports: ["127.0.0.1:8001:8000"]
+    volumes: ["lab-sandbox:/app/data/sandbox"]
+    networks: [lab-frontend]
+
+  ollama:
+    profiles: [ollama]
+    image: ollama/ollama:0.5.4
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    volumes: ["ollama-models:/root/.ollama"]
+    networks: [lab-backend]
+
+networks:
+  lab-frontend: {}
+  lab-backend:
+    internal: true
+
+volumes:
+  lab-sandbox: {}
+  ollama-models: {}

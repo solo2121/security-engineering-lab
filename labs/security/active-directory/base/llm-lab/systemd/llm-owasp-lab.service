@@ -10,6 +10,8 @@ Group=llmlab
 WorkingDirectory=/opt/llm-lab
 Environment="PATH=/opt/llm-lab/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
 Environment="LLM_LAB_ROOT=/opt/llm-lab"
+# This VM is the isolated training target: mount the vulnerable scenarios.
+Environment="LLM_LAB_MODE=lab"
 ExecStart=/opt/llm-lab/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
 Restart=on-failure
 RestartSec=5

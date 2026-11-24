@@ -1,0 +1,9 @@
+tests/
+docs/
+scripts/
+systemd/
+**/__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example

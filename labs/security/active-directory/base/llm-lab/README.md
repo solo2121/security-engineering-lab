@@ -42,12 +42,52 @@ curl http://172.28.128.60:8000/health
 open http://172.28.128.60:8000/docs   # Swagger UI (macOS `open`; use xdg-open on Linux)
 ```
 
+## Run modes
+
+| Mode | Set by | What runs |
+|---|---|---|
+| `secure` (default) | unset, or `LLM_LAB_MODE=secure` | Only the authenticated `/secure/*` baseline API |
+| `lab` | `LLM_LAB_MODE=lab` | The baseline plus the intentionally vulnerable scenarios below |
+
+The `llm01` VM's systemd unit sets `lab`, so the VM works exactly as before. A bare
+`uvicorn app.main:app` now starts in `secure` mode. For the secure API, architecture,
+threat model, test matrix, runbook and roadmap see [`docs/`](docs/).
+
+## Docker Compose (local, optional)
+
+```bash
+cd labs/security/active-directory/base/llm-lab
+cp .env.example .env        # then replace every CHANGE_ME key; the API stays off until you do
+docker compose up -d --build                    # secure mode on http://127.0.0.1:8000
+docker compose --profile lab up -d --build      # also the vulnerable lab on http://127.0.0.1:8001
+docker compose down -v                          # teardown
+```
+
+Example call, using a key from your `.env`:
+
+```bash
+curl -s http://127.0.0.1:8000/secure/chat \
+  -H "Authorization: Bearer $LAB_KEY" -H "Content-Type: application/json" \
+  -d '{"prompt": "Summarize our leave policy.", "max_tokens": 128}'
+```
+
+The default provider is a deterministic offline mock. To use a local model, set
+`LLM_LAB_PROVIDER=ollama`, start the `ollama` profile, and pre-pull the model, because
+that service sits on an internal-only network and cannot download anything itself:
+
+```bash
+docker run -d --name ollama-pull -v llm-lab_ollama-models:/root/.ollama ollama/ollama:0.5.4
+docker exec ollama-pull ollama pull llama3.2:1b && docker rm -f ollama-pull
+```
+
 ## Taxonomy
 
-This lab implements the **current OWASP Top 10 for LLM Applications (2025)**:
-<https://genai.owasp.org/initiatives/top-10-for-llm-and-genai/>. `GET /owasp/categories`
-returns this list from the running app itself, so the lab is self-documenting and can't
-silently drift from the taxonomy it claims to implement.
+The scenario modules were written against the OWASP Top 10 for LLM Applications 2025
+numbering and keep their `/llmNN` endpoint prefixes. The current edition is the 2026
+list (<https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/>). `GET /owasp/categories`
+returns both, with `categories_2026` mapping each 2026 identifier onto the endpoints, and
+[`docs/owasp-2026-coverage.md`](docs/owasp-2026-coverage.md) lists what each risk covers
+today. The table below uses the 2025 numbering of the endpoints.
 
 | Category | Scenario | Module | Endpoints | Test |
 |---|---|---|---|---|
@@ -86,7 +126,11 @@ llm-lab/
 │   ├── documents/                # synthetic trusted + poisoned RAG documents
 │   ├── fake_secrets/             # synthetic-only fixtures (FAKE-ONLY- / LAB_SECRET_ / SYNTHETIC-)
 │   └── sandbox/                  # the only path the app is ever allowed to read/write
-├── tests/test_app.py             # pytest suite — 33 tests, no network/VM required
+├── app/secure/                   # secure baseline: auth/RBAC, gateway, redaction, limits, audit
+├── docs/                         # architecture, threat model, coverage, test matrix, runbook, roadmap
+├── tests/test_app.py             # scenario tests (33), lab mode
+├── tests/test_secure.py          # secure baseline tests (32)
+├── Dockerfile, docker-compose.yml, .env.example
 ├── scripts/smoke_test.sh          # curl-based smoke test against the running VM
 ├── systemd/llm-owasp-lab.service  # hardened systemd unit installed on the VM
 └── requirements.txt               # pinned: fastapi, uvicorn, pydantic
@@ -117,6 +161,9 @@ authors to remember:
   (`DAILY_QUOTA`), enforced before any "work" happens.
 - **No outbound internet from the app.** Nothing in `app/` makes an HTTP request,
   installs a package, or resolves a DNS name at runtime.
+- **Secure by default.** Without `LLM_LAB_MODE=lab` the vulnerable scenarios are not
+  mounted. The `/secure` API denies everything until valid keys are configured, and
+  authenticates, authorizes, rate-limits, scans and audits every request.
 - **OS-level defense in depth.** The systemd unit runs as an unprivileged `llmlab` user
   with `ProtectSystem=strict`, `ProtectHome=true`, and a single writable path
   (`data/sandbox`) — even a bug in the app can't write outside that directory.
@@ -136,7 +183,8 @@ pytest labs/security/active-directory/base/llm-lab/tests/ -v
 LLM01_HOST=172.28.128.60 labs/security/active-directory/base/llm-lab/scripts/smoke_test.sh
 ```
 
-The pytest suite (33 tests) covers: every scenario's vulnerable and defensive
+The pytest suite (65 tests: 33 scenario tests in `test_app.py`, 32 secure-baseline tests in
+`test_secure.py`) covers: every scenario's vulnerable and defensive
 behavior, the safety-module unit tests (command allowlist, sandbox-path traversal,
 redaction, HTML encoding), input-size limits, rate limiting/quotas, and that
 arbitrary-shell-execution and arbitrary-file-access attempts are refused rather than

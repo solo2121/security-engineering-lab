@@ -507,7 +507,7 @@ Testing scenarios include:
 ## LLM Security Testing
 
 The `llm01` VM hosts an intentionally vulnerable, safety-sandboxed training lab
-covering the current **OWASP Top 10 for LLM Applications (2025)** — see
+covering the **OWASP Top 10 for LLM Applications (2025 numbering, mapped to 2026)** — see
 [`../base/llm-lab/README.md`](../base/llm-lab/README.md) for the full architecture,
 safety model, and category/endpoint/test table (the app is shared with the `base`
 Vagrantfile, so there's a single copy). `GET /owasp/categories` on the running service

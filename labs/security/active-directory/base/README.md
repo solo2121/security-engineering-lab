@@ -587,7 +587,7 @@ Both providers pull the same Vagrant Cloud boxes (`kalilinux/rolling`, `generic/
 
 ### LLM Platform (llm01)
 
-Implements the current **OWASP Top 10 for LLM Applications (2025)** — see
+Implements the **OWASP Top 10 for LLM Applications (2025 numbering, mapped to 2026)** — see
 [`llm-lab/README.md`](llm-lab/README.md) for full docs, the safety model, and the
 category/endpoint/test table. Quick reference:
 
