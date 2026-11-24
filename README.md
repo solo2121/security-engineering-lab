@@ -93,7 +93,7 @@ Each lab includes deployable infrastructure, provisioning automation, health val
 > [!NOTE]
 > Resource figures represent practical **host capacity**, not only aggregate guest allocations. Reserve additional CPU, RAM, and disk capacity for the host OS, provider overhead, Vagrant boxes, snapshots, package caches, and container-image storage.
 >
-> The Active Directory Security Lab includes an optional `llm` profile that deploys the OWASP Top 10 for LLM Applications (2025 numbering, mapped to 2026) training lab.
+> The Active Directory Security Lab includes an optional `llm` profile that deploys the OWASP Top 10 for LLM Applications training lab.
 >
 > When `LAB_PROFILE` is not set, the Segmented Active Directory Lab picks a profile from host RAM: `minimal` (3 VMs) below 20 GB, `ad` (7 VMs) from 20 GB, and `full` (12 VMs) from 40 GB. The RAM and disk figures above reflect the `ad` profile; set `LAB_PROFILE=ad` explicitly on a smaller host that meets that profile's minimum. The `full` profile requires approximately 32 GB minimum and 48 GB+ recommended host RAM.
 >
@@ -232,7 +232,7 @@ The Active Directory Security Lab provides Windows enterprise-style infrastructu
 
 It covers Active Directory Domain Services, Kerberos, LDAP, Active Directory Certificate Services, credential-access simulation, privilege-escalation research, post-compromise analysis workflows, and detection-engineering concepts.
 
-It also hosts the OWASP Top 10 for LLM Applications (2025 numbering, mapped to 2026) training lab on a dedicated `llm01` VM:
+It also hosts the OWASP Top 10 for LLM Applications training lab on a dedicated `llm01` VM:
 
 ```bash
 LAB_PROFILE=llm vagrant up llm01
@@ -391,7 +391,7 @@ See the following documents for architecture details, trust boundaries, and desi
 | Domain | Capabilities | Location |
 |---|---|---|
 | Active Directory security | Domain deployment, AD CS, identity attack-path simulation, privilege-escalation research, and post-compromise analysis workflows | `labs/security/active-directory/base/` |
-| LLM application security | OWASP Top 10 for LLM Applications (2025 numbering, mapped to 2026), including a safety-sandboxed vulnerable and defensive training pair for each covered category | `labs/security/active-directory/base/llm-lab/` |
+| LLM application security | OWASP Top 10 for LLM Applications (2026), including a safety-sandboxed vulnerable and defensive training pair for each covered category | `labs/security/active-directory/base/llm-lab/` |
 | Network segmentation | Logical segmentation boundaries, routing separation, trust relationships, and segmentation-aware security-testing scenarios | `labs/security/active-directory/vlan-segmented/` |
 | DevOps/DevSecOps | Kubernetes operations, GitOps, observability, runtime security, and policy enforcement | `labs/infrastructure/devops-linux-lab/` |
 | Defensive hardening | CIS-benchmark-inspired controls mapped to specific AD attack techniques, with validation tooling for each control | `labs/security/windows-hardening/` |

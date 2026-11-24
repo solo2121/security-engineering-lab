@@ -14,7 +14,7 @@
 | VLAN Enterprise Lab | [`labs/security/active-directory/vlan-segmented/`](../../labs/security/active-directory/vlan-segmented/) | Network segmentation, VLAN isolation, enterprise routing, and traffic analysis |
 | DevOps Linux Lab | [`labs/infrastructure/devops-linux-lab/`](../../labs/infrastructure/devops-linux-lab/) | Kubernetes (k3s, Kind, K3d), Argo CD, Harbor, Terraform, OpenTofu, and the Prometheus/Grafana/Loki stack |
 | Windows Server Hardening Lab (experimental) | [`labs/security/windows-hardening/`](../../labs/security/windows-hardening/) | Windows Server hardening with selectable profiles; advanced controls such as LAPS and Sysmon + WEF are experimental (v0.1.0) |
-| OWASP LLM Training Lab | [`labs/security/active-directory/base/llm-lab/`](../../labs/security/active-directory/base/llm-lab/) | Scenarios for the OWASP Top 10 for LLM Applications (2025 numbering, mapped to 2026), each with documented mitigations and tests |
+| OWASP LLM Training Lab | [`labs/security/active-directory/base/llm-lab/`](../../labs/security/active-directory/base/llm-lab/) | Scenarios for the OWASP Top 10 for LLM Applications, each with documented mitigations and tests |
 
 ---
 
@@ -65,7 +65,7 @@
 - Function call injection.
 - Embedding inversion.
 
-Implemented as OWASP Top 10 for LLM Applications (2025 numbering, mapped to 2026) scenarios in [`llm-lab/`](../../labs/security/active-directory/base/llm-lab/); attack walkthroughs are in the [AD lab attack guide](../../labs/security/active-directory/base/docs/attack-guide.md).
+Implemented as OWASP Top 10 for LLM Applications scenarios in [`llm-lab/`](../../labs/security/active-directory/base/llm-lab/); attack walkthroughs are in the [AD lab attack guide](../../labs/security/active-directory/base/docs/attack-guide.md).
 
 ### Detection Engineering
 - MITRE ATT&CK-aligned detection guidance, log sources, and detection ideas for each attack phase ([`ad-mitre-log-source-playbook.md`](../guides/security/ad-mitre-log-source-playbook.md)).
