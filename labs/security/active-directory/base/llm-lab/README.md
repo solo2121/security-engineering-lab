@@ -70,6 +70,25 @@ mixed into the prompt, so `data/rag/samples/poisoned-faq.md` really does take ov
 Offline, the built-in mock model is deliberately gullible so these attacks are reproducible;
 see [`docs/owasp-2026-coverage.md`](docs/owasp-2026-coverage.md).
 
+## Helpdesk agent on the lab's Active Directory
+
+`data/ad/directory.json` is a snapshot of the 48 users and 13 groups that dc01 creates
+(passwords omitted), rebuilt with `python3 scripts/export_ad_snapshot.py`. No real AD is
+contacted. Give a key the `helpdesk` role and ask the agent for something:
+
+```bash
+curl -s http://127.0.0.1:8000/secure/agent/run -H "Authorization: Bearer $HKEY" \
+  -H "Content-Type: application/json" -d '{"request": "reset the password for mike.taylor"}'
+# -> pending_approval; an admin other than the requester approves it:
+curl -s -X POST http://127.0.0.1:8000/secure/agent/approvals/<id>/approve -H "Authorization: Bearer $AKEY"
+```
+
+Reads run directly, unlocks run and can be undone, and `reset_password` and `disable_account`
+wait for a human. Executive and admin accounts can never be changed by the agent. In `lab`
+mode, `POST /lab/agent/run {"request": "who is amanda.white"}` shows the confused deputy: a
+note hidden in her description field makes the agent reset the CEO's password, and
+`GET /lab/agent/state` shows what changed (`POST /lab/agent/reset` restores the seed).
+
 ## Docker Compose (local, optional)
 
 ```bash
@@ -154,12 +173,15 @@ llm-lab/
 │   └── sandbox/                  # the only path the app is ever allowed to read/write
 ├── app/secure/                   # secure baseline: auth/RBAC, gateway, redaction, limits, audit
 ├── app/rag/                      # two-tenant RAG: embedded store, ingestion, secure and lab policies
+├── app/agent/                    # helpdesk agent: tools, policy, approvals, lab twin
 ├── data/rag/                     # synthetic seed documents and the poisoned sample
+├── data/ad/                      # AD snapshot built from the dc01 provisioning script
 ├── docs/                         # architecture, threat model, coverage, test matrix, runbook, roadmap
 ├── tests/test_app.py             # scenario tests (33), lab mode
 ├── tests/test_secure.py          # secure baseline tests (33)
 ├── tests/test_rag.py             # RAG tests (23)
 ├── tests/test_ollama.py          # provider tests against a fake Ollama server (14)
+├── tests/test_agent.py           # helpdesk agent tests (26)
 ├── Dockerfile, docker-compose.yml, .env.example
 ├── scripts/smoke_test.sh          # curl-based smoke test against the running VM
 ├── systemd/llm-owasp-lab.service  # hardened systemd unit installed on the VM
@@ -213,8 +235,9 @@ pytest labs/security/active-directory/base/llm-lab/tests/ -v
 LLM01_HOST=172.28.128.60 labs/security/active-directory/base/llm-lab/scripts/smoke_test.sh
 ```
 
-The pytest suite (103 tests: 33 scenario tests in `test_app.py`, 33 secure-baseline tests in
-`test_secure.py`, 23 RAG tests in `test_rag.py`, 14 provider tests in `test_ollama.py`) covers: every scenario's vulnerable and defensive
+The pytest suite (129 tests: 33 scenario tests in `test_app.py`, 33 secure-baseline tests in
+`test_secure.py`, 23 RAG tests in `test_rag.py`, 14 provider tests in `test_ollama.py`, 26 agent
+tests in `test_agent.py`) covers: every scenario's vulnerable and defensive
 behavior, the safety-module unit tests (command allowlist, sandbox-path traversal,
 redaction, HTML encoding), input-size limits, rate limiting/quotas, and that
 arbitrary-shell-execution and arbitrary-file-access attempts are refused rather than

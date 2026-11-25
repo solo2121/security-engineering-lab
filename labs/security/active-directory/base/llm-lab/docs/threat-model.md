@@ -63,6 +63,24 @@ Residual risk: the chain is in memory and resets on restart. Ship events to appe
 
 Residual risk: the embedder is a hashing model, not a trained one, so retrieval quality is basic. The injection scan is heuristic: a well-paraphrased instruction can be indexed, and the structural defenses (documents wrapped as data, no tools in this path, output scanning) are what limit the damage. Tenant isolation here relies on one SQL filter; a real deployment should add database-level separation or row-level security.
 
+## Helpdesk agent
+
+The agent works on an in-memory snapshot of the users dc01 creates
+(`data/ad/directory.json`, built from the provisioning script, no passwords).
+No real Active Directory is contacted.
+
+| Threat | Control | Evidence |
+|---|---|---|
+| Instruction hidden in a directory field (confused deputy) | Output sanitising removes instruction-like text before the planner sees it | `test_llm01_2026_poisoned_description_is_removed_from_tool_output` |
+| Planner fooled anyway | The executor decides, not the planner: protected targets are refused, high-impact tools wait for approval | `test_llm03_2026_policy_still_blocks_when_the_planner_is_fooled`, `..._cannot_skip_the_approval_gate` |
+| Model invents a tool or arguments | Registry allowlist and strict argument schemas | `test_llm03_2026_arguments_are_validated_and_unknown_tools_denied` |
+| Takeover of privileged or executive accounts | Protected accounts and groups are read-only for the agent, even with approval | `test_llm03_2026_protected_accounts_cannot_be_changed_even_with_approval` |
+| Approval abuse | Approver must differ from the requester, holds `agent:approve`, approvals expire, state is re-checked at approval time | `test_llm03_2026_requester_cannot_approve_their_own_request` |
+| Runaway loops | Step cap of 4 and a per-user rate limit | `test_llm03_2026_step_budget_limits_a_runaway_agent` |
+| Irreversible mistakes | Undo for unlock and disable; password resets return nothing secret | `test_llm03_2026_unlock_is_allowed_and_audited_and_undoable` |
+
+Residual risk: sanitising is heuristic, so the approval gate and the protected-account list carry the guarantee. Protected-account membership is derived from group names, which a real deployment should replace with an explicit tiering model. With a real model the planner is single-turn: it proposes calls from the request and does not read tool output, so injection through data only reaches the mock planner. Approvals are held in memory and are lost on restart.
+
 ## Container and deployment
 
 | Threat | Control |

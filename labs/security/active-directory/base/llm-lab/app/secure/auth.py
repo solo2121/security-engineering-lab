@@ -23,8 +23,10 @@ logger = logging.getLogger("llm_lab.secure.auth")
 ROLE_PERMISSIONS: Dict[str, FrozenSet[str]] = {
     "viewer": frozenset({"chat:use", "usage:read", "rag:read"}),
     "editor": frozenset({"chat:use", "usage:read", "rag:read", "rag:write"}),
+    "helpdesk": frozenset({"chat:use", "usage:read", "agent:use"}),
     "admin": frozenset({
         "chat:use", "usage:read", "rag:read", "rag:write", "rag:review", "audit:read", "config:read",
+        "agent:use", "agent:approve",
     }),
 }
 

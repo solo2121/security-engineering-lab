@@ -32,6 +32,13 @@ flowchart LR
     M --> OLL[Ollama - local model, optional]
 ```
 
+## Other pipelines
+
+- **RAG** (`/secure/rag`): ingestion with provenance, quarantine and versioning, then tenant-filtered retrieval and grounded, cited answers.
+- **Helpdesk agent** (`/secure/agent`): a planner proposes tool calls, and a policy layer decides each one (execute, deny, or hold for human approval) against a snapshot of the lab's AD.
+
+Both share the auth, rate limits, audit chain and gateway described here. Their lab twins (`/lab/rag`, `/lab/agent`) exist only in `lab` mode.
+
 ## Data flow for `POST /secure/chat`
 
 1. Authenticate the bearer key (constant-time compare), then authorize the `chat:use` permission. Failures are audited.

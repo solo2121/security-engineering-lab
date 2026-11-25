@@ -14,6 +14,8 @@ observability phase.
 | Token or cost anomaly | `tokens` in `chat` events, `/secure/usage` | A user above 3x their usual daily tokens | Lower `LLM_LAB_SECURE_DAILY_TOKENS`; contact the owner |
 | Rate-limit pressure | HTTP 429 responses | Sustained 429s for one user | Confirm whether it is a runaway client |
 | Possible exfiltration | `redactions` non-empty on many `chat` events | Sudden rise for one user | Review prompts' fingerprints and the data source |
+| Agent denials or flagged data | `agent_tool_denied`, `agent_output_flagged` events | Any `agent_output_flagged`, or 3 or more denials per user in 10 minutes | Look at the directory field that was flagged and who last edited it; review the user's agent runs |
+| Approval anomalies | `agent_self_approval_denied`, many `agent_approval_requested` | Any self-approval attempt, or a burst of requests | Review the requester; reject pending approvals you did not expect |
 | Audit chain broken | `chain_valid: false` from `/secure/admin/audit` | Any | Treat as tampering; preserve logs and the container |
 
 ## Incident response

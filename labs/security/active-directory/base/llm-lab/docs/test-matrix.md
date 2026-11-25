@@ -11,6 +11,32 @@ modules under the 2025 endpoint numbering and are not listed here.
 
 | Test | Risk | What it checks |
 |---|---|---|
+| `test_snapshot_comes_from_the_dc01_provisioning_script_and_has_no_passwords` | Run modes and structure | snapshot comes from the dc01 provisioning script and has no passwords |
+| `test_snapshot_is_in_sync_with_the_provisioning_script` | Run modes and structure | snapshot is in sync with the provisioning script |
+| `test_llm03_2026_viewer_role_has_no_agent_access` | LLM03 Excessive Agency | viewer role has no agent access |
+| `test_llm03_2026_read_tools_run_without_approval` | LLM03 Excessive Agency | read tools run without approval |
+| `test_llm03_2026_unlock_is_allowed_and_audited_and_undoable` | LLM03 Excessive Agency | unlock is allowed and audited and undoable |
+| `test_llm03_2026_high_impact_actions_wait_for_a_human` | LLM03 Excessive Agency | high impact actions wait for a human |
+| `test_llm03_2026_admin_approval_executes_once` | LLM03 Excessive Agency | admin approval executes once |
+| `test_llm03_2026_requester_cannot_approve_their_own_request` | LLM03 Excessive Agency | requester cannot approve their own request |
+| `test_llm03_2026_helpdesk_cannot_approve` | LLM03 Excessive Agency | helpdesk cannot approve |
+| `test_llm03_2026_rejected_and_expired_approvals_do_not_execute` | LLM03 Excessive Agency | rejected and expired approvals do not execute |
+| `test_llm03_2026_protected_accounts_cannot_be_changed_even_with_approval` | LLM03 Excessive Agency | protected accounts cannot be changed even with approval |
+| `test_llm03_2026_protected_group_membership_is_not_listed` | LLM03 Excessive Agency | protected group membership is not listed |
+| `test_llm03_2026_arguments_are_validated_and_unknown_tools_denied` | LLM03 Excessive Agency | arguments are validated and unknown tools denied |
+| `test_llm03_2026_step_budget_limits_a_runaway_agent` | LLM03 Excessive Agency | step budget limits a runaway agent |
+| `test_llm03_2026_only_registered_tools_exist` | LLM03 Excessive Agency | only registered tools exist |
+| `test_llm01_2026_poisoned_description_is_removed_from_tool_output` | LLM01 Prompt Injection | poisoned description is removed from tool output |
+| `test_llm03_2026_policy_still_blocks_when_the_planner_is_fooled` | LLM03 Excessive Agency | policy still blocks when the planner is fooled |
+| `test_llm03_2026_a_fooled_planner_cannot_skip_the_approval_gate` | LLM03 Excessive Agency | a fooled planner cannot skip the approval gate |
+| `test_llm01_2026_injection_in_the_request_is_blocked` | LLM01 Prompt Injection | injection in the request is blocked |
+| `test_llm10_2026_model_planner_output_is_parsed_strictly` | LLM10 Improper Output Handling | model planner output is parsed strictly |
+| `test_llm03_2026_model_cannot_name_a_tool_outside_the_registry` | LLM03 Excessive Agency | model cannot name a tool outside the registry |
+| `test_llm06_2026_agent_runs_are_rate_limited` | LLM06 Unbounded Consumption | agent runs are rate limited |
+| `test_lab_llm03_2026_data_in_a_field_hijacks_the_agent` | LLM03 Excessive Agency (lab) | data in a field hijacks the agent |
+| `test_lab_llm03_2026_no_approval_no_protection` | LLM03 Excessive Agency (lab) | no approval no protection |
+| `test_lab_and_secure_directories_are_independent` | Run modes and structure | lab and secure directories are independent |
+| `test_lab_agent_routes_absent_in_secure_mode` | Run modes and structure | lab agent routes absent in secure mode |
 | `test_ollama_chat_sends_system_and_user_separately_with_a_token_cap` | Model provider (fake Ollama server) | ollama chat sends system and user separately with a token cap |
 | `test_ollama_output_is_sanitised_and_capped` | Model provider (fake Ollama server) | ollama output is sanitised and capped |
 | `test_ollama_secure_chat_end_to_end` | Model provider (fake Ollama server) | ollama secure chat end to end |

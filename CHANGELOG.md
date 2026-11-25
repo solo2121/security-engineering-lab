@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Helpdesk agent on the lab's Active Directory.** A snapshot of the users and
+  groups that dc01 creates (no passwords) drives an agent with a strict tool
+  registry, protected accounts, human approval for high-impact actions, a step
+  budget, undo and audit (`/secure/agent`), plus a vulnerable twin
+  (`/lab/agent`) where text hidden in a directory field hijacks it. New
+  `helpdesk` role, an AD snapshot exporter with a drift test, and 26 tests.
 - **Real local model for the LLM lab.** The gateway and the RAG embedder can
   use Ollama (`LLM_LAB_PROVIDER=ollama`): allowlisted host, timeouts, clean
   502s on failure, an admin provider check, and a one-shot `ollama-pull`

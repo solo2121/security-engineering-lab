@@ -26,6 +26,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from app import config
+from app.agent import routes as agent_routes
 from app.rag import routes as rag_routes
 from app.secure import gateway
 from app.secure import routes as secure_routes
@@ -81,8 +82,10 @@ _CURRENT_CATEGORIES = [
 def _mount_routers(app: FastAPI, mode: str) -> None:
     app.include_router(secure_routes.router)
     app.include_router(rag_routes.router)
+    app.include_router(agent_routes.router)
     if mode == "lab":
         app.include_router(rag_routes.lab_router)
+        app.include_router(agent_routes.lab_router)
         for router in _LAB_ROUTERS:
             app.include_router(router)
 
