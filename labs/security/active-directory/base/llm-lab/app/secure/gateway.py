@@ -54,9 +54,49 @@ def _validated_ollama_url() -> str:
     return url.rstrip("/")
 
 
+# The mock is a deliberately gullible stand-in for a weak model: it obeys a
+# quoted "ignore ... instructions ... reply with "X"" found anywhere in its
+# input. That makes injection attacks reproducible offline. Real models behave
+# differently and less predictably; use the Ollama provider to see that.
+_GULLIBLE = re.compile(r'(?is)\bignore\b[^.\n]{0,60}\b(?:instructions|rules|above)\b[^"\n]{0,60}"([^"\n]{1,200})"')
+_DOC = re.compile(r'<document id="(\d+)"[^>]*>\n(.*?)\n</document>', re.S)
+
+
+_WORD = re.compile(r"[a-z0-9]+")
+
+
+def _best_sentence(candidates, question: str):
+    """Pick the sentence that shares the most words with the question."""
+    q = set(_WORD.findall(question.lower()))
+    best, best_score = None, -1
+    for tag, text in candidates:
+        for sent in re.split(r"(?<=[.!?])\s+|\n+", text):
+            sent = sent.strip()
+            if not sent:
+                continue
+            score = len(q & set(_WORD.findall(sent.lower())))
+            if score > best_score:
+                best, best_score = (tag, sent), score
+    return best
+
+
 def _mock(messages: List[Dict[str, str]], max_tokens: int) -> Completion:
     user_text = messages[-1]["content"]
-    answer = f"[mock model] Received {len(user_text)} characters. This is a deterministic lab response."
+    question = user_text.rsplit("Question:", 1)[-1] if "Question:" in user_text else user_text
+    gullible = _GULLIBLE.search(user_text)
+    docs = _DOC.findall(user_text)
+    if gullible:
+        answer = gullible.group(1)
+    elif docs:
+        tag, sent = _best_sentence(docs, question)
+        answer = f"According to [doc {tag}]: {sent[:240]}"
+    elif "Answer using only the documents" in user_text:
+        answer = "The documents do not answer this question."
+    elif "\n\nQuestion:" in user_text:  # lab RAG: raw context, no document tags
+        context = user_text.split("\n\nQuestion:")[0]
+        answer = "Based on the context: " + _best_sentence([("ctx", context)], question)[1][:240]
+    else:
+        answer = f"[mock model] Received {len(user_text)} characters. This is a deterministic lab response."
     return Completion(answer, "mock-1", "mock", estimate_tokens(" ".join(m["content"] for m in messages)), estimate_tokens(answer))
 
 

@@ -49,6 +49,20 @@ Residual risk: the chain is in memory and resets on restart. Ship events to appe
 | Provider error leaks internals | Generic 502, detail only in audit | `test_llm06_2026_provider_failure_is_a_clean_502` |
 | Output treated as markup or code | Plain text, control characters removed, `nosniff` | `test_llm10_2026_*` |
 
+## RAG pipeline
+
+| Threat | Control | Evidence |
+|---|---|---|
+| Cross-tenant retrieval | Tenant filter in the SQL query, tenant from the credential, never the request | `test_llm09_2026_tenant_isolation_in_retrieval` |
+| Guessing another tenant's document ids | 404 for ids outside the caller's tenant | `test_llm09_2026_cross_tenant_document_ids_look_nonexistent` |
+| Poisoned upload | Role-gated writes, size limit, injection scan, quarantine | `test_llm05_2026_poisoned_upload_is_quarantined_not_indexed` |
+| Poisoned chunk already indexed | Re-scan at retrieval, excluded and audited | `test_llm01_2026_indirect_injection_excluded_at_retrieval` |
+| Silent corpus change | Versions, provenance, hash, rollback | `test_llm05_2026_versioning_and_rollback` |
+| Fabricated or missing citations | Citation check, refusal without evidence | `test_llm07_2026_*` |
+| Malformed embeddings | Validation before insert | `test_llm09_2026_malformed_vectors_are_rejected` |
+
+Residual risk: the embedder is a hashing model, not a trained one, so retrieval quality is basic. The injection scan is heuristic: a well-paraphrased instruction can be indexed, and the structural defenses (documents wrapped as data, no tools in this path, output scanning) are what limit the damage. Tenant isolation here relies on one SQL filter; a real deployment should add database-level separation or row-level security.
+
 ## Container and deployment
 
 | Threat | Control |

@@ -258,3 +258,12 @@ def test_taxonomy_2026_maps_every_category_to_a_live_endpoint(keys):
     assert prefixes == {x["endpoint_prefix"] for x in body["current_categories"]}
     paths = c.get("/openapi.json").json()["paths"]
     assert all(any(p.startswith(prefix + "/") for p in paths) for prefix in prefixes)
+
+
+def test_docs_test_matrix_is_current():
+    import subprocess
+
+    script = Path(__file__).resolve().parents[1] / "scripts" / "generate_test_matrix.py"
+    assert subprocess.run([sys.executable, str(script), "--check"]).returncode == 0, (
+        "docs/test-matrix.md is stale; run scripts/generate_test_matrix.py"
+    )

@@ -53,6 +53,23 @@ The `llm01` VM's systemd unit sets `lab`, so the VM works exactly as before. A b
 `uvicorn app.main:app` now starts in `secure` mode. For the secure API, architecture,
 threat model, test matrix, runbook and roadmap see [`docs/`](docs/).
 
+## RAG with two tenants
+
+Seed documents for two synthetic tenants (`tenant-a`, `tenant-b`) load at startup from
+`data/rag/seed/`. In secure mode the API key decides the tenant:
+
+```bash
+curl -s http://127.0.0.1:8000/secure/rag/query -H "Authorization: Bearer $VKEY" \
+  -H "Content-Type: application/json" -d '{"question": "How many days of annual leave do I get?"}'
+```
+
+Roles: `viewer` queries, `editor` uploads documents (`POST /secure/rag/documents`), `admin`
+also releases quarantined uploads and rolls versions back. In `lab` mode `/lab/rag` offers the
+vulnerable twin: a global index (cross-tenant leak), no ingestion checks, and retrieved text
+mixed into the prompt, so `data/rag/samples/poisoned-faq.md` really does take over the answer.
+Offline, the built-in mock model is deliberately gullible so these attacks are reproducible;
+see [`docs/owasp-2026-coverage.md`](docs/owasp-2026-coverage.md).
+
 ## Docker Compose (local, optional)
 
 ```bash
@@ -127,9 +144,12 @@ llm-lab/
 │   ├── fake_secrets/             # synthetic-only fixtures (FAKE-ONLY- / LAB_SECRET_ / SYNTHETIC-)
 │   └── sandbox/                  # the only path the app is ever allowed to read/write
 ├── app/secure/                   # secure baseline: auth/RBAC, gateway, redaction, limits, audit
+├── app/rag/                      # two-tenant RAG: embedded store, ingestion, secure and lab policies
+├── data/rag/                     # synthetic seed documents and the poisoned sample
 ├── docs/                         # architecture, threat model, coverage, test matrix, runbook, roadmap
 ├── tests/test_app.py             # scenario tests (33), lab mode
-├── tests/test_secure.py          # secure baseline tests (32)
+├── tests/test_secure.py          # secure baseline tests (33)
+├── tests/test_rag.py             # RAG tests (23)
 ├── Dockerfile, docker-compose.yml, .env.example
 ├── scripts/smoke_test.sh          # curl-based smoke test against the running VM
 ├── systemd/llm-owasp-lab.service  # hardened systemd unit installed on the VM
@@ -183,8 +203,8 @@ pytest labs/security/active-directory/base/llm-lab/tests/ -v
 LLM01_HOST=172.28.128.60 labs/security/active-directory/base/llm-lab/scripts/smoke_test.sh
 ```
 
-The pytest suite (65 tests: 33 scenario tests in `test_app.py`, 32 secure-baseline tests in
-`test_secure.py`) covers: every scenario's vulnerable and defensive
+The pytest suite (89 tests: 33 scenario tests in `test_app.py`, 33 secure-baseline tests in
+`test_secure.py`, 23 RAG tests in `test_rag.py`) covers: every scenario's vulnerable and defensive
 behavior, the safety-module unit tests (command allowlist, sandbox-path traversal,
 redaction, HTML encoding), input-size limits, rate limiting/quotas, and that
 arbitrary-shell-execution and arbitrary-file-access attempts are refused rather than

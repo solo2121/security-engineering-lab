@@ -21,8 +21,11 @@ from app.secure import audit
 logger = logging.getLogger("llm_lab.secure.auth")
 
 ROLE_PERMISSIONS: Dict[str, FrozenSet[str]] = {
-    "viewer": frozenset({"chat:use", "usage:read"}),
-    "admin": frozenset({"chat:use", "usage:read", "audit:read", "config:read"}),
+    "viewer": frozenset({"chat:use", "usage:read", "rag:read"}),
+    "editor": frozenset({"chat:use", "usage:read", "rag:read", "rag:write"}),
+    "admin": frozenset({
+        "chat:use", "usage:read", "rag:read", "rag:write", "rag:review", "audit:read", "config:read",
+    }),
 }
 
 MIN_KEY_LENGTH = 16

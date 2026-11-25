@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Two-tenant RAG in the LLM lab.** An embedded SQLite store with offline
+  embeddings, ingestion with provenance, quarantine and versioned rollback,
+  tenant-filtered retrieval, grounded answers with checked citations
+  (`/secure/rag`), and a deliberately vulnerable twin at `/lab/rag` (global
+  index, no validation) so cross-tenant leaks and indirect prompt injection
+  are real. New `editor` role, synthetic seed data, 23 tests, and a generated
+  test matrix with a drift test.
 - **Secure baseline for the LLM lab.** `llm-lab` now starts in `secure` mode by
   default and serves an authenticated `/secure` API: deny-by-default roles,
   per-user rate limits and token budgets, prompt-injection scoring, PII and
