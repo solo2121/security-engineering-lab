@@ -15,8 +15,32 @@ iptables -P OUTPUT ACCEPT 2>/dev/null || true
 iptables -F OUTPUT 2>/dev/null || true
 
 export DEBIAN_FRONTEND=noninteractive
-apt-get update -y
-apt-get install -y --no-install-recommends \
+
+# Wait for working DNS before touching apt. A resolver that is still coming
+# up, or a briefly unreachable mirror, otherwise fails the whole provision
+# with "Temporary failure resolving ...".
+dns_ok=0
+for i in $(seq 1 30); do
+  if getent hosts archive.ubuntu.com >/dev/null 2>&1; then
+    dns_ok=1
+    break
+  fi
+  sleep 2
+done
+if [ "$dns_ok" -ne 1 ]; then
+  echo "[FAIL] llm01 cannot resolve archive.ubuntu.com after 60 seconds."
+  echo "       Check the host: the libvirt default network must be active"
+  echo "       (virsh net-list --all), and a host firewall or Docker must not"
+  echo "       block the VM's DNS or forwarded traffic. Then run:"
+  echo "       vagrant provision llm01"
+  exit 1
+fi
+
+APT_OPTS="-o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30"
+# shellcheck disable=SC2086
+apt-get $APT_OPTS update -y
+# shellcheck disable=SC2086
+apt-get $APT_OPTS install -y --no-install-recommends \
   python3 python3-venv python3-pip iptables ca-certificates curl
 
 id -u llmlab >/dev/null 2>&1 || useradd --system --create-home --shell /usr/sbin/nologin llmlab
