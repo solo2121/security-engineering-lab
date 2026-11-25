@@ -63,6 +63,7 @@ def _validated_ollama_url() -> str:
 # input. That makes injection attacks reproducible offline. Real models behave
 # differently and less predictably; use the Ollama provider to see that.
 _GULLIBLE = re.compile(r'(?is)\bignore\b[^.\n]{0,60}\b(?:instructions|rules|above)\b[^"\n]{0,60}"([^"\n]{1,200})"')
+_EXTRACT = re.compile(r"(?is)\b(?:repeat|print|show|reveal|output)\b[^.\n]{0,40}\b(?:system prompt|instructions|text above|above)\b")
 _DOC = re.compile(r'<document id="(\d+)"[^>]*>\n(.*?)\n</document>', re.S)
 
 
@@ -91,6 +92,8 @@ def _mock(messages: List[Dict[str, str]], max_tokens: int) -> Completion:
     docs = _DOC.findall(user_text)
     if gullible:
         answer = gullible.group(1)
+    elif _EXTRACT.search(user_text) and not docs:
+        answer = messages[0]["content"]  # a weak model repeats its hidden instructions
     elif docs:
         tag, sent = _best_sentence(docs, question)
         answer = f"According to [doc {tag}]: {sent[:240]}"
@@ -152,9 +155,9 @@ def _ollama(messages: List[Dict[str, str]], max_tokens: int, timeout: float) -> 
     )
 
 
-def complete(user_text: str, max_tokens: int) -> Completion:
+def complete(user_text: str, max_tokens: int, system: "str | None" = None) -> Completion:
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "system", "content": system or SYSTEM_PROMPT},
         {"role": "user", "content": user_text},
     ]
     timeout = float(os.environ.get("LLM_LAB_PROVIDER_TIMEOUT", 20))

@@ -18,9 +18,9 @@ def _int(name: str, default: int) -> int:
     return int(os.environ.get(name, default))
 
 
-def check_rate(user: str) -> None:
-    limit = _int("LLM_LAB_SECURE_RATE_LIMIT", 10)
-    window = _int("LLM_LAB_SECURE_RATE_WINDOW", 60)
+def check_rate(user: str, limit: "int | None" = None, window: "int | None" = None) -> None:
+    limit = limit if limit is not None else _int("LLM_LAB_SECURE_RATE_LIMIT", 10)
+    window = window if window is not None else _int("LLM_LAB_SECURE_RATE_WINDOW", 60)
     now = time.monotonic()
     with _lock:
         q = _windows[user]
@@ -35,8 +35,8 @@ def _today() -> int:
     return int(time.time() // 86400)
 
 
-def check_budget(user: str, planned_tokens: int) -> None:
-    budget = _int("LLM_LAB_SECURE_DAILY_TOKENS", 20_000)
+def check_budget(user: str, planned_tokens: int, budget: "int | None" = None) -> None:
+    budget = budget if budget is not None else _int("LLM_LAB_SECURE_DAILY_TOKENS", 20_000)
     with _lock:
         rec = _tokens[user]
         if rec["day"] != _today():
@@ -65,3 +65,10 @@ def reset() -> None:
     with _lock:
         _windows.clear()
         _tokens.clear()
+
+
+def forget(user: str) -> None:
+    """Drop one user's counters (used by throwaway defense checks)."""
+    with _lock:
+        _windows.pop(user, None)
+        _tokens.pop(user, None)

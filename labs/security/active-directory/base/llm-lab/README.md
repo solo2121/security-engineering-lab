@@ -89,6 +89,13 @@ mode, `POST /lab/agent/run {"request": "who is amanda.white"}` shows the confuse
 note hidden in her description field makes the agent reset the CEO's password, and
 `GET /lab/agent/state` shows what changed (`POST /lab/agent/reset` restores the seed).
 
+## Challenges
+
+In `lab` mode, `GET /challenges` lists ten challenges, one per 2026 risk. Attack the
+vulnerable twin, `POST /challenges/{id}/verify`, then `POST /challenges/{id}/defense-check` to
+replay the attack against the secure policy and see which controls stop it. Flags are unique
+to each running instance. See [`docs/challenges.md`](docs/challenges.md).
+
 ## Docker Compose (local, optional)
 
 ```bash
@@ -174,14 +181,16 @@ llm-lab/
 ├── app/secure/                   # secure baseline: auth/RBAC, gateway, redaction, limits, audit
 ├── app/rag/                      # two-tenant RAG: embedded store, ingestion, secure and lab policies
 ├── app/agent/                    # helpdesk agent: tools, policy, approvals, lab twin
+├── app/challenges/               # ten challenges: attack, verify, defense-check (lab mode)
 ├── data/rag/                     # synthetic seed documents and the poisoned sample
 ├── data/ad/                      # AD snapshot built from the dc01 provisioning script
 ├── docs/                         # architecture, threat model, coverage, test matrix, runbook, roadmap
 ├── tests/test_app.py             # scenario tests (33), lab mode
 ├── tests/test_secure.py          # secure baseline tests (33)
-├── tests/test_rag.py             # RAG tests (23)
+├── tests/test_rag.py             # RAG tests (24)
 ├── tests/test_ollama.py          # provider tests against a fake Ollama server (14)
 ├── tests/test_agent.py           # helpdesk agent tests (26)
+├── tests/test_challenges.py      # challenge attack/verify/defense tests (41)
 ├── Dockerfile, docker-compose.yml, .env.example
 ├── scripts/smoke_test.sh          # curl-based smoke test against the running VM
 ├── systemd/llm-owasp-lab.service  # hardened systemd unit installed on the VM
@@ -235,9 +244,9 @@ pytest labs/security/active-directory/base/llm-lab/tests/ -v
 LLM01_HOST=172.28.128.60 labs/security/active-directory/base/llm-lab/scripts/smoke_test.sh
 ```
 
-The pytest suite (129 tests: 33 scenario tests in `test_app.py`, 33 secure-baseline tests in
-`test_secure.py`, 23 RAG tests in `test_rag.py`, 14 provider tests in `test_ollama.py`, 26 agent
-tests in `test_agent.py`) covers: every scenario's vulnerable and defensive
+The pytest suite (171 tests: 33 scenario tests in `test_app.py`, 33 secure-baseline tests in
+`test_secure.py`, 24 RAG tests in `test_rag.py`, 14 provider tests in `test_ollama.py`, 26 agent
+tests in `test_agent.py`, 41 challenge tests in `test_challenges.py`) covers: every scenario's vulnerable and defensive
 behavior, the safety-module unit tests (command allowlist, sandbox-path traversal,
 redaction, HTML encoding), input-size limits, rate limiting/quotas, and that
 arbitrary-shell-execution and arbitrary-file-access attempts are refused rather than

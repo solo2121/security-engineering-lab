@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Per-risk challenges for the LLM lab.** Ten challenges, one per OWASP 2026
+  risk, in lab mode: attack the vulnerable twin, verify it worked, then run a
+  defense-check that replays the attack against the secure policy on
+  throwaway data. Per-instance flags, progressive hints, new `/lab/chat` and
+  `/lab/render` endpoints, and 41 tests that also prove each check fails when
+  its control is switched off.
 - **Helpdesk agent on the lab's Active Directory.** A snapshot of the users and
   groups that dc01 creates (no passwords) drives an agent with a strict tool
   registry, protected accounts, human approval for high-impact actions, a step

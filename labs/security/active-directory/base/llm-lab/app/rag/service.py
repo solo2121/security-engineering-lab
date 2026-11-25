@@ -20,7 +20,7 @@ SEED_DIR = config.DATA_DIR / "rag" / "seed"
 
 
 def store(kind: str) -> Store:
-    """kind is 'secure' or 'lab'; each has its own database."""
+    """kind 'lab' is the vulnerable store; any other kind is a secure-policy store."""
     if kind not in _stores:
         _stores[kind] = Store()
         load_seed(kind)
@@ -31,15 +31,28 @@ def reset() -> None:
     _stores.clear()
 
 
+def drop(kind: str) -> None:
+    _stores.pop(kind, None)
+
+
 def load_seed(kind: str, seed_dir: Path = SEED_DIR) -> None:
     st = _stores[kind]
     for path in sorted(seed_dir.glob("*__*.md")):
         tenant, _, name = path.stem.partition("__")
-        text = path.read_text(encoding="utf-8")
-        if kind == "secure":
+        text = _plant_flags(path.read_text(encoding="utf-8"))
+        if kind != "lab":
             ingest_secure(st, tenant, name, text, source="seed", uploader="seed")
         else:
             st.add_document(tenant, name, text, "seed", "seed")
+
+
+_FLAG = re.compile(r"\{\{FLAG:(c\d\d)\}\}")
+
+
+def _plant_flags(text: str) -> str:
+    from app.challenges import flags  # local import: challenges depend on this module
+
+    return _FLAG.sub(lambda m: flags.flag(m.group(1)), text)
 
 
 # -- secure ingestion -------------------------------------------------------
@@ -81,8 +94,19 @@ def build_prompt(question: str, chunks: List[Dict[str, Any]]) -> str:
     )
 
 
-def query_secure(tenant: str, user: str, question: str, k: int, max_tokens: int) -> Dict[str, Any]:
-    st = store("secure")
+def validate_citations(answer: str, allowed: set) -> tuple:
+    """Remove citations the retrieval did not produce. Returns (answer, grounded)."""
+    cited = {int(n) for n in CITATION.findall(answer)}
+    bad = cited - allowed
+    if bad:
+        answer = CITATION.sub(
+            lambda m: m.group(0) if int(m.group(1)) in allowed else "[invalid citation removed]", answer
+        )
+    return answer, bool(cited & allowed) and not bad
+
+
+def query_secure(tenant: str, user: str, question: str, k: int, max_tokens: int, kind: str = "secure") -> Dict[str, Any]:
+    st = store(kind)
     hits = [h for h in st.search(embed.embed(question), k, tenant) if h["score"] >= MIN_SCORE]
     safe: List[Dict[str, Any]] = []
     for h in hits:
@@ -98,12 +122,7 @@ def query_secure(tenant: str, user: str, question: str, k: int, max_tokens: int)
 
     result = gateway.complete(redact.scan_and_redact(build_prompt(question, safe))[0], max_tokens)
     answer, found = redact.scan_and_redact(result.text)
-    allowed = {h["doc_id"] for h in safe}
-    cited = {int(n) for n in CITATION.findall(answer)}
-    bad = cited - allowed
-    if bad:  # a citation the retrieval did not produce is fabricated
-        answer = CITATION.sub(lambda m: m.group(0) if int(m.group(1)) in allowed else "[invalid citation removed]", answer)
-    grounded = bool(cited & allowed) and not bad
+    answer, grounded = validate_citations(answer, {h["doc_id"] for h in safe})
     seen: Dict[int, Dict[str, Any]] = {}
     for h in safe:
         seen.setdefault(h["doc_id"], {"doc_id": h["doc_id"], "title": h["title"], "version": h["version"],
@@ -123,6 +142,9 @@ def query_lab(question: str, tenant: Optional[str], k: int, max_tokens: int) -> 
     hits = st.search(embed.embed(question), k, None, active_only=False)
     context = "\n\n".join(h["text"] for h in hits)
     result = gateway.complete(f"{context}\n\nQuestion: {question}", max_tokens)
+    from app.challenges import state
+
+    state.note_lab_query(hits[0]["score"] if hits else 0.0, MIN_SCORE)
     return {
         "answer": result.text,
         "sources": [{"doc_id": h["doc_id"], "tenant": h["tenant"], "title": h["title"], "score": round(h["score"], 3)} for h in hits],

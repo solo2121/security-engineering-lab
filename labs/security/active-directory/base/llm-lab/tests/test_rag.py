@@ -15,6 +15,7 @@ from fastapi.testclient import TestClient
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.main import create_app  # noqa: E402
+from app.challenges import flags  # noqa: E402
 from app.rag import embed, service  # noqa: E402
 from app.rag.store import Store, chunk  # noqa: E402
 from app.secure import audit, gateway, limits  # noqa: E402
@@ -31,6 +32,7 @@ def keys(monkeypatch):
         f"dave:viewer:tenant-b:{k['dave']},erin:admin:tenant-b:{k['erin']}",
     )
     monkeypatch.delenv("LLM_LAB_PROVIDER", raising=False)
+    flags.set_seed("test-seed")
     service.reset()
     limits.reset()
     audit.LOG.reset()
@@ -77,7 +79,7 @@ def test_llm09_2026_malformed_vectors_are_rejected():
 def test_llm09_2026_tenant_isolation_in_retrieval(client, keys):
     out = ask(client, keys["alice"], "what is the product roadmap release codename and single sign-on")
     assert out["citations"] == [] and out["grounded"] is False
-    assert "7731" not in str(out)
+    assert flags.flag("c02") not in str(out)
     out_b = ask(client, keys["dave"], "what is the product roadmap release single sign-on")
     assert any(c["title"] == "product-roadmap" for c in out_b["citations"])
 
@@ -198,7 +200,7 @@ def test_llm06_2026_rag_query_is_rate_limited(client, keys, monkeypatch):
 def test_lab_llm09_2026_cross_tenant_leak_in_global_index(lab):
     r = lab.post("/lab/rag/query", json={"question": "product roadmap release codename", "tenant": "tenant-a"}).json()
     assert any(s["tenant"] == "tenant-b" for s in r["sources"])
-    assert "SYNTHETIC-TENANTB-ROADMAP-7731" in r["answer"]
+    assert flags.flag("c02") in r["answer"]
 
 
 def test_lab_llm01_2026_indirect_injection_through_a_document(lab):
@@ -225,3 +227,9 @@ def test_chunking_splits_on_paragraphs():
     text = "\n\n".join(["para " * 60] * 4)
     parts = chunk(text, 400)
     assert len(parts) >= 2 and all(len(p) <= 800 for p in parts)
+
+
+def test_llm02_2026_owners_answer_redacts_the_planted_flag_too(client, keys):
+    """Output scanning is a backstop: even the owning tenant never sees the flag verbatim."""
+    out = ask(client, keys["dave"], "what is the internal codename for the next release roadmap")
+    assert flags.flag("c02") not in out["answer"] and "REDACTED" in out["answer"]

@@ -21,6 +21,7 @@ _RULES = [
         "[REDACTED-CREDENTIAL]",
     ),
     ("lab_marker", re.compile(r"\b(?:FAKE-ONLY-|LAB_SECRET_|SYNTHETIC-)[A-Za-z0-9_-]+"), "[REDACTED-LAB-SECRET]"),
+    ("challenge_flag", re.compile(r"LAB\{[0-9a-f]{16}\}"), "[REDACTED-LAB-SECRET]"),
     ("private_key", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"), "[REDACTED-KEY]"),
 ]
 

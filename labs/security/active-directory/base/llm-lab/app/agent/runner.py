@@ -101,11 +101,11 @@ def handle(kind: str, who: auth.Principal, call: planner.Call) -> Dict[str, Any]
     return _step(call, "executed", "allowed by policy", result=out["result"], action_id=out["action_id"])
 
 
-def run_secure(who: auth.Principal, request: str, max_steps: int = MAX_STEPS) -> Dict[str, Any]:
+def run_secure(who: auth.Principal, request: str, max_steps: int = MAX_STEPS, kind: str = "secure") -> Dict[str, Any]:
     queue: Deque[planner.Call] = deque(planner.plan(request))
     steps: List[Dict[str, Any]] = []
     while queue and len(steps) < min(max_steps, MAX_STEPS):
-        step = handle("secure", who, queue.popleft())
+        step = handle(kind, who, queue.popleft())
         steps.append(step)
         if step["decision"] == "executed":
             seen = sanitize(step["result"], who.user)
@@ -211,5 +211,8 @@ def run_lab(request: str, max_steps: int = 8) -> Dict[str, Any]:
             continue
         steps.append(_step(call, "executed", "lab mode: executed without any check", result=result))
         queue.extend(planner.follow_up(json.dumps(result)))
+    from app.challenges import state
+
+    state.note_agent_run(request, steps)
     return {"steps": steps, "summary": summarize(steps),
             "note": "LAB MODE: no auth, no policy, tool output trusted as instructions."}

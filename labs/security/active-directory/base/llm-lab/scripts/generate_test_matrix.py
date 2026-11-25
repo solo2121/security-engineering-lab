@@ -42,7 +42,9 @@ def rows() -> list[str]:
             continue
         for name in re.findall(r"^def (test_\w+)\(", path.read_text(), re.M):
             m = re.match(r"test_(lab_)?llm(\d\d)_2026_(.*)", name)
-            if m:
+            if path.name == "test_challenges.py":
+                risk, what = "Challenges (lab mode)", re.sub(r"^test_", "", name)
+            elif m:
                 risk = RISKS[m.group(2)] + (" (lab)" if m.group(1) else "")
                 what = m.group(3)
             elif name.startswith("test_xcut_"):

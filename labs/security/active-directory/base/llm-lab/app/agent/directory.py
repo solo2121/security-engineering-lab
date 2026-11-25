@@ -69,3 +69,7 @@ def get(kind: str) -> Directory:
 
 def reset() -> None:
     _dirs.clear()
+
+
+def drop(kind: str) -> None:
+    _dirs.pop(kind, None)

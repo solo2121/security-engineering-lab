@@ -23,6 +23,8 @@ no secure-baseline control yet. **Planned** = see the [roadmap](roadmap.md).
 | LLM09 | Vector and Embedding Weaknesses | `/llm08/*`, `/lab/rag/query` | Tenant filter inside the query, tenant from credentials only, embedding validation, 404 for other tenants' ids | Baseline |
 | LLM10 | Improper Output Handling | `/llm05/*` | Typed schema, plain text, sanitized, `nosniff` | Baseline |
 
+Every risk has a hands-on challenge: see [challenges.md](challenges.md).
+
 ## Per-risk reference
 
 Every module follows the same structure. Where a secure control does not exist

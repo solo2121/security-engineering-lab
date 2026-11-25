@@ -37,6 +37,21 @@ modules under the 2025 endpoint numbering and are not listed here.
 | `test_lab_llm03_2026_no_approval_no_protection` | LLM03 Excessive Agency (lab) | no approval no protection |
 | `test_lab_and_secure_directories_are_independent` | Run modes and structure | lab and secure directories are independent |
 | `test_lab_agent_routes_absent_in_secure_mode` | Run modes and structure | lab agent routes absent in secure mode |
+| `test_ten_challenges_one_per_2026_risk` | Challenges (lab mode) | ten challenges one per 2026 risk |
+| `test_challenge_routes_absent_in_secure_mode` | Challenges (lab mode) | challenge routes absent in secure mode |
+| `test_hints_are_revealed_one_at_a_time` | Challenges (lab mode) | hints are revealed one at a time |
+| `test_flags_are_per_instance` | Challenges (lab mode) | flags are per instance |
+| `test_challenge_is_unsolved_before_the_attack_and_solved_after` | Challenges (lab mode) | challenge is unsolved before the attack and solved after |
+| `test_wrong_flag_and_wrong_answer_do_not_solve` | Challenges (lab mode) | wrong flag and wrong answer do not solve |
+| `test_c03_needs_the_agent_to_act_on_an_account_you_did_not_name` | Challenges (lab mode) | c03 needs the agent to act on an account you did not name |
+| `test_c05_an_injection_document_is_not_the_same_as_a_false_fact` | Challenges (lab mode) | c05 an injection document is not the same as a false fact |
+| `test_c06_stays_unsolved_below_the_threshold` | Challenges (lab mode) | c06 stays unsolved below the threshold |
+| `test_reset_clears_progress_and_lab_data` | Challenges (lab mode) | reset clears progress and lab data |
+| `test_the_lab_render_endpoint_really_leaves_markup_unencoded` | Challenges (lab mode) | the lab render endpoint really leaves markup unencoded |
+| `test_defense_check_passes_on_the_secure_policy` | Challenges (lab mode) | defense check passes on the secure policy |
+| `test_defense_checks_leave_the_secure_instance_untouched` | Challenges (lab mode) | defense checks leave the secure instance untouched |
+| `test_defense_check_fails_when_its_control_is_switched_off` | Challenges (lab mode) | defense check fails when its control is switched off |
+| `test_c04_defense_check_fails_on_an_unpinned_requirement` | Challenges (lab mode) | c04 defense check fails on an unpinned requirement |
 | `test_ollama_chat_sends_system_and_user_separately_with_a_token_cap` | Model provider (fake Ollama server) | ollama chat sends system and user separately with a token cap |
 | `test_ollama_output_is_sanitised_and_capped` | Model provider (fake Ollama server) | ollama output is sanitised and capped |
 | `test_ollama_secure_chat_end_to_end` | Model provider (fake Ollama server) | ollama secure chat end to end |
@@ -74,6 +89,7 @@ modules under the 2025 endpoint numbering and are not listed here.
 | `test_lab_vs_secure_same_poison_different_outcome` | Run modes and structure | lab vs secure same poison different outcome |
 | `test_lab_rag_routes_absent_in_secure_mode` | Run modes and structure | lab rag routes absent in secure mode |
 | `test_chunking_splits_on_paragraphs` | Run modes and structure | chunking splits on paragraphs |
+| `test_llm02_2026_owners_answer_redacts_the_planted_flag_too` | LLM02 Sensitive Information Disclosure | owners answer redacts the planted flag too |
 | `test_llm03_2026_secure_api_disabled_without_keys` | LLM03 Excessive Agency | secure api disabled without keys |
 | `test_llm03_2026_missing_or_wrong_token_is_401` | LLM03 Excessive Agency | missing or wrong token is 401 |
 | `test_llm03_2026_viewer_cannot_read_audit_or_config` | LLM03 Excessive Agency | viewer cannot read audit or config |
