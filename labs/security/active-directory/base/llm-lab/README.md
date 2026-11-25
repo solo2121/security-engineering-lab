@@ -88,14 +88,23 @@ curl -s http://127.0.0.1:8000/secure/chat \
   -d '{"prompt": "Summarize our leave policy.", "max_tokens": 128}'
 ```
 
-The default provider is a deterministic offline mock. To use a local model, set
-`LLM_LAB_PROVIDER=ollama`, start the `ollama` profile, and pre-pull the model, because
-that service sits on an internal-only network and cannot download anything itself:
+The default provider is a deterministic offline mock, which is also deliberately gullible so
+injection attacks are reproducible. To use a real local model through Ollama:
 
 ```bash
-docker run -d --name ollama-pull -v llm-lab_ollama-models:/root/.ollama ollama/ollama:0.5.4
-docker exec ollama-pull ollama pull llama3.2:1b && docker rm -f ollama-pull
+docker compose --profile ollama-pull run --rm ollama-pull   # once; the only step that needs internet
+# in .env: LLM_LAB_PROVIDER=ollama
+docker compose --profile ollama up -d
+curl -s http://127.0.0.1:8000/secure/admin/provider-check -H "Authorization: Bearer $AKEY"
 ```
+
+The `ollama` service sits on an internal-only network, so it cannot download anything itself;
+that is why models are pulled by the separate one-shot service. Defaults are `llama3.2:1b` for
+chat and `nomic-embed-text` for RAG embeddings (set in `.env`). With Ollama the RAG store
+embeds with the real model, and a small real model will often follow, ignore or half-follow
+an injected instruction, unlike the mock. Tests use the mock and a fake Ollama server, so the
+real-model behavior is something to explore by hand. Switching provider needs a restart,
+because the in-memory RAG store is built with one embedder.
 
 ## Taxonomy
 
@@ -150,6 +159,7 @@ llm-lab/
 ├── tests/test_app.py             # scenario tests (33), lab mode
 ├── tests/test_secure.py          # secure baseline tests (33)
 ├── tests/test_rag.py             # RAG tests (23)
+├── tests/test_ollama.py          # provider tests against a fake Ollama server (14)
 ├── Dockerfile, docker-compose.yml, .env.example
 ├── scripts/smoke_test.sh          # curl-based smoke test against the running VM
 ├── systemd/llm-owasp-lab.service  # hardened systemd unit installed on the VM
@@ -203,8 +213,8 @@ pytest labs/security/active-directory/base/llm-lab/tests/ -v
 LLM01_HOST=172.28.128.60 labs/security/active-directory/base/llm-lab/scripts/smoke_test.sh
 ```
 
-The pytest suite (89 tests: 33 scenario tests in `test_app.py`, 33 secure-baseline tests in
-`test_secure.py`, 23 RAG tests in `test_rag.py`) covers: every scenario's vulnerable and defensive
+The pytest suite (103 tests: 33 scenario tests in `test_app.py`, 33 secure-baseline tests in
+`test_secure.py`, 23 RAG tests in `test_rag.py`, 14 provider tests in `test_ollama.py`) covers: every scenario's vulnerable and defensive
 behavior, the safety-module unit tests (command allowlist, sandbox-path traversal,
 redaction, HTML encoding), input-size limits, rate limiting/quotas, and that
 arbitrary-shell-execution and arbitrary-file-access attempts are refused rather than

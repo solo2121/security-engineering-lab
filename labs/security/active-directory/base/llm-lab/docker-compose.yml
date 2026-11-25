@@ -3,7 +3,8 @@
 #   cp .env.example .env   # then set real keys in .env
 #   docker compose up -d --build                      # secure mode (default)
 #   docker compose --profile lab up -d --build        # also start the vulnerable lab
-#   docker compose --profile ollama up -d             # optional local model
+#   docker compose --profile ollama-pull run --rm ollama-pull   # once: download the models
+#   docker compose --profile ollama up -d             # optional local model (set LLM_LAB_PROVIDER=ollama)
 #   docker compose down -v                            # teardown
 x-hardened: &hardened
   read_only: true
@@ -44,8 +45,28 @@ services:
     volumes: ["ollama-models:/root/.ollama"]
     networks: [lab-backend]
 
+  # One-shot: downloads the models into the shared volume, then exits. It is the
+  # only service with internet access, because the ollama service itself sits on
+  # an internal-only network. Run it once:  docker compose --profile ollama-pull run --rm ollama-pull
+  ollama-pull:
+    profiles: [ollama-pull]
+    image: ollama/ollama:0.5.4
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        ollama serve >/dev/null 2>&1 &
+        for i in $$(seq 1 30); do ollama list >/dev/null 2>&1 && break; sleep 1; done
+        ollama pull "$${LLM_LAB_OLLAMA_MODEL:-llama3.2:1b}"
+        ollama pull "$${LLM_LAB_OLLAMA_EMBED_MODEL:-nomic-embed-text}"
+    environment:
+      LLM_LAB_OLLAMA_MODEL: ${LLM_LAB_OLLAMA_MODEL:-llama3.2:1b}
+      LLM_LAB_OLLAMA_EMBED_MODEL: ${LLM_LAB_OLLAMA_EMBED_MODEL:-nomic-embed-text}
+    volumes: ["ollama-models:/root/.ollama"]
+    networks: [lab-egress]
+
 networks:
   lab-frontend: {}
+  lab-egress: {}
   lab-backend:
     internal: true
 

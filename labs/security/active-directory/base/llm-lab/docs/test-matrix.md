@@ -11,6 +11,20 @@ modules under the 2025 endpoint numbering and are not listed here.
 
 | Test | Risk | What it checks |
 |---|---|---|
+| `test_ollama_chat_sends_system_and_user_separately_with_a_token_cap` | Model provider (fake Ollama server) | ollama chat sends system and user separately with a token cap |
+| `test_ollama_output_is_sanitised_and_capped` | Model provider (fake Ollama server) | ollama output is sanitised and capped |
+| `test_ollama_secure_chat_end_to_end` | Model provider (fake Ollama server) | ollama secure chat end to end |
+| `test_ollama_timeout_is_a_clean_502` | Model provider (fake Ollama server) | ollama timeout is a clean 502 |
+| `test_ollama_garbage_response_is_a_clean_502` | Model provider (fake Ollama server) | ollama garbage response is a clean 502 |
+| `test_ollama_unreachable_is_a_clean_502` | Model provider (fake Ollama server) | ollama unreachable is a clean 502 |
+| `test_ollama_rejects_malformed_chat_shape` | Model provider (fake Ollama server) | ollama rejects malformed chat shape |
+| `test_llm09_2026_ollama_embeddings_are_normalised_and_validated` | LLM09 Vector and Embedding Weaknesses | ollama embeddings are normalised and validated |
+| `test_llm09_2026_rag_with_ollama_embeddings_keeps_tenant_isolation` | LLM09 Vector and Embedding Weaknesses | rag with ollama embeddings keeps tenant isolation |
+| `test_llm09_2026_vectors_from_different_embedders_are_not_mixed` | LLM09 Vector and Embedding Weaknesses | vectors from different embedders are not mixed |
+| `test_ollama_rag_query_end_to_end` | Model provider (fake Ollama server) | ollama rag query end to end |
+| `test_ollama_down_during_rag_is_a_clean_502` | Model provider (fake Ollama server) | ollama down during rag is a clean 502 |
+| `test_provider_check_reports_models_and_requires_admin` | Model provider (fake Ollama server) | provider check reports models and requires admin |
+| `test_provider_check_reports_unreachable` | Model provider (fake Ollama server) | provider check reports unreachable |
 | `test_llm09_2026_embeddings_are_deterministic_and_normalised` | LLM09 Vector and Embedding Weaknesses | embeddings are deterministic and normalised |
 | `test_llm09_2026_malformed_vectors_are_rejected` | LLM09 Vector and Embedding Weaknesses | malformed vectors are rejected |
 | `test_llm09_2026_tenant_isolation_in_retrieval` | LLM09 Vector and Embedding Weaknesses | tenant isolation in retrieval |

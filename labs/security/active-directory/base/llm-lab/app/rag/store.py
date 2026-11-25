@@ -41,7 +41,7 @@ class Store:
               sha256 TEXT NOT NULL, flags TEXT NOT NULL DEFAULT '[]', created REAL NOT NULL);
             CREATE TABLE IF NOT EXISTS chunks(
               id INTEGER PRIMARY KEY AUTOINCREMENT, doc_id INTEGER NOT NULL, tenant TEXT NOT NULL,
-              idx INTEGER NOT NULL, text TEXT NOT NULL, vec TEXT NOT NULL);
+              idx INTEGER NOT NULL, text TEXT NOT NULL, vec TEXT NOT NULL, embedder TEXT NOT NULL DEFAULT 'hash-256');
             CREATE INDEX IF NOT EXISTS chunks_tenant ON chunks(tenant);
             """
         )
@@ -68,12 +68,12 @@ class Store:
             doc_id = int(cur.lastrowid)
             for i, piece in enumerate(chunk(text)):
                 vec = embed.embed(piece)
-                if not embed.validate(vec):
+                if not embed.validate(vec, None if embed.embedder_id() == "hash-256" else len(vec)):
                     self._db.rollback()
                     raise ValueError("embedding failed validation")
                 self._db.execute(
-                    "INSERT INTO chunks(doc_id,tenant,idx,text,vec) VALUES(?,?,?,?,?)",
-                    (doc_id, tenant, i, piece, json.dumps(vec)),
+                    "INSERT INTO chunks(doc_id,tenant,idx,text,vec,embedder) VALUES(?,?,?,?,?,?)",
+                    (doc_id, tenant, i, piece, json.dumps(vec), embed.embedder_id()),
                 )
             self._db.commit()
         return self.get_document(doc_id)  # type: ignore[return-value]
@@ -115,8 +115,8 @@ class Store:
     def search(self, query_vec: List[float], k: int, tenant: Optional[str], active_only: bool = True) -> List[Dict[str, Any]]:
         """Nearest chunks. tenant=None searches every tenant (lab mode only)."""
         q = ("SELECT c.text,c.vec,c.doc_id,c.tenant,d.title,d.version,d.status FROM chunks c "
-             "JOIN documents d ON d.id=c.doc_id WHERE 1=1")
-        args: List[Any] = []
+             "JOIN documents d ON d.id=c.doc_id WHERE c.embedder=?")
+        args: List[Any] = [embed.embedder_id()]
         if tenant is not None:
             q += " AND c.tenant=?"
             args.append(tenant)

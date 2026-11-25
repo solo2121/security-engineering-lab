@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Real local model for the LLM lab.** The gateway and the RAG embedder can
+  use Ollama (`LLM_LAB_PROVIDER=ollama`): allowlisted host, timeouts, clean
+  502s on failure, an admin provider check, and a one-shot `ollama-pull`
+  Compose service because the model server runs on an internal-only network.
+  Tested against a fake local Ollama server, not yet against a live model.
 - **Two-tenant RAG in the LLM lab.** An embedded SQLite store with offline
   embeddings, ingestion with provenance, quarantine and versioned rollback,
   tenant-filtered retrieval, grounded answers with checked citations

@@ -47,6 +47,8 @@ def rows() -> list[str]:
                 what = m.group(3)
             elif name.startswith("test_xcut_"):
                 risk, what = "Cross-cutting hardening", name[len("test_xcut_"):]
+            elif name.startswith("test_ollama_") or name.startswith("test_provider_"):
+                risk, what = "Model provider (fake Ollama server)", re.sub(r"^test_", "", name)
             else:
                 risk, what = "Run modes and structure", name[len("test_"):]
             out.append(f"| `{name}` | {risk} | {what.replace('_', ' ')} |")

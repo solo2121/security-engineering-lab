@@ -95,3 +95,9 @@ def admin_config(who: auth.Principal = auth.require("config:read")) -> Dict[str,
         "max_text_length": config.MAX_TEXT_LENGTH,
         "injection_block_threshold": injection.BLOCK_THRESHOLD,
     }
+
+
+@router.get("/admin/provider-check")
+def admin_provider_check(who: auth.Principal = auth.require("config:read")) -> Dict[str, Any]:
+    """Is the configured model provider reachable, and which models does it have?"""
+    return gateway.provider_check()

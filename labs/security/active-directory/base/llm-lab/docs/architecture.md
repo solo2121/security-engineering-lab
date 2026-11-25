@@ -71,6 +71,6 @@ Privilege boundary: the `viewer` role can chat and read its own usage. Only `adm
 | Option | Status | How |
 |---|---|---|
 | Local process | Available | `LLM_LAB_API_KEYS=... uvicorn app.main:app` from `llm-lab/` |
-| Docker Compose | Available | `docker compose up -d --build` (see the README) |
+| Docker Compose | Available | `docker compose up -d --build` (see the README); optional `ollama` profile for a real local model |
 | `llm01` VM | Available, unchanged | `LAB_PROFILE=llm vagrant up llm01` |
 | Kubernetes | Planned (phase 5) | Manifests with NetworkPolicy, PodSecurity `restricted`, secrets |

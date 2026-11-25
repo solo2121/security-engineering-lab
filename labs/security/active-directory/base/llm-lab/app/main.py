@@ -27,6 +27,7 @@ from fastapi.responses import JSONResponse
 
 from app import config
 from app.rag import routes as rag_routes
+from app.secure import gateway
 from app.secure import routes as secure_routes
 from app.secure import taxonomy
 from app.scenarios import (
@@ -162,6 +163,10 @@ def create_app(mode: str = config.LAB_MODE) -> FastAPI:
                 "historical/supplemental context and is not a current category."
             ),
         }
+
+    @app.exception_handler(gateway.ProviderUnavailable)
+    async def _provider_unavailable(request: Request, exc: gateway.ProviderUnavailable) -> JSONResponse:
+        return JSONResponse({"detail": "The model provider is unavailable."}, status_code=502)
 
     return app
 
