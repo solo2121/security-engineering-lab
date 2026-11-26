@@ -1,0 +1,14 @@
+[Unit]
+Description=llm01 egress isolation (lab subnet only)
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# iptables rules do not survive a reboot, so reapply them on every boot.
+ExecStart=/usr/local/sbin/llm01-egress apply
+ExecStop=/usr/local/sbin/llm01-egress lift
+
+[Install]
+WantedBy=multi-user.target

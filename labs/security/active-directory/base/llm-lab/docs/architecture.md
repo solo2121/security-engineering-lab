@@ -8,7 +8,7 @@
 | `lab` | The above plus the intentionally vulnerable `/llm01` to `/llm10` and `/legacy` scenarios | The `llm01` VM and the compose `lab` profile only |
 
 Mode comes from `LLM_LAB_MODE`. Anything other than `lab` is treated as `secure`.
-The `llm01` systemd unit sets `lab` explicitly, so the VM behaves as before.
+The `llm01` VM runs the Compose `lab` service (and the Python fallback unit sets `lab` too), so the VM behaves as before.
 
 ## Components
 

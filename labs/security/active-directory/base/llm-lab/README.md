@@ -34,13 +34,31 @@ LAB_PROFILE=full vagrant up
 # SSH in
 LAB_PROFILE=llm vagrant ssh llm01
 
-# Check the service
-LAB_PROFILE=llm vagrant ssh llm01 -c "systemctl status llm-owasp-lab --no-pager"
+# Check the service (the lab runs in Docker and starts by itself on every boot)
+LAB_PROFILE=llm vagrant ssh llm01 -c "systemctl status llm-lab-docker --no-pager; docker ps"
 
 # From the host, once the VM reports healthy
 curl http://172.28.128.60:8000/health
 open http://172.28.128.60:8000/docs   # Swagger UI (macOS `open`; use xdg-open on Linux)
 ```
+
+## What starts automatically on llm01
+
+`vagrant up llm01` leaves a working lab with nothing else to run:
+
+- Docker is installed, the image is built from `docker-compose.yml`, and
+  `llm-lab-docker.service` starts the container on every boot (no internet needed after
+  provisioning). If Docker cannot be set up, provisioning falls back to the Python service
+  (`llm-owasp-lab.service`) and says so.
+- Provisioning waits for `/health` and only then reports success.
+- Fresh random API keys are written to `/opt/llm-lab/.env` (root only, never in the repo).
+  Read them inside the VM with `sudo cat /opt/llm-lab/.env`.
+- Egress is restricted to the lab subnet for the host **and** for containers (Docker traffic
+  bypasses the normal OUTPUT chain, so `llm01-egress` also sets `DOCKER-USER` rules). The
+  `llm01-egress.service` unit reapplies them on every boot.
+- The real local model is opt-in. `sudo llm01-ollama enable` opens egress only for the
+  download (about 1.5 GB), closes it again, and switches the lab to Ollama.
+  `sudo llm01-ollama disable` returns to the offline mock model.
 
 ## Run modes
 
@@ -193,7 +211,9 @@ llm-lab/
 ├── tests/test_challenges.py      # challenge attack/verify/defense tests (41)
 ├── Dockerfile, docker-compose.yml, .env.example
 ├── scripts/smoke_test.sh          # curl-based smoke test against the running VM
-├── systemd/llm-owasp-lab.service  # hardened systemd unit installed on the VM
+├── systemd/llm-owasp-lab.service  # hardened systemd unit (fallback runtime on the VM)
+├── systemd/llm-lab-docker.service # starts the Compose stack on boot
+├── systemd/llm01-egress.service   # reapplies egress isolation on boot
 └── requirements.txt               # pinned: fastapi, uvicorn, pydantic
 ```
 
@@ -266,7 +286,7 @@ learners can diff the two code paths directly instead of taking the fix on faith
 
 ```bash
 # Reset in-memory scenario state (rate limits, ingested documents) — just restart the service
-LAB_PROFILE=llm vagrant ssh llm01 -c "sudo systemctl restart llm-owasp-lab"
+LAB_PROFILE=llm vagrant ssh llm01 -c "sudo systemctl restart llm-lab-docker"
 
 # Destroy just this VM
 LAB_PROFILE=llm vagrant destroy llm01 -f
@@ -278,7 +298,8 @@ LAB_PROFILE=llm vagrant destroy llm01 -f
 |---|---|---|
 | `vagrant up llm01` says "machine not found" | `llm01` isn't in your active `LAB_PROFILE` | `LAB_PROFILE=llm vagrant up llm01` or `LAB_PROFILE=full vagrant up` |
 | `curl` to port 8000 times out | Provisioning still running, or VM booted without network up yet | `LAB_PROFILE=llm vagrant ssh llm01 -c "systemctl status llm-owasp-lab"`; wait for `apt-get`/`pip` provisioning to finish |
-| `systemctl status llm-owasp-lab` shows failed | Check `journalctl -u llm-owasp-lab -n 50 --no-pager` on the VM | Usually a venv/dependency issue — re-run `vagrant provision llm01` |
+| `systemctl status llm-lab-docker` shows failed | Check `journalctl -u llm-lab-docker -n 50 --no-pager` and `docker compose -f /opt/llm-lab/docker-compose.yml logs --tail 50` | Re-run `vagrant provision llm01`; if Docker cannot be installed, provisioning uses `llm-owasp-lab` instead |
+| `llm01-ollama enable` fails to download | The VM has no route to the internet | Check DNS and the host network, then run it again; egress is closed again either way |
 | `/docs` returns 404 | App didn't start (see above) | Same as above |
 
 ## Portfolio Note

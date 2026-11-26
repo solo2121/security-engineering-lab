@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **llm01 starts by itself.** `vagrant up llm01` now installs Docker, builds the lab
+  image, starts it at every boot, and waits for `/health` before it reports success. It
+  falls back to the Python service if Docker cannot be set up. Fresh random API keys are
+  generated per VM. Egress isolation now also covers containers (a `DOCKER-USER` rule)
+  and is reapplied on every boot. `sudo llm01-ollama enable` adds the real local model on
+  request.
 - **Per-risk challenges for the LLM lab.** Ten challenges, one per OWASP 2026
   risk, in lab mode: attack the vulnerable twin, verify it worked, then run a
   defense-check that replays the attack against the secure policy on

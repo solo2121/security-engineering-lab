@@ -1,0 +1,18 @@
+[Unit]
+Description=OWASP Top 10 for LLM Applications Training Lab (Docker Compose)
+Documentation=https://genai.owasp.org/initiatives/top-10-for-llm-and-genai/
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/llm-lab
+# The image is built once during provisioning, so a boot never needs the internet.
+ExecStart=/usr/bin/docker compose --profile lab up -d --no-build llm-lab-vulnerable
+ExecStop=/usr/bin/docker compose --profile lab stop
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

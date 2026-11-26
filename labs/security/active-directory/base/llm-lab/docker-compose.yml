@@ -21,7 +21,7 @@ services:
     env_file: [.env]
     environment:
       LLM_LAB_MODE: secure
-    ports: ["127.0.0.1:8000:8000"]
+    ports: ["${LLM_LAB_BIND:-127.0.0.1}:${LLM_LAB_PORT:-8000}:8000"]
     networks: [lab-frontend, lab-backend]
 
   # Intentionally vulnerable training target. Never enable outside an isolated host.
@@ -33,9 +33,11 @@ services:
     env_file: [.env]
     environment:
       LLM_LAB_MODE: lab
-    ports: ["127.0.0.1:8001:8000"]
+    # The llm01 VM sets LLM_LAB_BIND=0.0.0.0 and LLM_LAB_VULN_PORT=8000 in .env.
+    ports: ["${LLM_LAB_BIND:-127.0.0.1}:${LLM_LAB_VULN_PORT:-8001}:8000"]
     volumes: ["lab-sandbox:/app/data/sandbox"]
-    networks: [lab-frontend]
+    # lab-backend is internal-only; it lets this service reach Ollama and nothing else.
+    networks: [lab-frontend, lab-backend]
 
   ollama:
     profiles: [ollama]
