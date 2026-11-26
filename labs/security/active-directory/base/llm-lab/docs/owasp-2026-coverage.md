@@ -2,6 +2,11 @@
 
 Source: <https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/>
 
+The ten identifiers and titles below were checked on 2026-11-26 against the OWASP GenAI
+Security Project's published README (current release 2026, published 2026-08-04). The
+mapping to the 2025 numbering, which keeps the lab's endpoint prefixes stable, is this
+lab's own.
+
 The vulnerable scenario modules keep their 2025-era endpoint prefixes so
 existing scripts and the `llm01` VM keep working. `GET /owasp/categories`
 returns the mapping in `categories_2026`.

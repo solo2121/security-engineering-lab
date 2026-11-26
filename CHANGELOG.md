@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`CITATION.cff` and a CodeQL badge.** GitHub now shows a "Cite this repository" entry, and the README shows the CodeQL status next to CI.
 - **CI boots the LLM lab container.** A new `llm-lab-docker` job validates `docker-compose.yml`
   with every profile, builds the image, starts the vulnerable lab and the secure default with the
   compose hardening (read-only root, no capabilities), runs the smoke test, and checks that the

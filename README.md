@@ -1,6 +1,7 @@
 # Security Engineering Lab
 
 [![CI](https://github.com/solo2121/security-engineering-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/solo2121/security-engineering-lab/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/solo2121/security-engineering-lab/actions/workflows/codeql.yml/badge.svg)](https://github.com/solo2121/security-engineering-lab/actions/workflows/codeql.yml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 ![Primary Provider](https://img.shields.io/badge/primary%20provider-KVM%2FQEMU%20%2B%20libvirt-8A2BE2)
 ![Alternative Provider](https://img.shields.io/badge/alternative%20provider-VirtualBox-183A61)

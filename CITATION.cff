@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this repository in your work, please cite it as below."
+type: software
+title: "Security Engineering Lab"
+abstract: >-
+  A modular, Vagrant-provisioned laboratory for Active Directory security
+  research, network segmentation, Kubernetes and DevSecOps workflows, Windows
+  hardening validation, and an OWASP Top 10 for LLM Applications training lab,
+  built for isolated, authorized environments.
+authors:
+  - family-names: Carlo
+    given-names: "Miguel A."
+    alias: solo2121
+repository-code: "https://github.com/solo2121/security-engineering-lab"
+license: MIT
+keywords:
+  - security engineering
+  - active directory
+  - devsecops
+  - owasp llm top 10
+  - vagrant
