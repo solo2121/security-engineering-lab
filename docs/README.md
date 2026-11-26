@@ -10,6 +10,9 @@ you're not sure where to look.
 | [`project/learning-path.md`](project/learning-path.md) | **Start here.** Which lab to try first, and in what order |
 | [`setup/installation.md`](setup/installation.md) | Host setup, prerequisites, deploying any of the three labs |
 | [`setup/troubleshooting.md`](setup/troubleshooting.md) | Common setup and runtime issues |
+| [`setup/platform-support.md`](setup/platform-support.md) | Provider matrix, Apple Silicon status, host requirements, Vagrant plugins |
+| [`known-limitations.md`](known-limitations.md) | Platform, lab-specific and validation limits |
+| [`development.md`](development.md) | Repository structure and development quickstart |
 | [`setup/quickstart-examples.md`](setup/quickstart-examples.md) | Worked setup examples |
 | [`guides/optimization/minimal-resource-deployment.md`](guides/optimization/minimal-resource-deployment.md) | Running any of the three labs on smaller hosts |
 | [`dependencies.md`](dependencies.md) | Supported OS, Python/Kubernetes versions, external tool and package dependencies |
@@ -27,6 +30,7 @@ you're not sure where to look.
 
 | Doc | What it covers |
 |---|---|
+| [`guides/workflows/common-workflows.md`](guides/workflows/common-workflows.md) | Everyday Vagrant commands, snapshots and the lab manager |
 | [`guides/workflows/workflows.md`](guides/workflows/workflows.md) | General repo/lab workflows |
 | [`guides/workflows/lab-deployment-workflow.md`](guides/workflows/lab-deployment-workflow.md) | Step-by-step lab deployment flow |
 | [`guides/workflows/lab-reset-and-cleanup.md`](guides/workflows/lab-reset-and-cleanup.md) | Snapshot revert, VM rebuild, full teardown, and host network cleanup |

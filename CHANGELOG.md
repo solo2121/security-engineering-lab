@@ -133,6 +133,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Root README shortened from 710 to about 395 lines.** Provider and Apple Silicon details, prerequisites, the full command list, the repository structure, the development quickstart and the known limitations moved to `docs/` (`setup/platform-support.md`, `guides/workflows/common-workflows.md`, `development.md`, `known-limitations.md`); the README keeps a short version of each and the same anchors. The skills table moved to the portfolio, and a stray closing code fence at the end of the README is gone.
 - **One llm01 provisioner for both labs.** The segmented lab now provisions `llm01` with the
   base lab's script instead of its own older copy, so the DNS wait, the Docker auto-start and
   the egress rules apply to both. The segmented lab keeps egress open to `172.28.0.0/16`.

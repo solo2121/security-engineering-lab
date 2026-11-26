@@ -123,3 +123,22 @@ For the full documentation index, see [`docs/README.md`](../README.md).
 | DevSecOps Engineer | `labs/infrastructure/devops-linux-lab/` | Falco, Kyverno, Cert-Manager, Argo CD, Harbor |
 | Kubernetes Engineer | `labs/infrastructure/devops-linux-lab/` | k3s, Kind, K3d, Helm, GitOps workflows |
 | Linux Systems Administrator | `tools/sysadmin/` + Linux lab nodes | Hardening, monitoring, troubleshooting |
+
+## Skills and technologies
+
+| Area | Technologies and concepts |
+|---|---|
+| Linux administration | Ubuntu, Rocky Linux, AlmaLinux, openSUSE |
+| Virtualization | KVM, QEMU, libvirt, VirtualBox, Vagrant |
+| Infrastructure as Code | Vagrant, Ansible |
+| DevOps | Git, GitHub Actions, CI/CD workflows |
+| Kubernetes | K3s and Kubernetes administration |
+| GitOps | Argo CD |
+| Monitoring | Prometheus, Grafana, Loki |
+| Runtime security | Falco |
+| Policy security | Kyverno |
+| Container platform | K3s, containerd, Helm, Harbor |
+| Active Directory | Windows Server, Kerberos, LDAP |
+| AD CS | Certificate Services and escalation scenarios |
+| Detection engineering | MITRE ATT&CK mapping, log analysis, and detection engineering |
+| Security testing | Nmap, BloodHound, Metasploit, and Hashcat |
