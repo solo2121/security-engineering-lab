@@ -6,6 +6,7 @@
 #   validate-vagrantfiles  — syntax check all three Vagrantfiles
 #   lint-shell-scripts     — shellcheck warnings and errors (blocks)
 #   lint-python-scripts    — syntax check only (flake8 informational)
+#   modern-python-tooling  — ruff, black --check and mypy on tools/lib (blocks)
 #   security-scan          — bandit informational only (never blocks)
 #   detect-secrets-scan    — detect-secrets against .secrets.baseline
 #                            (blocks only on new/unaudited findings)
@@ -14,9 +15,10 @@
 #                            reference check (blocks — local, no network)
 #
 # Philosophy:
-#   Only REAL errors block the build. Style warnings and security
-#   findings in intentional pentest scripts are reported but do not
-#   fail the pipeline.
+#   Only REAL errors block the build. Security findings in intentional
+#   pentest scripts are reported but do not fail the pipeline. Formatting
+#   (black) and the narrow ruff and mypy rule sets are enforced, because
+#   the code is clean under them.
 #
 # =============================================================================
 
@@ -421,15 +423,16 @@ jobs:
           echo "No new or unaudited findings -- .secrets.baseline is up to date."
 
   # ---------------------------------------------------------------------------
-  # Job 4b: Modern Python tooling — ruff/black/mypy, informational only
+  # Job 4b: Modern Python tooling — ruff, black and mypy, all blocking
   #
-  # flake8 (Job 3) remains the tool that's actually tuned and relied on.
-  # ruff/black/mypy are offered as opt-in developer tooling (see `make
-  # format` / `make typecheck`, config in pyproject.toml) and reported here
-  # for visibility, but — like bandit — never block the pipeline.
+  # The code is formatted with black and clean under ruff and mypy, so these
+  # checks now fail the build instead of only reporting. ruff selects only
+  # the E, F and W rules and mypy is held to a strict standard only on
+  # tools/lib (see pyproject.toml), so a failure here is a real regression,
+  # not a style preference. Run `make format typecheck` before you push.
   # ---------------------------------------------------------------------------
   modern-python-tooling:
-    name: Ruff / Black / Mypy (informational — never blocks)
+    name: Ruff / Black / Mypy (blocks)
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -446,14 +449,14 @@ jobs:
       - name: Install tools
         run: pip install ruff black mypy --quiet
 
-      - name: ruff check (informational)
-        run: ruff check . || true
+      - name: ruff check
+        run: ruff check .
 
-      - name: black --check (informational)
-        run: black --check . || true
+      - name: black --check
+        run: black --check .
 
-      - name: mypy on tools/lib (informational — the only module held to a typed standard so far)
-        run: mypy tools/lib || true
+      - name: mypy on tools/lib (the module held to a typed standard)
+        run: mypy tools/lib
 
   # ---------------------------------------------------------------------------
   # Job 5: Automated test suites — pytest (Python) and bats (Bash)

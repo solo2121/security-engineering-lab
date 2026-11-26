@@ -112,9 +112,10 @@ black
 mypy
 ```
 
-`ruff`, `black`, and `mypy` are opt-in/informational only (`make format`,
-`make typecheck`) and are configured in [`pyproject.toml`](../pyproject.toml);
-they are not part of the blocking `make lint` target.
+`ruff`, `black`, and `mypy` are enforced in CI (`make format`, `make typecheck`
+run the same checks locally) and are configured in
+[`pyproject.toml`](../pyproject.toml). Run `black .` to fix formatting. They are
+separate from the shellcheck-based `make lint` target.
 
 Install with:
 

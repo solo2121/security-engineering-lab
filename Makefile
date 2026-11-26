@@ -13,8 +13,8 @@
 help:
 	@echo "Available targets:"
 	@echo "  make lint               - shellcheck (warnings+) + flake8 (informational)"
-	@echo "  make format             - ruff check + black --check (informational, opt-in)"
-	@echo "  make typecheck          - mypy (informational, opt-in)"
+	@echo "  make format             - ruff check + black --check (blocks in CI)"
+	@echo "  make typecheck          - mypy on tools/lib (blocks in CI)"
 	@echo "  make test               - run pytest and bats unit test suites"
 	@echo "  make coverage           - run pytest with coverage report"
 	@echo "  make validate           - vagrant validate on all three lab Vagrantfiles (KVM/libvirt)"
@@ -36,14 +36,14 @@ lint:
 		--exclude=.git,__pycache__ $$(find . -name "*.py" -not -path "./.git/*") || true
 
 format:
-	@echo "==> ruff check (informational)"
-	@ruff check . || true
-	@echo "==> black --check (informational)"
-	@black --check . || true
+	@echo "==> ruff check"
+	@ruff check .
+	@echo "==> black --check (run 'black .' to fix)"
+	@black --check .
 
 typecheck:
-	@echo "==> mypy (informational — opt-in, not yet enforced repo-wide)"
-	@mypy tools/lib || true
+	@echo "==> mypy (tools/lib)"
+	@mypy tools/lib
 
 test:
 	@echo "==> pytest"

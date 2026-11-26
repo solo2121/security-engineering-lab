@@ -3,11 +3,11 @@
 # =============================================================================
 # Centralized configuration for modern Python tooling (ruff, black, mypy).
 #
-# This repo's CI/pre-commit already enforce flake8 (informational) and
-# bandit (informational) — see .pre-commit-config.yaml and
-# .github/workflows/ci.yml. ruff/black/mypy are provided here as
-# *additional, opt-in* developer tooling (`make format`, `make typecheck`)
-# and do not replace or block on top of the existing checks.
+# flake8 and bandit stay informational — see .pre-commit-config.yaml and
+# .github/workflows/ci.yml. ruff, black and mypy are enforced: CI fails when
+# `ruff check .`, `black --check .` or `mypy tools/lib` fail (locally:
+# `make format typecheck`). The rule sets are kept narrow on purpose, so a
+# failure is a real regression.
 #
 # Philosophy mirrors the rest of the repo: real errors matter, style
 # preferences don't, and offensive-security tooling intentionally uses
