@@ -213,7 +213,7 @@ A complete OPNsense deployment for the Segmented Active Directory Lab, from init
 |---|---|---|
 | ![Pentest VLAN Lab Manager bringing the OPNsense VM up under the libvirt provider](./assets/demos/opnsense-01-lab-manager-start.gif) | ![OPNsense reloading after configuration and coming back with Machine booted and ready](./assets/demos/opnsense-02-reload-success.gif) | ![OPNsense console showing the complete WAN, LAN, and VLAN interface assignments](./assets/demos/opnsense-03-vlan-topology.gif) |
 
-Full, unedited deployment recordings are available for the [Active Directory lab](./assets/demos/dc01.webm), [DevOps lab](./assets/demos/devops1.webm), and [segmented Active Directory lab](./assets/demos/opnsense-vlan.webm).
+Full, unedited deployment recordings are available for the [Active Directory lab](https://github.com/solo2121/security-engineering-lab/releases/download/media-v1/dc01.webm), [DevOps lab](https://github.com/solo2121/security-engineering-lab/releases/download/media-v1/devops1.webm), and [segmented Active Directory lab](https://github.com/solo2121/security-engineering-lab/releases/download/media-v1/opnsense-vlan.webm). They are hosted as GitHub Release assets, so cloning the repository stays small.
 
 ---
 

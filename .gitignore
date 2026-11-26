@@ -207,4 +207,8 @@ temp/
 .gitconfig
 .gitconfig.locallabs/infrastructure/devops-linux-lab/.cluster_state.json
 labs/infrastructure/devops-linux-lab/.k3s_token
+
+# Full demo recordings live in the media-v1 GitHub Release, not in Git.
+assets/demos/*.webm
+assets/demos/*.mp4
 labs/infrastructure/devops-linux-lab/.cluster_state.json

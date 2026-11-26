@@ -90,7 +90,7 @@ Pointers a reviewer can inspect directly. Nothing here claims more than these fi
 |------|-------|
 | CI pipeline (lint, shell and Python checks, secret-scan baseline, Vagrantfile validation, tests) | [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) |
 | Automated tests | [`tests/`](../../tests/) |
-| Demo recordings | [`assets/demos/`](../../assets/demos/) |
+| Demo recordings | Preview GIFs in [`assets/demos/`](../../assets/demos/); full recordings in the [`media-v1` release](https://github.com/solo2121/security-engineering-lab/releases/tag/media-v1) |
 | Lab scope, isolation, and responsible-use rules | [`docs/security-scope.md`](../security-scope.md) and [`SECURITY.md`](../../SECURITY.md) |
 | Intentional lab credentials, documented as lab-only | [`lab-credentials.md`](../../labs/security/active-directory/base/docs/lab-credentials.md) |
 | Defensive counterpart to the attack guides | [`detection-and-blue-team.md`](../guides/security/detection-and-blue-team.md) |

@@ -497,6 +497,17 @@ jobs:
       - name: Run Bash unit tests
         run: bats tests/bash/
 
+      - name: Fail on large tracked files
+        # Big recordings belong in a GitHub Release (see assets/demos/README.md);
+        # every file in Git is downloaded by every clone, forever.
+        run: |
+          large=$(git ls-files -z | xargs -0 -r du -k | awk '$1 > 10240 {print $2 " (" int($1/1024) " MB)"}')
+          if [ -n "$large" ]; then
+            echo "Tracked files over 10 MB:"
+            echo "$large"
+            exit 1
+          fi
+
       - name: Run llm-lab tests
         # In-process FastAPI TestClient tests; no VM or network needed.
         # pytest and httpx are test-only and not in the lab's requirements.txt.

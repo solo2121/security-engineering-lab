@@ -6,7 +6,7 @@ For a log of what has already been released, see [`CHANGELOG.md`](../../CHANGELO
 
 ## Near-term
 
-- [ ] Add an attack-chain demo (asciinema or GIF) showing an Active Directory attack path end to end. Deployment demos for the AD base, DevOps, and segmented AD labs are already in the README (`assets/demos/`).
+- [ ] Add an attack-chain demo (asciinema or GIF) showing an Active Directory attack path end to end. Deployment demos for the AD base, DevOps, and segmented AD labs are already in the README (preview GIFs in `assets/demos/`, full recordings in the `media-v1` release).
 - [x] Expand automated test coverage across additional `sysadmin/` and `security/` scripts — added `user-audit.sh` (`tools/sysadmin/system-hardening/user-audit.sh`, covered by `tests/bash/test_user_audit.bats`), joining `log-analyzer.sh`, `setup-vlans.sh`, and `port-scanner.py`. Many other `sysadmin/` and `security/` scripts still have no tests — contributions toward closing that gap are welcome.
 
 ## Mid-term

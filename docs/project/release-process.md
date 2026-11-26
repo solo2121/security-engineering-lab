@@ -21,6 +21,15 @@ from a commit that satisfies the checklist below.
 - A published tag is never moved or deleted. A mistake is corrected by a new
   patch release.
 
+## Media-only releases
+
+Large demo recordings are not stored in Git. They are attached to a GitHub
+Release named `media-vN` (currently `media-v1`) and linked from the README.
+A `media-vN` tag is not a lab version and carries no claim about the lab
+state; it only hosts files. Add a new `media-vN` release when a recording
+changes, instead of replacing assets in an existing one, so older links keep
+working.
+
 ## Repository releases versus lab revisions
 
 Individual labs carry their own revision numbers in `CHANGELOG.md` (for
