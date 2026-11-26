@@ -11,6 +11,7 @@
 #   detect-secrets-scan    — detect-secrets against .secrets.baseline
 #                            (blocks only on new/unaudited findings)
 #   run-tests              — pytest (Python), bats (Bash), and repo health checks
+#   llm-lab-docker         — builds the LLM lab image, boots it hardened and smoke-tests both modes
 #   check-doc-links        — markdown link check (informational) + doc-index
 #                            reference check (blocks — local, no network)
 #
@@ -521,6 +522,92 @@ jobs:
         run: |
           echo "Running scripts/validate_lab.py (Vagrant checks skipped — covered by the validate-vagrantfiles job)"
           python3 scripts/validate_lab.py --skip-vagrant
+
+  # ---------------------------------------------------------------------------
+  # Job: LLM lab boots in Docker — build the image, start it with the same
+  # hardening as docker-compose.yml, and smoke-test both run modes.
+  #
+  # The unit tests run the app in-process; this job proves the container
+  # itself works (read-only root, no capabilities, non-root user) and that the
+  # secure default really exposes nothing but /secure/*. No VM, no model
+  # download and no secrets: the API key is random and lives only in this job.
+  # ---------------------------------------------------------------------------
+  llm-lab-docker:
+    name: LLM lab (Docker build, boot and smoke test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      LAB_DIR: labs/security/active-directory/base/llm-lab
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Validate docker-compose.yml with every profile
+        working-directory: ${{ env.LAB_DIR }}
+        run: |
+          cp .env.example .env
+          docker compose --profile lab --profile ollama --profile ollama-pull config -q
+
+      - name: Build the image
+        run: docker build -t llm-lab:ci "$LAB_DIR"
+
+      - name: Generate a throwaway API key for the secure container
+        run: |
+          openssl rand -hex 24 | {
+            read -r value
+            echo "::add-mask::$value"
+            echo "LAB_KEY=$value" >> "$GITHUB_ENV"
+            printf '%s=%s\n' LLM_LAB_API_KEYS "ci:viewer:tenant-a:$value" > "$RUNNER_TEMP/lab-secure.env"
+          }
+
+      - name: Start the lab (vulnerable) and the secure default
+        run: |
+          # The same hardening as docker-compose.yml.
+          run_lab() {
+            docker run -d --read-only --cap-drop ALL --security-opt no-new-privileges:true --tmpfs /tmp "$@"
+          }
+          run_lab --name lab-vulnerable -e LLM_LAB_MODE=lab \
+            -p 127.0.0.1:8000:8000 llm-lab:ci
+          run_lab --name lab-secure -e LLM_LAB_MODE=secure \
+            --env-file "$RUNNER_TEMP/lab-secure.env" \
+            -p 127.0.0.1:8002:8000 llm-lab:ci
+          for port in 8000 8002; do
+            ok=0
+            for _ in $(seq 1 30); do
+              if curl -fsS "http://127.0.0.1:$port/health" >/dev/null 2>&1; then ok=1; break; fi
+              sleep 2
+            done
+            [ "$ok" -eq 1 ] || { echo "port $port never became healthy"; exit 1; }
+          done
+
+      - name: Smoke test the vulnerable lab
+        run: LLM01_HOST=127.0.0.1 LLM01_PORT=8000 bash "$LAB_DIR/scripts/smoke_test.sh"
+
+      - name: Check the secure default
+        run: |
+          code() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
+          fail=0
+          expect() { # description, expected, actual
+            if [ "$2" = "$3" ]; then echo "[PASS] $1 ($3)"; else echo "[FAIL] $1: expected $2, got $3"; fail=1; fi
+          }
+          base=http://127.0.0.1:8002
+          expect "secure API refuses a request without a key" 401 "$(code "$base/secure/usage")"
+          expect "secure API accepts a valid key" 200 "$(code -H "Authorization: Bearer $LAB_KEY" "$base/secure/usage")"
+          expect "vulnerable scenarios are not mounted" 404 "$(code -X POST -H 'Content-Type: application/json' -d '{"prompt":"hi"}' "$base/llm01/chat")"
+          expect "challenges are not mounted" 404 "$(code "$base/challenges")"
+          exit "$fail"
+
+      - name: Container logs (on failure)
+        if: failure()
+        run: |
+          docker logs lab-vulnerable || true
+          docker logs lab-secure || true
+
+      - name: Clean up
+        if: always()
+        run: docker rm -f lab-vulnerable lab-secure || true
 
   # ---------------------------------------------------------------------------
   # Job 6: Markdown link check — catch broken internal doc references

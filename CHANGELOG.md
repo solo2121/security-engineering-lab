@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **CI boots the LLM lab container.** A new `llm-lab-docker` job validates `docker-compose.yml`
+  with every profile, builds the image, starts the vulnerable lab and the secure default with the
+  compose hardening (read-only root, no capabilities), runs the smoke test, and checks that the
+  secure default refuses requests without a key and mounts no vulnerable scenario.
 - **llm01 starts by itself.** `vagrant up llm01` now installs Docker, builds the lab
   image, starts it at every boot, and waits for `/health` before it reports success. It
   falls back to the Python service if Docker cannot be set up. Fresh random API keys are
