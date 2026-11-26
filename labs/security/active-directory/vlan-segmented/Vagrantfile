@@ -950,7 +950,10 @@ Vagrant.configure("2") do |config|
         # stages files and runs setup.
         vm.vm.provision "file", source: "../base/llm-lab", destination: "/tmp/llm-lab-src"
 
-        vm.vm.provision "shell", name: "llm01-config", privileged: true, inline: render_provision("llm01/llm01-config.sh", VM_IP: vm_ip)
+        # One provisioner for both labs: this uses the base lab's script, so a
+        # fix there (DNS wait, Docker auto-start, egress rules) reaches this lab
+        # too. The segmented lab allows egress to all of 172.28.0.0/16.
+        vm.vm.provision "shell", name: "llm01-config", privileged: true, inline: render_provision("../../base/provision/llm01/llm01-config.sh", LAB_SUBNET: "172.28.0.0/16", LLM01_IP: vm_ip)
 
       when 'cloud-pentest'
         vm.vm.provision "shell", inline: render_provision("cloud-pentest/cloud-pentest-config.sh")

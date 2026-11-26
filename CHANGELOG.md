@@ -128,6 +128,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **One llm01 provisioner for both labs.** The segmented lab now provisions `llm01` with the
+  base lab's script instead of its own older copy, so the DNS wait, the Docker auto-start and
+  the egress rules apply to both. The segmented lab keeps egress open to `172.28.0.0/16`.
+- **Python linters block the build.** The code is formatted with black, and ruff, black
+  `--check` and mypy on `tools/lib` now fail CI instead of only reporting.
+- **Demo recordings moved to a release.** The three full `.webm` recordings (about 94 MB)
+  are GitHub Release assets (`media-v1`) instead of files in Git. CI fails on tracked
+  files over 10 MB.
 - **DevOps/DevSecOps lab: provisioning scripts moved out of the Vagrantfile.**
   The 14 inline shell heredocs (common setup, K3s + Harbor master, enterprise
   tools, DevSecOps attack vectors, worker join, Kind, K3d, Ansible nodes,

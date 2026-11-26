@@ -294,7 +294,8 @@ provision/
 │   └── fragments/   # provider-specific snippets spliced into static-ip
 ├── dc01/            # phase0 … phase6: WinRM, AD promotion, full DC config
 ├── ca01-esc/  db01/  win10/  print01/    # Windows member / target VMs
-└── kali/  linux/  llm01/  cloud-pentest/  juice-shop/    # Linux VMs, shared /etc/hosts
+└── kali/  linux/  cloud-pentest/  juice-shop/    # Linux VMs, shared /etc/hosts
+                     # (llm01 uses ../base/provision/llm01/, shared with the base lab)
 ```
 
 Edit a script and run `vagrant provision <vm>` as before; there is no build
@@ -761,7 +762,7 @@ Full interactive docs: `http://172.28.30.60:8000/docs`.
 | VM boot failure | Reduce profile size or increase host resources |
 | Domain join failure | Verify DC01 is running and DNS is available |
 | Windows provisioning issues | Check WinRM connectivity and VM logs. `DC01` uses extended timeouts (10800s boot / 7200s communication) for AD promotion — other Windows VMs use 7200s / 3600s. Long DC01 provisioning is expected, not necessarily a failure. |
-| LLM service unavailable | Restart services on `llm01` (`sudo systemctl restart llm-owasp-lab`). The Docker auto-start and `llm01-ollama` helper are in the `base` lab; see [`../base/llm-lab/README.md`](../base/llm-lab/README.md) |
+| LLM service unavailable | On `llm01`, run `sudo systemctl restart llm-lab-docker` (or `llm-owasp-lab` if provisioning fell back to the Python service). `llm01` uses the same provisioner as the `base` lab, so it also starts at boot and has the `llm01-ollama` helper; see [`../base/llm-lab/README.md`](../base/llm-lab/README.md) |
 | LocalStack unavailable | Verify `cloud-pentest` services are running |
 
 ---
