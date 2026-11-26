@@ -40,6 +40,7 @@ Logging/detection point:
 
 Test case: see tests/test_app.py::test_llm05_output_encoding
 """
+
 from __future__ import annotations
 
 import logging

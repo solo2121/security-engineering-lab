@@ -37,8 +37,6 @@ def render_banner(
     if subtitle:
         lines.append(subtitle.center(width))
     if authorized_use_notice:
-        lines.append(
-            "For authorized security testing and educational use only.".center(width)
-        )
+        lines.append("For authorized security testing and educational use only.".center(width))
     lines.append(border)
     return "\n".join(lines)

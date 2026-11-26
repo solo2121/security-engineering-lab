@@ -14,6 +14,7 @@ anything below as an 11th, 12th, or 13th "current" OWASP category.
 
 Test case: see tests/test_app.py::test_legacy_endpoints_labeled
 """
+
 from __future__ import annotations
 
 import logging

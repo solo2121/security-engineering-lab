@@ -43,7 +43,7 @@ def parse_interface_list(output):
 
 def get_interface_list():
     try:
-        result = subprocess.run(['tcpdump', '-D'], capture_output=True, text=True, check=True)
+        result = subprocess.run(["tcpdump", "-D"], capture_output=True, text=True, check=True)
         return parse_interface_list(result.stdout)
     except subprocess.CalledProcessError as e:
         print(f"Error getting interfaces: {e.stderr}")
@@ -63,7 +63,7 @@ def select_interface(interfaces):
         try:
             choice = int(input("\nSelect interface (number): "))
             if 1 <= choice <= len(interfaces):
-                return interfaces[choice-1]
+                return interfaces[choice - 1]
             else:
                 print(f"Please enter a number between 1 and {len(interfaces)}")
         except ValueError:
@@ -72,7 +72,7 @@ def select_interface(interfaces):
 
 def select_save_location():
     print_header()
-    default_dir = os.path.join(os.path.expanduser('~'), 'pcaps')
+    default_dir = os.path.join(os.path.expanduser("~"), "pcaps")
 
     print(f"Current default save location: {default_dir}")
     print("\nOptions:")
@@ -82,10 +82,10 @@ def select_save_location():
 
     while True:
         choice = input("\nSelect save location option (1-3): ")
-        if choice == '1':
+        if choice == "1":
             os.makedirs(default_dir, exist_ok=True)
             return default_dir
-        elif choice == '2':
+        elif choice == "2":
             custom_path = input("Enter full path to save directory: ")
             if os.path.isdir(custom_path):
                 return custom_path
@@ -97,7 +97,7 @@ def select_save_location():
                 except Exception as e:
                     print(f"Error creating directory: {e}")
                     continue
-        elif choice == '3':
+        elif choice == "3":
             return os.getcwd()
         else:
             print("Invalid choice. Please select 1, 2, or 3.")
@@ -162,13 +162,13 @@ def select_capture_options():
 
     while True:
         choice = input("\nSelect capture option (1-5): ").strip()
-        if choice == '1':
+        if choice == "1":
             return []
-        elif choice == '2':
+        elif choice == "2":
             return [f"port {prompt_port()}"]
-        elif choice == '3':
+        elif choice == "3":
             return [f"host {prompt_host()}"]
-        elif choice == '4':
+        elif choice == "4":
             print("\nProtocol options:")
             print("1. TCP")
             print("2. UDP")
@@ -178,7 +178,7 @@ def select_capture_options():
                 if proto_choice in protocols:
                     return [protocols[proto_choice]]
                 print("Please enter 1, 2, or 3.")
-        elif choice == '5':
+        elif choice == "5":
             return [prompt_custom_filter()]
         else:
             print("Invalid choice. Please select 1-5.")
@@ -192,18 +192,18 @@ def select_packet_count():
 
     while True:
         choice = input("\nSelect packet count option (1-2): ").strip()
-        if choice == '1':
+        if choice == "1":
             return []
-        elif choice == '2':
+        elif choice == "2":
             count = prompt_positive_int("Enter number of packets to capture: ")
-            return ['-c', str(count)]
+            return ["-c", str(count)]
         else:
             print("Invalid choice. Please select 1 or 2.")
 
 
 def build_command(interface, save_path, filter_options, count_options):
     """Assemble the tcpdump argv: options first, BPF filter expression last."""
-    return ['tcpdump', '-i', interface, '-w', save_path] + count_options + filter_options
+    return ["tcpdump", "-i", interface, "-w", save_path] + count_options + filter_options
 
 
 def run_tcpdump(interface, save_dir, filename, filter_options, count_options):

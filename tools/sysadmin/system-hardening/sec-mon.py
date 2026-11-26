@@ -72,10 +72,12 @@ def setup_logging(log_file: str, verbose: bool):
         verbose: Enable debug-level logging
     """
     level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(level=level, format=LOG_FORMAT, handlers=[
-        RotatingFileHandler(log_file, maxBytes=1_000_000, backupCount=3),
-        logging.StreamHandler(sys.stdout)
-    ])
+    logging.basicConfig(
+        level=level,
+        format=LOG_FORMAT,
+        handlers=[RotatingFileHandler(log_file, maxBytes=1_000_000, backupCount=3), logging.StreamHandler(sys.stdout)],
+    )
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # System Monitoring Functions
@@ -126,9 +128,7 @@ def get_resource_snapshot() -> dict:
         Dictionary with CPU%, load averages, memory%, and disk% usage
     """
     # CPU usage
-    cpu_line = subprocess.check_output(
-        ["ps", "-A", "-o", "%cpu", "--no-headers"], text=True
-    )
+    cpu_line = subprocess.check_output(["ps", "-A", "-o", "%cpu", "--no-headers"], text=True)
     cpu_total = sum(float(x) for x in cpu_line.split())
 
     # Load averages
@@ -142,9 +142,7 @@ def get_resource_snapshot() -> dict:
     mem_used_pct = 100 * (1 - mem_avail / mem_total)
 
     # Disk usage
-    disk_line = subprocess.check_output(
-        ["df", "/", "-h", "--output=pcent"], text=True
-    )
+    disk_line = subprocess.check_output(["df", "/", "-h", "--output=pcent"], text=True)
     disk_used_pct = int(disk_line.splitlines()[1].strip().rstrip("%"))
 
     return dict(
@@ -156,6 +154,7 @@ def get_resource_snapshot() -> dict:
         disk_used_pct=disk_used_pct,
     )
 
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Main Monitoring Loop
 # ──────────────────────────────────────────────────────────────────────────────
@@ -163,15 +162,13 @@ def get_resource_snapshot() -> dict:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Security port & resource monitor",
-        epilog="Example: sudo python3 sec-mon.py -i 30 -v"
+        description="Security port & resource monitor", epilog="Example: sudo python3 sec-mon.py -i 30 -v"
     )
-    parser.add_argument("-i", "--interval", type=int, default=INTERVAL,
-                        help="Seconds between resource snapshots (default: 10)")
-    parser.add_argument("-l", "--logfile", default="/var/log/security_monitor.log",
-                        help="Path to rotating log file")
-    parser.add_argument("-v", "--verbose", action="store_true",
-                        help="Enable debug output")
+    parser.add_argument(
+        "-i", "--interval", type=int, default=INTERVAL, help="Seconds between resource snapshots (default: 10)"
+    )
+    parser.add_argument("-l", "--logfile", default="/var/log/security_monitor.log", help="Path to rotating log file")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable debug output")
     args = parser.parse_args()
 
     if os.geteuid() != 0:
@@ -187,6 +184,7 @@ def main():
     def _sig_handler(signum, frame):
         nonlocal shutdown
         shutdown = True
+
     signal.signal(signal.SIGINT, _sig_handler)
     signal.signal(signal.SIGTERM, _sig_handler)
 
@@ -210,16 +208,23 @@ def main():
 
         for p in ports:
             if (p.proto, p.local_addr, p.pid) in new:
-                logging.warning("NEW open port: %s %s (PID %s %s)",
-                                p.proto, p.local_addr, p.pid or "?", p.process_name or "?")
+                logging.warning(
+                    "NEW open port: %s %s (PID %s %s)", p.proto, p.local_addr, p.pid or "?", p.process_name or "?"
+                )
         for proto, addr, pid in closed:
             logging.info("CLOSED port: %s %s (PID %s)", proto, addr, pid or "?")
 
         # Resource snapshot
         res = get_resource_snapshot()
-        logging.info("RESOURCES CPU=%.1f%% Load=%.2f/%.2f/%.2f Mem=%.1f%% Disk=%d%%",
-                     res["cpu_total"], res["load_1"], res["load_5"], res["load_15"],
-                     res["mem_used_pct"], res["disk_used_pct"])
+        logging.info(
+            "RESOURCES CPU=%.1f%% Load=%.2f/%.2f/%.2f Mem=%.1f%% Disk=%d%%",
+            res["cpu_total"],
+            res["load_1"],
+            res["load_5"],
+            res["load_15"],
+            res["mem_used_pct"],
+            res["disk_used_pct"],
+        )
 
         time.sleep(args.interval)
 

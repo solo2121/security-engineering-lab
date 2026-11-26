@@ -1,4 +1,5 @@
 """Embedded SQLite document and chunk store."""
+
 from __future__ import annotations
 
 import hashlib
@@ -33,8 +34,7 @@ class Store:
         self._db = sqlite3.connect(path, check_same_thread=False)
         self._db.row_factory = sqlite3.Row
         self._lock = threading.Lock()
-        self._db.executescript(
-            """
+        self._db.executescript("""
             CREATE TABLE IF NOT EXISTS documents(
               id INTEGER PRIMARY KEY AUTOINCREMENT, tenant TEXT NOT NULL, title TEXT NOT NULL,
               version INTEGER NOT NULL, status TEXT NOT NULL, source TEXT, uploader TEXT,
@@ -43,12 +43,19 @@ class Store:
               id INTEGER PRIMARY KEY AUTOINCREMENT, doc_id INTEGER NOT NULL, tenant TEXT NOT NULL,
               idx INTEGER NOT NULL, text TEXT NOT NULL, vec TEXT NOT NULL, embedder TEXT NOT NULL DEFAULT 'hash-256');
             CREATE INDEX IF NOT EXISTS chunks_tenant ON chunks(tenant);
-            """
-        )
+            """)
 
     # -- writes ------------------------------------------------------------
-    def add_document(self, tenant: str, title: str, text: str, source: str, uploader: str,
-                     status: str = "active", flags: Optional[List[str]] = None) -> Dict[str, Any]:
+    def add_document(
+        self,
+        tenant: str,
+        title: str,
+        text: str,
+        source: str,
+        uploader: str,
+        status: str = "active",
+        flags: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
         sha = hashlib.sha256(text.encode()).hexdigest()
         with self._lock:
             row = self._db.execute(
@@ -112,10 +119,14 @@ class Store:
             rows = self._db.execute(q + " ORDER BY id", args).fetchall()
         return [self._doc(r) for r in rows]
 
-    def search(self, query_vec: List[float], k: int, tenant: Optional[str], active_only: bool = True) -> List[Dict[str, Any]]:
+    def search(
+        self, query_vec: List[float], k: int, tenant: Optional[str], active_only: bool = True
+    ) -> List[Dict[str, Any]]:
         """Nearest chunks. tenant=None searches every tenant (lab mode only)."""
-        q = ("SELECT c.text,c.vec,c.doc_id,c.tenant,d.title,d.version,d.status FROM chunks c "
-             "JOIN documents d ON d.id=c.doc_id WHERE c.embedder=?")
+        q = (
+            "SELECT c.text,c.vec,c.doc_id,c.tenant,d.title,d.version,d.status FROM chunks c "
+            "JOIN documents d ON d.id=c.doc_id WHERE c.embedder=?"
+        )
         args: List[Any] = [embed.embedder_id()]
         if tenant is not None:
             q += " AND c.tenant=?"
@@ -125,8 +136,14 @@ class Store:
         with self._lock:
             rows = self._db.execute(q, args).fetchall()
         scored = [
-            {"doc_id": r["doc_id"], "tenant": r["tenant"], "title": r["title"], "version": r["version"],
-             "text": r["text"], "score": embed.cosine(query_vec, json.loads(r["vec"]))}
+            {
+                "doc_id": r["doc_id"],
+                "tenant": r["tenant"],
+                "title": r["title"],
+                "version": r["version"],
+                "text": r["text"],
+                "score": embed.cosine(query_vec, json.loads(r["vec"])),
+            }
             for r in rows
         ]
         scored.sort(key=lambda x: x["score"], reverse=True)

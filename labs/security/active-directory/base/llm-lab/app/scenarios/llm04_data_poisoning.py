@@ -36,6 +36,7 @@ Logging/detection point:
 
 Test case: see tests/test_app.py::test_llm04_poisoning_detection
 """
+
 from __future__ import annotations
 
 import hashlib

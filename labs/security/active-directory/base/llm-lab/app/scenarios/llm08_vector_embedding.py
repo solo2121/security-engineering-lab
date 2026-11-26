@@ -38,6 +38,7 @@ Logging/detection point:
 
 Test case: see tests/test_app.py::test_llm08_tenant_isolation
 """
+
 from __future__ import annotations
 
 import logging
@@ -123,6 +124,8 @@ async def rag_query(payload: RagQuery):
         "vulnerability": "LLM08: Vector and Embedding Weaknesses",
         "mode": "defensive" if payload.enforce_authorization else "vulnerable",
         "tenant": payload.tenant,
-        "results": [{"id": d["id"], "tenant": d["tenant"], "poisoned": d["poisoned"], "content": d["content"]} for d in top],
+        "results": [
+            {"id": d["id"], "tenant": d["tenant"], "poisoned": d["poisoned"], "content": d["content"]} for d in top
+        ],
         "cross_tenant_leak": cross_tenant_leak,
     }

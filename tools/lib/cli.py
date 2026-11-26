@@ -63,12 +63,8 @@ def build_parser(
     )
 
     verbosity = parser.add_mutually_exclusive_group()
-    verbosity.add_argument(
-        "-v", "--verbose", action="store_true", help="Enable debug-level logging."
-    )
-    verbosity.add_argument(
-        "-q", "--quiet", action="store_true", help="Suppress informational output."
-    )
+    verbosity.add_argument("-v", "--verbose", action="store_true", help="Enable debug-level logging.")
+    verbosity.add_argument("-q", "--quiet", action="store_true", help="Suppress informational output.")
 
     return parser
 

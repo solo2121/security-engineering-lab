@@ -18,7 +18,6 @@ from pathlib import Path
 
 import pytest
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 WRAPPER_PATH = PROJECT_ROOT / "tools" / "security" / "network" / "tcpdump-wrapper.py"

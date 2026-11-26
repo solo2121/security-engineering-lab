@@ -6,6 +6,7 @@ no network, no external services required. Run with:
 
     pytest tests/test_app.py -v
 """
+
 from __future__ import annotations
 
 import sys
@@ -244,9 +245,7 @@ def test_llm10_rate_limit():
             headers={"x-api-key": "rate-limit-test-client"},
         )
         assert resp.status_code == 200
-    over_limit = client.post(
-        "/llm10/generate", json={"prompt": "hi"}, headers={"x-api-key": "rate-limit-test-client"}
-    )
+    over_limit = client.post("/llm10/generate", json={"prompt": "hi"}, headers={"x-api-key": "rate-limit-test-client"})
     assert over_limit.status_code == 429
 
 

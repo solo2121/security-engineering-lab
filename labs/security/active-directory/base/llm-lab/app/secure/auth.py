@@ -6,6 +6,7 @@ Keys must be at least 16 characters; placeholder values are ignored. With no
 valid keys configured, every protected route answers 503 rather than running
 open.
 """
+
 from __future__ import annotations
 
 import hmac
@@ -24,10 +25,19 @@ ROLE_PERMISSIONS: Dict[str, FrozenSet[str]] = {
     "viewer": frozenset({"chat:use", "usage:read", "rag:read"}),
     "editor": frozenset({"chat:use", "usage:read", "rag:read", "rag:write"}),
     "helpdesk": frozenset({"chat:use", "usage:read", "agent:use"}),
-    "admin": frozenset({
-        "chat:use", "usage:read", "rag:read", "rag:write", "rag:review", "audit:read", "config:read",
-        "agent:use", "agent:approve",
-    }),
+    "admin": frozenset(
+        {
+            "chat:use",
+            "usage:read",
+            "rag:read",
+            "rag:write",
+            "rag:review",
+            "audit:read",
+            "config:read",
+            "agent:use",
+            "agent:approve",
+        }
+    ),
 }
 
 MIN_KEY_LENGTH = 16
@@ -90,8 +100,12 @@ def require(permission: str):
             raise HTTPException(401, "Missing or invalid credentials.", headers={"WWW-Authenticate": "Bearer"})
         if not principal.can(permission):
             audit.LOG.record(
-                "authz_denied", user=principal.user, tenant=principal.tenant, outcome="denied",
-                permission=permission, path=request.url.path,
+                "authz_denied",
+                user=principal.user,
+                tenant=principal.tenant,
+                outcome="denied",
+                permission=permission,
+                path=request.url.path,
             )
             raise HTTPException(403, "Your role does not permit this action.")
         return principal

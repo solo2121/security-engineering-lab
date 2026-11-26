@@ -1,4 +1,5 @@
 """Secure API: authenticated, authorized, bounded, scanned and audited."""
+
 from __future__ import annotations
 
 import uuid
@@ -45,8 +46,14 @@ def chat(body: SecureChatRequest, response: Response, who: auth.Principal = auth
     score, hits = injection.score(body.prompt)
     if score >= injection.BLOCK_THRESHOLD:
         audit.LOG.record(
-            "injection_blocked", user=who.user, tenant=who.tenant, outcome="blocked",
-            request_id=request_id, score=score, rules=hits, prompt=audit.fingerprint(body.prompt),
+            "injection_blocked",
+            user=who.user,
+            tenant=who.tenant,
+            outcome="blocked",
+            request_id=request_id,
+            score=score,
+            rules=hits,
+            prompt=audit.fingerprint(body.prompt),
         )
         raise HTTPException(400, "Request blocked by the prompt-injection policy.")
 
@@ -61,12 +68,21 @@ def chat(body: SecureChatRequest, response: Response, who: auth.Principal = auth
     used = result.prompt_tokens + result.completion_tokens
     limits.add_usage(who.user, used)
     audit.LOG.record(
-        "chat", user=who.user, tenant=who.tenant, outcome="ok", request_id=request_id,
-        provider=result.provider, tokens=used, redactions=sorted(set(in_found + out_found)),
+        "chat",
+        user=who.user,
+        tenant=who.tenant,
+        outcome="ok",
+        request_id=request_id,
+        provider=result.provider,
+        tokens=used,
+        redactions=sorted(set(in_found + out_found)),
         prompt=audit.fingerprint(body.prompt),
     )
     return SecureChatResponse(
-        request_id=request_id, answer=answer, model=result.model, provider=result.provider,
+        request_id=request_id,
+        answer=answer,
+        model=result.model,
+        provider=result.provider,
         usage=Usage(prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens),
         redactions=sorted(set(in_found + out_found)),
     )

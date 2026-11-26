@@ -39,7 +39,7 @@ def detect_firewall(host, open_ports, closed_ports):
     # Check for sequential open ports (unusual pattern)
     if len(open_ports) > 1:
         sorted_ports = sorted(open_ports.keys())
-        sequential = sum(1 for i in range(len(sorted_ports)-1) if sorted_ports[i+1] - sorted_ports[i] == 1)
+        sequential = sum(1 for i in range(len(sorted_ports) - 1) if sorted_ports[i + 1] - sorted_ports[i] == 1)
         if sequential / len(sorted_ports) > 0.8:
             firewall_indicators.append("Unusual sequential port pattern")
 
@@ -65,16 +65,18 @@ def decoy_scan(host, port, scan_type, decoy_ips=None):
     """Perform scan with decoy IPs to mask real source"""
     if decoy_ips is None:
         # Generate random decoy IPs
-        decoy_ips = [f"{random.randint(1, 254)}.{random.randint(1, 254)}.{random.randint(1, 254)}.{random.randint(1, 254)}"
-                    for _ in range(3)]
+        decoy_ips = [
+            f"{random.randint(1, 254)}.{random.randint(1, 254)}.{random.randint(1, 254)}.{random.randint(1, 254)}"
+            for _ in range(3)
+        ]
 
     # Perform decoy scans (won't wait for responses)
     for decoy_ip in decoy_ips:
         try:
             if scan_type == "1":
-                send(IP(src=decoy_ip, dst=host)/TCP(dport=port, flags="S"), verbose=0)
+                send(IP(src=decoy_ip, dst=host) / TCP(dport=port, flags="S"), verbose=0)
             elif scan_type == "6":
-                send(IP(src=decoy_ip, dst=host)/UDP(dport=port), verbose=0)
+                send(IP(src=decoy_ip, dst=host) / UDP(dport=port), verbose=0)
         except Exception:
             pass
 
@@ -87,9 +89,9 @@ def source_port_scan(host, port, scan_type, source_port=53):
     """Scan using specific source port (often allowed through firewalls)"""
     try:
         if scan_type == "1":
-            response = sr1(IP(dst=host)/TCP(sport=source_port, dport=port, flags="S"), timeout=1, verbose=0)
+            response = sr1(IP(dst=host) / TCP(sport=source_port, dport=port, flags="S"), timeout=1, verbose=0)
         elif scan_type == "6":
-            response = sr1(IP(dst=host)/UDP(sport=source_port, dport=port), timeout=1, verbose=0)
+            response = sr1(IP(dst=host) / UDP(sport=source_port, dport=port), timeout=1, verbose=0)
         else:
             return scan_port(host, port, scan_type)
 
@@ -112,13 +114,7 @@ def source_port_scan(host, port, scan_type, source_port=53):
 
 def timing_evasion_scan(host, port, scan_type, timing_level=3):
     """Perform scan with timing evasion"""
-    timing_delays = {
-        1: 15,      # Paranoid
-        2: 5,       # Sneaky
-        3: 1,       # Polite
-        4: 0.5,     # Normal
-        5: 0.1      # Aggressive
-    }
+    timing_delays = {1: 15, 2: 5, 3: 1, 4: 0.5, 5: 0.1}  # Paranoid  # Sneaky  # Polite  # Normal  # Aggressive
 
     delay = timing_delays.get(timing_level, 1)
     time.sleep(delay)
@@ -128,7 +124,7 @@ def timing_evasion_scan(host, port, scan_type, timing_level=3):
 
 def tcp_syn_scan(host, port):
     """TCP SYN Scan"""
-    response = sr1(IP(dst=host)/TCP(dport=port, flags="S"), timeout=1, verbose=0)
+    response = sr1(IP(dst=host) / TCP(dport=port, flags="S"), timeout=1, verbose=0)
     if response is None:
         return "Filtered"
     elif response.haslayer(TCP):
@@ -141,13 +137,13 @@ def tcp_syn_scan(host, port):
 
 def tcp_connect_scan(host, port):
     """TCP Connect Scan"""
-    response = sr1(IP(dst=host)/TCP(dport=port, flags="S"), timeout=1, verbose=0)
+    response = sr1(IP(dst=host) / TCP(dport=port, flags="S"), timeout=1, verbose=0)
     if response is None:
         return "Filtered"
     elif response.haslayer(TCP):
         if response[TCP].flags == 18:  # SYN-ACK
             # Send ACK to complete handshake
-            sr1(IP(dst=host)/TCP(dport=port, flags="A"), timeout=1, verbose=0)
+            sr1(IP(dst=host) / TCP(dport=port, flags="A"), timeout=1, verbose=0)
             return "Open"
         elif response[TCP].flags == 4:  # RST
             return "Closed"
@@ -156,7 +152,7 @@ def tcp_connect_scan(host, port):
 
 def tcp_fin_scan(host, port):
     """TCP FIN Scan"""
-    response = sr1(IP(dst=host)/TCP(dport=port, flags="F"), timeout=1, verbose=0)
+    response = sr1(IP(dst=host) / TCP(dport=port, flags="F"), timeout=1, verbose=0)
     if response is None:
         return "Open|Filtered"
     elif response.haslayer(TCP):
@@ -167,7 +163,7 @@ def tcp_fin_scan(host, port):
 
 def tcp_xmas_scan(host, port):
     """TCP XMAS Scan"""
-    response = sr1(IP(dst=host)/TCP(dport=port, flags="FPU"), timeout=1, verbose=0)
+    response = sr1(IP(dst=host) / TCP(dport=port, flags="FPU"), timeout=1, verbose=0)
     if response is None:
         return "Open|Filtered"
     elif response.haslayer(TCP):
@@ -178,7 +174,7 @@ def tcp_xmas_scan(host, port):
 
 def tcp_null_scan(host, port):
     """TCP NULL Scan"""
-    response = sr1(IP(dst=host)/TCP(dport=port, flags=""), timeout=1, verbose=0)
+    response = sr1(IP(dst=host) / TCP(dport=port, flags=""), timeout=1, verbose=0)
     if response is None:
         return "Open|Filtered"
     elif response.haslayer(TCP):
@@ -189,7 +185,7 @@ def tcp_null_scan(host, port):
 
 def udp_scan(host, port):
     """UDP Scan"""
-    response = sr1(IP(dst=host)/UDP(dport=port), timeout=1, verbose=0)
+    response = sr1(IP(dst=host) / UDP(dport=port), timeout=1, verbose=0)
     if response is None:
         return "Open|Filtered"
     elif response.haslayer(ICMP):
@@ -266,9 +262,9 @@ def display_menu():
 def parse_ports(port_range):
     """Parse port range string into list of ports"""
     ports = []
-    for part in port_range.split(','):
-        if '-' in part:
-            start, end = map(int, part.split('-'))
+    for part in port_range.split(","):
+        if "-" in part:
+            start, end = map(int, part.split("-"))
             ports.extend(range(start, end + 1))
         else:
             ports.append(int(part))
@@ -280,12 +276,11 @@ def main():
 
     if len(sys.argv) > 1:
         # Command line mode
-        parser = argparse.ArgumentParser(description='Port Scanner with Scapy')
-        parser.add_argument('host', help='Target host to scan')
-        parser.add_argument('-p', '--ports', default='1-1000', help='Port range (e.g., 1-1000 or 80,443,8080)')
-        parser.add_argument('-t', '--type', default='1', choices=['1', '2', '3', '4', '5', '6'],
-                          help='Scan type (1-6)')
-        parser.add_argument('--threads', default=50, type=int, help='Number of threads')
+        parser = argparse.ArgumentParser(description="Port Scanner with Scapy")
+        parser.add_argument("host", help="Target host to scan")
+        parser.add_argument("-p", "--ports", default="1-1000", help="Port range (e.g., 1-1000 or 80,443,8080)")
+        parser.add_argument("-t", "--type", default="1", choices=["1", "2", "3", "4", "5", "6"], help="Scan type (1-6)")
+        parser.add_argument("--threads", default=50, type=int, help="Number of threads")
 
         args = parser.parse_args()
 

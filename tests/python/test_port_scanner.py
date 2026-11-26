@@ -19,16 +19,9 @@ from pathlib import Path
 
 import pytest
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-PORT_SCANNER_PATH = (
-    PROJECT_ROOT
-    / "tools"
-    / "security"
-    / "reconnaissance"
-    / "port-scanner.py"
-)
+PORT_SCANNER_PATH = PROJECT_ROOT / "tools" / "security" / "reconnaissance" / "port-scanner.py"
 
 
 def _load_module():
@@ -39,9 +32,7 @@ def _load_module():
     """
 
     if not PORT_SCANNER_PATH.exists():
-        raise FileNotFoundError(
-            f"Port scanner not found: {PORT_SCANNER_PATH}"
-        )
+        raise FileNotFoundError(f"Port scanner not found: {PORT_SCANNER_PATH}")
 
     spec = importlib.util.spec_from_file_location(
         "port_scanner",

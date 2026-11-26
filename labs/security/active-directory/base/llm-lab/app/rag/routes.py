@@ -1,4 +1,5 @@
 """HTTP API for the RAG pipeline: /secure/rag (default) and /lab/rag (lab mode)."""
+
 from __future__ import annotations
 
 import uuid
@@ -50,8 +51,9 @@ def ingest(body: IngestRequest, who: auth.Principal = auth.require("rag:write"))
 
 
 @router.get("/documents")
-def list_documents(status: Optional[str] = Query(default=None, max_length=20),
-                   who: auth.Principal = auth.require("rag:read")) -> Dict[str, Any]:
+def list_documents(
+    status: Optional[str] = Query(default=None, max_length=20), who: auth.Principal = auth.require("rag:read")
+) -> Dict[str, Any]:
     return {"documents": [_public(d) for d in service.store("secure").list_documents(who.tenant, status)]}
 
 
@@ -62,7 +64,9 @@ def activate(doc_id: int, who: auth.Principal = auth.require("rag:write")) -> Di
     if doc["status"] == "quarantined":
         raise HTTPException(409, "Quarantined documents need an admin release.")
     service.store("secure").activate(doc_id)
-    audit.LOG.record("rag_rollback", user=who.user, tenant=who.tenant, outcome="ok", doc_id=doc_id, version=doc["version"])
+    audit.LOG.record(
+        "rag_rollback", user=who.user, tenant=who.tenant, outcome="ok", doc_id=doc_id, version=doc["version"]
+    )
     return _public(service.store("secure").get_document(doc_id))  # type: ignore[arg-type]
 
 
@@ -73,7 +77,9 @@ def release(doc_id: int, who: auth.Principal = auth.require("rag:review")) -> Di
     if doc["status"] != "quarantined":
         raise HTTPException(409, "Document is not quarantined.")
     service.store("secure").activate(doc_id)
-    audit.LOG.record("rag_release", user=who.user, tenant=who.tenant, outcome="released", doc_id=doc_id, rules=doc["flags"])
+    audit.LOG.record(
+        "rag_release", user=who.user, tenant=who.tenant, outcome="released", doc_id=doc_id, rules=doc["flags"]
+    )
     return _public(service.store("secure").get_document(doc_id))  # type: ignore[arg-type]
 
 
@@ -84,8 +90,16 @@ def query(body: QueryRequest, who: auth.Principal = auth.require("rag:read")) ->
     limits.check_budget(who.user, body.max_tokens + gateway.estimate_tokens(body.question))
     score, hits = injection.score(body.question)
     if score >= injection.BLOCK_THRESHOLD:
-        audit.LOG.record("injection_blocked", user=who.user, tenant=who.tenant, outcome="blocked",
-                         request_id=request_id, score=score, rules=hits, prompt=audit.fingerprint(body.question))
+        audit.LOG.record(
+            "injection_blocked",
+            user=who.user,
+            tenant=who.tenant,
+            outcome="blocked",
+            request_id=request_id,
+            score=score,
+            rules=hits,
+            prompt=audit.fingerprint(body.question),
+        )
         raise HTTPException(400, "Request blocked by the prompt-injection policy.")
     clean, _ = redact.scan_and_redact(body.question)
     try:
@@ -95,13 +109,22 @@ def query(body: QueryRequest, who: auth.Principal = auth.require("rag:read")) ->
         raise HTTPException(502, "The model provider is unavailable.")
     used = out["usage"]["prompt_tokens"] + out["usage"]["completion_tokens"]
     limits.add_usage(who.user, used)
-    audit.LOG.record("rag_query", user=who.user, tenant=who.tenant, outcome="ok", request_id=request_id,
-                     grounded=out["grounded"], docs=[c["doc_id"] for c in out["citations"]], tokens=used,
-                     prompt=audit.fingerprint(body.question))
+    audit.LOG.record(
+        "rag_query",
+        user=who.user,
+        tenant=who.tenant,
+        outcome="ok",
+        request_id=request_id,
+        grounded=out["grounded"],
+        docs=[c["doc_id"] for c in out["citations"]],
+        tokens=used,
+        prompt=audit.fingerprint(body.question),
+    )
     return {"request_id": request_id, **out}
 
 
 # -- lab router: intentionally vulnerable ------------------------------------
+
 
 class LabIngest(BaseModel):
     tenant: str = Field(..., max_length=40)

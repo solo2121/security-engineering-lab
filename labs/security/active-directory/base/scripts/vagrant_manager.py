@@ -58,7 +58,6 @@ from rich.panel import Panel
 from rich.prompt import Confirm, Prompt
 from rich.table import Table
 
-
 console = Console()
 
 VAGRANTFILE_CANDIDATES = ("Vagrantfile",)
@@ -178,10 +177,7 @@ def discover_vms(vagrantfile: Path) -> list[str]:
             errors="ignore",
         )
     except OSError as exc:
-        console.print(
-            f"[yellow]Warning:[/yellow] Unable to read "
-            f"{vagrantfile}: {exc}"
-        )
+        console.print(f"[yellow]Warning:[/yellow] Unable to read " f"{vagrantfile}: {exc}")
         return []
 
     names = re.findall(
@@ -222,9 +218,7 @@ def discover_vms_from_status(vagrantfile: Path) -> list[str]:
     # db                        running (virtualbox)
     #
     status_pattern = re.compile(
-        r"^\s*([\w.-]+)\s+"
-        r"(not created|running|poweroff|saved|aborted|"
-        r"stopping|starting|unknown)\b",
+        r"^\s*([\w.-]+)\s+" r"(not created|running|poweroff|saved|aborted|" r"stopping|starting|unknown)\b",
         re.IGNORECASE,
     )
 
@@ -299,11 +293,7 @@ def resolve_active_vms(
             f"error if you try to use it as-is; for this menu, falling "
             f"back to '{DEFAULT_LAB_PROFILE}'."
         )
-        requested = (
-            DEFAULT_LAB_PROFILE
-            if DEFAULT_LAB_PROFILE in profiles
-            else next(iter(profiles))
-        )
+        requested = DEFAULT_LAB_PROFILE if DEFAULT_LAB_PROFILE in profiles else next(iter(profiles))
 
     active = set(ALWAYS_ON_VMS) | set(profiles.get(requested, []))
     return active, requested, True
@@ -396,9 +386,7 @@ def run_vagrant(
             f"profile otherwise).[/dim]"
         )
 
-    console.rule(
-        f"[bold cyan]vagrant {action}[/bold cyan] {label}"
-    )
+    console.rule(f"[bold cyan]vagrant {action}[/bold cyan] {label}")
 
     try:
         result = subprocess.run(
@@ -449,11 +437,7 @@ def print_results(results: list[VmAction]) -> None:
     table.add_column("Detail")
 
     for result in results:
-        status = (
-            "[green]OK[/green]"
-            if result.ok
-            else "[red]FAILED[/red]"
-        )
+        status = "[green]OK[/green]" if result.ok else "[red]FAILED[/red]"
 
         table.add_row(
             result.name,
@@ -475,14 +459,10 @@ def show_status(vagrantfile: Path) -> bool:
             check=False,
         )
     except FileNotFoundError:
-        console.print(
-            "[bold red]Error:[/bold red] Vagrant was not found."
-        )
+        console.print("[bold red]Error:[/bold red] Vagrant was not found.")
         return False
     except OSError as exc:
-        console.print(
-            f"[bold red]Error:[/bold red] Unable to run Vagrant: {exc}"
-        )
+        console.print(f"[bold red]Error:[/bold red] Unable to run Vagrant: {exc}")
         return False
     except KeyboardInterrupt:
         console.print("[yellow]Interrupted by user.[/yellow]")
@@ -510,10 +490,7 @@ def pick_vms(
     treat None as "cancel", not "operate on everything".
     """
     if not vms:
-        console.print(
-            "[yellow]No VMs discovered; "
-            "will run against all VMs.[/yellow]"
-        )
+        console.print("[yellow]No VMs discovered; " "will run against all VMs.[/yellow]")
         return []
 
     console.print("\n[bold]Available VMs:[/bold]")
@@ -526,9 +503,7 @@ def pick_vms(
             suffix = f" (available via {hint})" if hint else " (not in current LAB_PROFILE)"
             console.print(f"  {index}. [dim]{name}[/dim][yellow]{suffix}[/yellow]")
 
-    console.print(
-        f"  a. all  [dim](the {len(active)} VM(s) in your current LAB_PROFILE)[/dim]"
-    )
+    console.print(f"  a. all  [dim](the {len(active)} VM(s) in your current LAB_PROFILE)[/dim]")
 
     choice = Prompt.ask(
         "Select VM number(s) (comma-separated) or 'a' for all",
@@ -566,10 +541,7 @@ def pick_vms(
         override = best_override_profile(vagrantfile, name)
 
         if override is None:
-            console.print(
-                f"[yellow]'{name}' isn't assigned to any LAB_PROFILE "
-                f"-- skipping.[/yellow]"
-            )
+            console.print(f"[yellow]'{name}' isn't assigned to any LAB_PROFILE " f"-- skipping.[/yellow]")
             declined.append(name)
             continue
 
@@ -585,19 +557,14 @@ def pick_vms(
             declined.append(name)
 
     if declined:
-        console.print(
-            "[yellow]Not running for:[/yellow] " + ", ".join(declined)
-        )
+        console.print("[yellow]Not running for:[/yellow] " + ", ".join(declined))
 
     if not selected:
         if declined:
             console.print("[yellow]Cancelling this action.[/yellow]")
             return None
 
-        console.print(
-            "[yellow]No valid selection made; "
-            "defaulting to active-profile VMs.[/yellow]"
-        )
+        console.print("[yellow]No valid selection made; " "defaulting to active-profile VMs.[/yellow]")
         return [VmTarget(name) for name in vms if name in active]
 
     return selected
@@ -625,13 +592,8 @@ def validate_vm_names(
     unknown = [name for name in requested if name not in known]
 
     if unknown:
-        console.print(
-            "[bold red]Error:[/bold red] Unknown VM(s): "
-            + ", ".join(unknown)
-        )
-        console.print(
-            "[dim]Known VMs:[/dim] " + ", ".join(discovered)
-        )
+        console.print("[bold red]Error:[/bold red] Unknown VM(s): " + ", ".join(unknown))
+        console.print("[dim]Known VMs:[/dim] " + ", ".join(discovered))
         return []
 
     if supported:
@@ -639,19 +601,14 @@ def validate_vm_names(
         if excluded:
             console.print(
                 f"[bold red]Error:[/bold red] VM(s) not available "
-                f"under LAB_PROFILE='{profile}': "
-                + ", ".join(excluded)
+                f"under LAB_PROFILE='{profile}': " + ", ".join(excluded)
             )
             for name in excluded:
                 hint = profile_hint(vagrantfile, name)
                 if hint:
-                    console.print(
-                        f"[yellow]{name}:[/yellow] use {hint}"
-                    )
+                    console.print(f"[yellow]{name}:[/yellow] use {hint}")
                 else:
-                    console.print(
-                        f"[yellow]{name}:[/yellow] not assigned to a profile"
-                    )
+                    console.print(f"[yellow]{name}:[/yellow] not assigned to a profile")
             return []
 
     return list(dict.fromkeys(requested))
@@ -690,11 +647,7 @@ def interactive_menu(
         return
 
     while True:
-        box_suffix = (
-            f" | Attacker box: {os.environ['KALI_BOX']}"
-            if os.environ.get("KALI_BOX")
-            else ""
-        )
+        box_suffix = f" | Attacker box: {os.environ['KALI_BOX']}" if os.environ.get("KALI_BOX") else ""
         if supported:
             excluded = [name for name in vms if name not in active]
             menu_title = (
@@ -708,10 +661,7 @@ def interactive_menu(
 
         console.print(
             Panel.fit(
-                "\n".join(
-                    f"{key}. {label}"
-                    for key, (_, label) in ACTIONS.items()
-                ),
+                "\n".join(f"{key}. {label}" for key, (_, label) in ACTIONS.items()),
                 title=menu_title,
                 border_style="cyan",
             )
@@ -730,8 +680,7 @@ def interactive_menu(
             current_version = os.environ.get("KALI_BOX_VERSION", "2026.1.0")
             console.print(
                 Panel.fit(
-                    "[bold]Attacker box (kali VM)[/bold]\n"
-                    f"Current: [cyan]{current_box}[/cyan] @ {current_version}",
+                    "[bold]Attacker box (kali VM)[/bold]\n" f"Current: [cyan]{current_box}[/cyan] @ {current_version}",
                     border_style="cyan",
                 )
             )
@@ -749,10 +698,7 @@ def interactive_menu(
                 if box is None:
                     os.environ.pop("KALI_BOX", None)
                     os.environ.pop("KALI_BOX_VERSION", None)
-                    console.print(
-                        "[green]Attacker box reset to the Kali default "
-                        "(kalilinux/rolling).[/green]"
-                    )
+                    console.print("[green]Attacker box reset to the Kali default " "(kalilinux/rolling).[/green]")
                 else:
                     os.environ["KALI_BOX"] = box
                     os.environ["KALI_BOX_VERSION"] = version
@@ -770,10 +716,7 @@ def interactive_menu(
                     default=os.environ.get("KALI_BOX", ""),
                 )
                 if not custom_box:
-                    console.print(
-                        "[yellow]No box entered -- leaving the current "
-                        "setting unchanged.[/yellow]"
-                    )
+                    console.print("[yellow]No box entered -- leaving the current " "setting unchanged.[/yellow]")
                     continue
 
                 custom_version = Prompt.ask(
@@ -808,16 +751,10 @@ def interactive_menu(
             profiles = parse_lab_profiles(vagrantfile) or {}
 
             for name in vms:
-                owning = [
-                    p_name
-                    for p_name, p_vms in profiles.items()
-                    if name in p_vms or name in ALWAYS_ON_VMS
-                ]
+                owning = [p_name for p_name, p_vms in profiles.items() if name in p_vms or name in ALWAYS_ON_VMS]
                 table.add_row(
                     name,
-                    "[green]active[/green]"
-                    if name in active
-                    else "[yellow]excluded[/yellow]",
+                    "[green]active[/green]" if name in active else "[yellow]excluded[/yellow]",
                     ", ".join(owning) if owning else "-",
                 )
 
@@ -840,10 +777,7 @@ def interactive_menu(
                 continue
 
             if len(targets) != 1:
-                console.print(
-                    "[yellow]SSH requires exactly one VM. "
-                    "Pick a single number.[/yellow]"
-                )
+                console.print("[yellow]SSH requires exactly one VM. " "Pick a single number.[/yellow]")
                 continue
 
             run_vagrant(
@@ -861,11 +795,7 @@ def interactive_menu(
                 console.print("[yellow]Cancelled.[/yellow]")
                 continue
 
-            names = (
-                ", ".join(t.name for t in targets)
-                if targets
-                else "ALL VMs"
-            )
+            names = ", ".join(t.name for t in targets) if targets else "ALL VMs"
 
             if not Confirm.ask(
                 f"[bold red]Really destroy {names}?[/bold red]",
@@ -897,9 +827,7 @@ def interactive_menu(
 
 def main() -> int:
     """Program entry point."""
-    parser = argparse.ArgumentParser(
-        description="Manage lab Vagrant VMs."
-    )
+    parser = argparse.ArgumentParser(description="Manage lab Vagrant VMs.")
 
     parser.add_argument(
         "action",
@@ -975,15 +903,10 @@ def main() -> int:
     vagrantfile = find_vagrantfile()
 
     if vagrantfile is None:
-        console.print(
-            "[bold red]Error:[/bold red] No Vagrantfile found "
-            "in this directory or any parent."
-        )
+        console.print("[bold red]Error:[/bold red] No Vagrantfile found " "in this directory or any parent.")
         return 1
 
-    console.print(
-        f"[dim]Vagrantfile:[/dim] {vagrantfile}"
-    )
+    console.print(f"[dim]Vagrantfile:[/dim] {vagrantfile}")
     console.print(
         f"[dim]Provider: [bold]{SELECTED_PROVIDER}[/bold] "
         "(override with --provider or VAGRANT_DEFAULT_PROVIDER)[/dim]"
@@ -1010,9 +933,7 @@ def main() -> int:
                     suffix = f" (needs {hint})" if hint else " (excluded)"
                     console.print(f"{vm}{suffix}")
         else:
-            console.print(
-                "[yellow]No VMs discovered.[/yellow]"
-            )
+            console.print("[yellow]No VMs discovered.[/yellow]")
         return 0
 
     if args.action:
@@ -1034,16 +955,10 @@ def main() -> int:
         if args.vms and not targets:
             return 1
 
-        default_targets = (
-            [name for name in vms if name in active] if supported else vms
-        )
+        default_targets = [name for name in vms if name in active] if supported else vms
         targets_to_run = targets or default_targets or [None]
 
-        extra = (
-            ["-f"]
-            if args.action == "destroy"
-            else None
-        )
+        extra = ["-f"] if args.action == "destroy" else None
 
         results = [
             run_vagrant(

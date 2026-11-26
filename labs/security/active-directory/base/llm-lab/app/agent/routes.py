@@ -1,4 +1,5 @@
 """HTTP API for the helpdesk agent: /secure/agent (default) and /lab/agent (lab mode)."""
+
 from __future__ import annotations
 
 from typing import Any, Dict
@@ -24,12 +25,25 @@ def run(body: RunRequest, who: auth.Principal = auth.require("agent:use")) -> Di
     limits.check_rate(who.user)
     score, hits = injection.score(body.request)
     if score >= injection.BLOCK_THRESHOLD:
-        audit.LOG.record("injection_blocked", user=who.user, tenant=who.tenant, outcome="blocked",
-                         score=score, rules=hits, prompt=audit.fingerprint(body.request))
+        audit.LOG.record(
+            "injection_blocked",
+            user=who.user,
+            tenant=who.tenant,
+            outcome="blocked",
+            score=score,
+            rules=hits,
+            prompt=audit.fingerprint(body.request),
+        )
         raise HTTPException(400, "Request blocked by the prompt-injection policy.")
     out = runner.run_secure(who, body.request, body.max_steps)
-    audit.LOG.record("agent_run", user=who.user, tenant=who.tenant, outcome="ok", steps=len(out["steps"]),
-                     prompt=audit.fingerprint(body.request))
+    audit.LOG.record(
+        "agent_run",
+        user=who.user,
+        tenant=who.tenant,
+        outcome="ok",
+        steps=len(out["steps"]),
+        prompt=audit.fingerprint(body.request),
+    )
     return out
 
 
@@ -62,6 +76,7 @@ def undo(action_id: str, who: auth.Principal = auth.require("agent:approve")) ->
 
 # -- lab router -----------------------------------------------------------------------
 
+
 class LabRun(BaseModel):
     request: str = Field(..., max_length=500)
 
@@ -76,8 +91,11 @@ def lab_state() -> Dict[str, Any]:
     """Users whose state differs from the seed, so you can see what an attack changed."""
     base = directory.fresh().users
     now = directory.get("lab").snapshot()
-    changed = {s: {k: u[k] for k in ("enabled", "locked", "must_change_password")}
-               for s, u in now.items() if any(u[k] != base[s][k] for k in ("enabled", "locked", "must_change_password"))}
+    changed = {
+        s: {k: u[k] for k in ("enabled", "locked", "must_change_password")}
+        for s, u in now.items()
+        if any(u[k] != base[s][k] for k in ("enabled", "locked", "must_change_password"))
+    }
     return {"changed": changed}
 
 

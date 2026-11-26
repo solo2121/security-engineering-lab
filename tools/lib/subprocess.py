@@ -87,9 +87,7 @@ def run_command(
     except FileNotFoundError as exc:
         raise CommandExecutionError(f"command not found: {args[0]}") from exc
     except subprocess.TimeoutExpired as exc:
-        raise CommandExecutionError(
-            f"command timed out after {timeout}s: {' '.join(args)}"
-        ) from exc
+        raise CommandExecutionError(f"command timed out after {timeout}s: {' '.join(args)}") from exc
 
     result = CommandResult(
         args=args,
@@ -99,8 +97,6 @@ def run_command(
     )
 
     if check and not result.ok:
-        raise CommandExecutionError(
-            f"command exited {result.returncode}: {' '.join(args)}\n{result.stderr}"
-        )
+        raise CommandExecutionError(f"command exited {result.returncode}: {' '.join(args)}\n{result.stderr}")
 
     return result

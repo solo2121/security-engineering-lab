@@ -7,6 +7,7 @@ intercepted here and replaced with a sandboxed, logged, non-destructive
 equivalent. No scenario module calls a shell, opens an arbitrary path, or
 installs a package directly — they all go through these helpers instead.
 """
+
 from __future__ import annotations
 
 import logging
@@ -95,9 +96,7 @@ def resolve_sandbox_path(user_path: str) -> Path:
 # ---------------------------------------------------------------------------
 # Redaction (LLM02 / LLM07 — sensitive info / system-prompt disclosure)
 # ---------------------------------------------------------------------------
-_SECRET_PATTERN = re.compile(
-    r"(FAKE-ONLY-[A-Za-z0-9\-]+|LAB_SECRET_[A-Z0-9_]+|SYNTHETIC-[A-Za-z0-9\-]+)"
-)
+_SECRET_PATTERN = re.compile(r"(FAKE-ONLY-[A-Za-z0-9\-]+|LAB_SECRET_[A-Z0-9_]+|SYNTHETIC-[A-Za-z0-9\-]+)")
 
 
 def redact(text: str) -> str:

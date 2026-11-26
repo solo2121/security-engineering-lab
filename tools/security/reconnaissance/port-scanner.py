@@ -104,9 +104,7 @@ def parse_ports(value: str) -> list[int]:
 
         else:
 
-            ports.append(
-                int(item)
-            )
+            ports.append(int(item))
 
     return sorted(set(ports))
 
@@ -126,9 +124,7 @@ async def grab_banner(
 
         if data:
 
-            return data.decode(
-                errors="ignore"
-            ).strip()
+            return data.decode(errors="ignore").strip()
 
     except (
         asyncio.TimeoutError,
@@ -222,9 +218,7 @@ async def scan_ports(
 ) -> list[ScanResult]:
     """Scan ports concurrently."""
 
-    semaphore = asyncio.Semaphore(
-        workers
-    )
+    semaphore = asyncio.Semaphore(workers)
 
     async def limited_scan(port: int):
 
@@ -237,12 +231,7 @@ async def scan_ports(
                 scan_type,
             )
 
-    return await asyncio.gather(
-        *[
-            limited_scan(port)
-            for port in ports
-        ]
-    )
+    return await asyncio.gather(*[limited_scan(port) for port in ports])
 
 
 def display_results(
@@ -252,11 +241,7 @@ def display_results(
 
     print()
 
-    print(
-        f"{'PORT':<8}"
-        f"{'STATE':<12}"
-        "SERVICE"
-    )
+    print(f"{'PORT':<8}" f"{'STATE':<12}" "SERVICE")
 
     print("-" * 35)
 
@@ -267,11 +252,7 @@ def display_results(
 
         if result.is_open:
 
-            print(
-                f"{result.port:<8}"
-                f"OPEN{'':<7}"
-                f"{service_name(result.port)}"
-            )
+            print(f"{result.port:<8}" f"OPEN{'':<7}" f"{service_name(result.port)}")
 
 
 async def async_main(args) -> None:
@@ -279,9 +260,7 @@ async def async_main(args) -> None:
 
     if not args.target:
 
-        print(
-            "No target supplied."
-        )
+        print("No target supplied.")
 
         return
 
@@ -294,13 +273,9 @@ async def async_main(args) -> None:
 
         args.scan_type = ScanType.TCP_CONNECT
 
-    ports = parse_ports(
-        args.ports or "1-1024"
-    )
+    ports = parse_ports(args.ports or "1-1024")
 
-    print(
-        f"[+] Scanning {args.target}"
-    )
+    print(f"[+] Scanning {args.target}")
 
     start = time.perf_counter()
 
@@ -312,18 +287,11 @@ async def async_main(args) -> None:
         scan_type=args.scan_type,
     )
 
-    duration = (
-        time.perf_counter()
-        - start
-    )
+    duration = time.perf_counter() - start
 
-    display_results(
-        results
-    )
+    display_results(results)
 
-    print(
-        f"\nCompleted in {duration:.2f}s"
-    )
+    print(f"\nCompleted in {duration:.2f}s")
 
     if args.output:
 
@@ -335,9 +303,7 @@ async def async_main(args) -> None:
             for result in results
         ]
 
-        Path(
-            args.output
-        ).write_text(
+        Path(args.output).write_text(
             json.dumps(
                 output,
                 indent=4,
@@ -348,9 +314,7 @@ async def async_main(args) -> None:
 def parse_args():
     """CLI argument parser."""
 
-    parser = argparse.ArgumentParser(
-        description="Modern Async Port Scanner"
-    )
+    parser = argparse.ArgumentParser(description="Modern Async Port Scanner")
 
     parser.add_argument(
         "target",
@@ -399,9 +363,7 @@ def parse_args():
         dest="scan_type",
     )
 
-    parser.set_defaults(
-        scan_type=ScanType.TCP_CONNECT
-    )
+    parser.set_defaults(scan_type=ScanType.TCP_CONNECT)
 
     return parser.parse_args()
 
@@ -410,9 +372,7 @@ def main():
 
     args = parse_args()
 
-    asyncio.run(
-        async_main(args)
-    )
+    asyncio.run(async_main(args))
 
 
 if __name__ == "__main__":

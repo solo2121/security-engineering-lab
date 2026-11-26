@@ -41,6 +41,7 @@ Logging/detection point:
 
 Test case: see tests/test_app.py::test_llm06_agent_task
 """
+
 from __future__ import annotations
 
 import logging

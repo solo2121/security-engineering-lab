@@ -9,6 +9,7 @@ mock    deterministic regex planner (offline, used by tests). Like the mock
         how a fooled model would behave.
 ollama  asks the local model for a JSON list of calls and parses it strictly.
 """
+
 from __future__ import annotations
 
 import json

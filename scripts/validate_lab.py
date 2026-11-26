@@ -71,11 +71,7 @@ def discover_vagrantfiles() -> list[Path]:
     labs_dir = REPO_ROOT / "labs"
     if not labs_dir.is_dir():
         return []
-    return sorted(
-        vf
-        for vf in labs_dir.rglob("Vagrantfile")
-        if ".vagrant" not in vf.parts
-    )
+    return sorted(vf for vf in labs_dir.rglob("Vagrantfile") if ".vagrant" not in vf.parts)
 
 
 @dataclass
@@ -89,18 +85,12 @@ def check_repository_structure() -> CheckResult:
     missing = [f for f in REQUIRED_TOP_LEVEL_FILES if not (REPO_ROOT / f).is_file()]
     missing += [d for d in REQUIRED_TOP_LEVEL_DIRS if not (REPO_ROOT / d).is_dir()]
     if missing:
-        return CheckResult(
-            "Repository structure", False, f"missing: {', '.join(missing)}"
-        )
+        return CheckResult("Repository structure", False, f"missing: {', '.join(missing)}")
     return CheckResult("Repository structure", True)
 
 
 def check_lab_readmes() -> CheckResult:
-    missing = [
-        lab
-        for lab in LAB_DIRS_REQUIRING_README
-        if not (REPO_ROOT / lab / "README.md").is_file()
-    ]
+    missing = [lab for lab in LAB_DIRS_REQUIRING_README if not (REPO_ROOT / lab / "README.md").is_file()]
     if missing:
         return CheckResult("Lab documentation", False, f"missing README in: {', '.join(missing)}")
     return CheckResult("Lab documentation", True)
@@ -112,14 +102,10 @@ def check_vagrant_syntax(skip: bool) -> CheckResult:
 
     vagrantfiles = discover_vagrantfiles()
     if not vagrantfiles:
-        return CheckResult(
-            "Vagrant configuration", False, "no Vagrantfile found under labs/"
-        )
+        return CheckResult("Vagrant configuration", False, "no Vagrantfile found under labs/")
 
     if shutil.which("vagrant") is None:
-        return CheckResult(
-            "Vagrant configuration", True, "vagrant not installed, syntax check skipped"
-        )
+        return CheckResult("Vagrant configuration", True, "vagrant not installed, syntax check skipped")
 
     failures = []
     for vf in vagrantfiles:

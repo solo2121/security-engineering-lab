@@ -7,6 +7,7 @@ structure. Passwords are never copied. Attacker-controlled attributes used by
 the training scenarios live in data/ad/overlay.json, not in the provisioning
 script. Run with --check to fail when the snapshot is stale.
 """
+
 from __future__ import annotations
 
 import json
@@ -31,13 +32,15 @@ def parse(text: str) -> dict:
         fields = {k: v for k, v in PAIR.findall(line)}
         name = fields["Name"].strip('"')
         if "Pass" in fields and "Groups" in fields:
-            users.append({
-                "sam": name,
-                "dept": fields.get("Dept", '""').strip('"'),
-                "title": fields.get("Title", '""').strip('"'),
-                "groups": re.findall(r'"([^"]+)"', fields["Groups"]),
-                "manager": fields.get("Manager", '""').strip('"') or None,
-            })
+            users.append(
+                {
+                    "sam": name,
+                    "dept": fields.get("Dept", '""').strip('"'),
+                    "title": fields.get("Title", '""').strip('"'),
+                    "groups": re.findall(r'"([^"]+)"', fields["Groups"]),
+                    "manager": fields.get("Manager", '""').strip('"') or None,
+                }
+            )
         elif "Description" in fields and "OU" in fields:
             groups.append({"name": name, "description": fields["Description"].strip('"')})
     return {"users": users, "groups": groups}

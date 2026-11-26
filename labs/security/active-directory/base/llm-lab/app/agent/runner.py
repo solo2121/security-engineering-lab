@@ -1,4 +1,5 @@
 """Policy, approvals and execution for the helpdesk agent."""
+
 from __future__ import annotations
 
 import json
@@ -32,6 +33,7 @@ def _step(call: planner.Call, decision: str, reason: str, **extra: Any) -> Dict[
 
 # -- output sanitising (first line of defense against injection in data) --------
 
+
 def sanitize(value: Any, user: str) -> Any:
     """Replace strings that look like instructions; leave everything else intact."""
     if isinstance(value, str):
@@ -48,6 +50,7 @@ def sanitize(value: Any, user: str) -> Any:
 
 
 # -- secure policy -------------------------------------------------------------------
+
 
 def _decide(d: directory.Directory, call: planner.Call) -> Optional[Dict[str, Any]]:
     """Return a denial step, or None when the call may proceed to risk handling."""
@@ -69,15 +72,34 @@ def _decide(d: directory.Directory, call: planner.Call) -> Optional[Dict[str, An
     return None
 
 
-def _execute(d: directory.Directory, who: auth.Principal, call: planner.Call, via: str, approver: Optional[str] = None) -> Dict[str, Any]:
+def _execute(
+    d: directory.Directory, who: auth.Principal, call: planner.Call, via: str, approver: Optional[str] = None
+) -> Dict[str, Any]:
     tool = REGISTRY[call.tool]
     result = tool.run(d, call.args)
     action_id = uuid.uuid4().hex[:10]
     with _lock:
-        _actions[action_id] = {"id": action_id, "tool": call.tool, "args": dict(call.args), "requester": who.user,
-                               "status": "executed", "undo": tool.undo, "created": time.time(), "approver": approver}
-    audit.LOG.record("agent_tool_executed", user=who.user, tenant=who.tenant, outcome="executed", tool=call.tool,
-                     args=call.args, via=via, action_id=action_id, approver=approver)
+        _actions[action_id] = {
+            "id": action_id,
+            "tool": call.tool,
+            "args": dict(call.args),
+            "requester": who.user,
+            "status": "executed",
+            "undo": tool.undo,
+            "created": time.time(),
+            "approver": approver,
+        }
+    audit.LOG.record(
+        "agent_tool_executed",
+        user=who.user,
+        tenant=who.tenant,
+        outcome="executed",
+        tool=call.tool,
+        args=call.args,
+        via=via,
+        action_id=action_id,
+        approver=approver,
+    )
     return {"result": result, "action_id": action_id}
 
 
@@ -85,17 +107,39 @@ def handle(kind: str, who: auth.Principal, call: planner.Call) -> Dict[str, Any]
     d = directory.get(kind)
     denial = _decide(d, call)
     if denial:
-        audit.LOG.record("agent_tool_denied", user=who.user, tenant=who.tenant, outcome="denied", tool=call.tool,
-                         args=call.args if isinstance(call.args, dict) else None, reason=denial["reason"])
+        audit.LOG.record(
+            "agent_tool_denied",
+            user=who.user,
+            tenant=who.tenant,
+            outcome="denied",
+            tool=call.tool,
+            args=call.args if isinstance(call.args, dict) else None,
+            reason=denial["reason"],
+        )
         return denial
     tool = REGISTRY[call.tool]
     if tool.risk == "high":
         approval_id = uuid.uuid4().hex[:10]
         with _lock:
-            _actions[approval_id] = {"id": approval_id, "tool": call.tool, "args": dict(call.args), "requester": who.user,
-                                     "status": "pending", "undo": tool.undo, "created": time.time(), "approver": None}
-        audit.LOG.record("agent_approval_requested", user=who.user, tenant=who.tenant, outcome="pending",
-                         tool=call.tool, args=call.args, approval_id=approval_id)
+            _actions[approval_id] = {
+                "id": approval_id,
+                "tool": call.tool,
+                "args": dict(call.args),
+                "requester": who.user,
+                "status": "pending",
+                "undo": tool.undo,
+                "created": time.time(),
+                "approver": None,
+            }
+        audit.LOG.record(
+            "agent_approval_requested",
+            user=who.user,
+            tenant=who.tenant,
+            outcome="pending",
+            tool=call.tool,
+            args=call.args,
+            approval_id=approval_id,
+        )
         return _step(call, "pending_approval", "high-impact action: an admin must approve it", approval_id=approval_id)
     out = _execute(d, who, call, via="policy")
     return _step(call, "executed", "allowed by policy", result=out["result"], action_id=out["action_id"])
@@ -120,6 +164,7 @@ def summarize(steps: List[Dict[str, Any]]) -> str:
 
 
 # -- approvals -----------------------------------------------------------------------
+
 
 class ApprovalError(Exception):
     def __init__(self, status: int, detail: str) -> None:
@@ -149,7 +194,9 @@ def pending() -> List[Dict[str, Any]]:
 def approve(who: auth.Principal, action_id: str) -> Dict[str, Any]:
     a = _pending(action_id)
     if a["requester"] == who.user:
-        audit.LOG.record("agent_self_approval_denied", user=who.user, tenant=who.tenant, outcome="denied", approval_id=action_id)
+        audit.LOG.record(
+            "agent_self_approval_denied", user=who.user, tenant=who.tenant, outcome="denied", approval_id=action_id
+        )
         raise ApprovalError(403, "You cannot approve your own request.")
     d = directory.get("secure")
     call = planner.Call(a["tool"], dict(a["args"]))
@@ -157,7 +204,14 @@ def approve(who: auth.Principal, action_id: str) -> Dict[str, Any]:
     if denial:
         with _lock:
             a["status"] = "denied"
-        audit.LOG.record("agent_tool_denied", user=who.user, tenant=who.tenant, outcome="denied", tool=a["tool"], reason=denial["reason"])
+        audit.LOG.record(
+            "agent_tool_denied",
+            user=who.user,
+            tenant=who.tenant,
+            outcome="denied",
+            tool=a["tool"],
+            reason=denial["reason"],
+        )
         raise ApprovalError(409, denial["reason"])
     requester = auth.Principal(a["requester"], "helpdesk", who.tenant)
     out = _execute(d, requester, call, via="approval", approver=who.user)
@@ -187,11 +241,14 @@ def undo(who: auth.Principal, action_id: str) -> Dict[str, Any]:
     result = rev.run(directory.get("secure"), dict(a["args"]))
     with _lock:
         a["status"] = "undone"
-    audit.LOG.record("agent_undo", user=who.user, tenant=who.tenant, outcome="undone", action_id=action_id, tool=a["undo"])
+    audit.LOG.record(
+        "agent_undo", user=who.user, tenant=who.tenant, outcome="undone", action_id=action_id, tool=a["undo"]
+    )
     return {"action_id": action_id, "status": "undone", "result": result}
 
 
 # -- lab policy: the confused deputy ---------------------------------------------------
+
 
 def run_lab(request: str, max_steps: int = 8) -> Dict[str, Any]:
     """No authentication, no argument checks, no approvals, raw tool output fed back to the planner."""
@@ -214,5 +271,8 @@ def run_lab(request: str, max_steps: int = 8) -> Dict[str, Any]:
     from app.challenges import state
 
     state.note_agent_run(request, steps)
-    return {"steps": steps, "summary": summarize(steps),
-            "note": "LAB MODE: no auth, no policy, tool output trusted as instructions."}
+    return {
+        "steps": steps,
+        "summary": summarize(steps),
+        "note": "LAB MODE: no auth, no policy, tool output trusted as instructions.",
+    }

@@ -80,18 +80,18 @@ v{version} | {author}
 # (description, short switch, long switch)
 # ------------------------------------------------------------------
 OPTIONS: List[Tuple[str, str, str]] = [
-    ("Do everything (-a)",                       "-a", ""),
-    ("Enumerate users (-U)",                     "-U", ""),
-    ("Enumerate groups (-G)",                    "-G", ""),
-    ("Enumerate shares (-S)",                    "-S", ""),
-    ("Enumerate passwords policy (-P)",          "-P", ""),
-    ("Enumerate OS information (-O)",            "-O", ""),
-    ("Enumerate printers (-i)",                  "-i", ""),
-    ("Enumerate LSA Policy info (-L)",           "-L", ""),
-    ("Enumerate RID cycling (RID range)",        "-r", ""),
+    ("Do everything (-a)", "-a", ""),
+    ("Enumerate users (-U)", "-U", ""),
+    ("Enumerate groups (-G)", "-G", ""),
+    ("Enumerate shares (-S)", "-S", ""),
+    ("Enumerate passwords policy (-P)", "-P", ""),
+    ("Enumerate OS information (-O)", "-O", ""),
+    ("Enumerate printers (-i)", "-i", ""),
+    ("Enumerate LSA Policy info (-L)", "-L", ""),
+    ("Enumerate RID cycling (RID range)", "-r", ""),
     ("Enumerate via brute-force share names (-b)", "-b", ""),
     ("Enumerate via brute-force user names (-B)", "-B", ""),
-    ("Enumerate via null session (-n)",          "-n", ""),
+    ("Enumerate via null session (-n)", "-n", ""),
 ]
 
 # ------------------------------------------------------------------
@@ -131,6 +131,7 @@ def ask(prompt: str, valid: List[str]) -> str:
         if choice in valid:
             return choice
         print(f"Invalid choice. Must be one of: {', '.join(valid)}")
+
 
 # ------------------------------------------------------------------
 # Main interactive menu
@@ -182,6 +183,7 @@ def interactive_menu(target: str, custom_options: List[str]) -> None:
     else:
         print("\nAborted.")
 
+
 # ------------------------------------------------------------------
 # CLI argument parsing
 # ------------------------------------------------------------------
@@ -190,22 +192,16 @@ def interactive_menu(target: str, custom_options: List[str]) -> None:
 def parse_args() -> argparse.Namespace:
     """Parse and validate command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Interactive wrapper around enum4linux",
-        formatter_class=argparse.RawTextHelpFormatter
+        description="Interactive wrapper around enum4linux", formatter_class=argparse.RawTextHelpFormatter
     )
-    parser.add_argument("-t", "--target", required=True,
-                        help="Target IP address / hostname")
-    parser.add_argument("-u", "--user", metavar="USER",
-                        help="Username (if authentication is needed)")
-    parser.add_argument("-p", "--password", metavar="PASS",
-                        help="Password (if authentication is needed)")
-    parser.add_argument("-d", "--domain", metavar="DOMAIN",
-                        help="Domain / workgroup")
-    parser.add_argument("--timeout", type=int, default=30,
-                        help="Connection timeout in seconds (default: 30)")
-    parser.add_argument("-v", "--version", action="version",
-                        version=f"%(prog)s {VERSION}",
-                        help="Show version information")
+    parser.add_argument("-t", "--target", required=True, help="Target IP address / hostname")
+    parser.add_argument("-u", "--user", metavar="USER", help="Username (if authentication is needed)")
+    parser.add_argument("-p", "--password", metavar="PASS", help="Password (if authentication is needed)")
+    parser.add_argument("-d", "--domain", metavar="DOMAIN", help="Domain / workgroup")
+    parser.add_argument("--timeout", type=int, default=30, help="Connection timeout in seconds (default: 30)")
+    parser.add_argument(
+        "-v", "--version", action="version", version=f"%(prog)s {VERSION}", help="Show version information"
+    )
     return parser.parse_args()
 
 
@@ -221,6 +217,7 @@ def build_custom_options(args: argparse.Namespace) -> List[str]:
     if args.timeout:
         opts += ["-T", str(args.timeout)]
     return opts
+
 
 # ------------------------------------------------------------------
 # Main function

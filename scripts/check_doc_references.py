@@ -57,7 +57,14 @@ TABLE_PATTERN = re.compile(r"^\|\s*`([^`]+)`\s*\|")
 
 # Only treat these as path references (skip e.g. `v1.12`, `HARBOR_PASS`).
 CANDIDATE_EXTENSIONS = {
-    ".md", ".py", ".sh", ".yml", ".yaml", ".json", ".toml", ".txt",
+    ".md",
+    ".py",
+    ".sh",
+    ".yml",
+    ".yaml",
+    ".json",
+    ".toml",
+    ".txt",
 }
 
 
@@ -71,12 +78,7 @@ def looks_like_path_reference(candidate: str) -> bool:
 
 def build_repo_file_index() -> list[Path]:
     """All tracked-looking files under the repo, excluding .git and vagrant state."""
-    return [
-        p for p in REPO_ROOT.rglob("*")
-        if p.is_file()
-        and ".git" not in p.parts
-        and ".vagrant" not in p.parts
-    ]
+    return [p for p in REPO_ROOT.rglob("*") if p.is_file() and ".git" not in p.parts and ".vagrant" not in p.parts]
 
 
 def resolves_somewhere(candidate: str, referencing_file: Path, repo_files: list[Path]) -> bool:
@@ -90,7 +92,7 @@ def resolves_somewhere(candidate: str, referencing_file: Path, repo_files: list[
     #    like `docs/attack-guide.md` used from a parent README).
     candidate_parts = Path(candidate).parts
     for f in repo_files:
-        if f.parts[-len(candidate_parts):] == candidate_parts:
+        if f.parts[-len(candidate_parts) :] == candidate_parts:
             return True
     return False
 

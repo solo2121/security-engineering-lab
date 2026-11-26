@@ -6,6 +6,7 @@ the same way whether it's run directly (`uvicorn app.main:app`) or under the
 systemd unit installed on the llm01 VM. Nothing in this file reaches out to
 the network or any external service.
 """
+
 from __future__ import annotations
 
 import os

@@ -46,7 +46,6 @@ from rich.panel import Panel
 from rich.prompt import Confirm, Prompt
 from rich.table import Table
 
-
 console = Console()
 
 # ========================== CONFIGURATION ==========================
@@ -230,11 +229,7 @@ def get_vagrant_inventory(
     # 2. Get SSH endpoints only for running machines.
     # ------------------------------------------------------------------
 
-    running_vms = [
-        vm
-        for vm, state in states.items()
-        if state == "running"
-    ]
+    running_vms = [vm for vm, state in states.items() if state == "running"]
 
     if not running_vms:
         return states, ssh_hosts
@@ -337,8 +332,7 @@ def parse_profiles(vagrantfile: Path) -> dict[str, dict] | None:
     profiles: dict[str, dict] = {}
 
     for entry in re.finditer(
-        r"""['"](?P<name>[\w-]+)['"]\s*=>\s*\{(?P<body>.*?)\},?\s*"""
-        r"""(?=\n\s*['"][\w-]+['"]\s*=>\s*\{|\Z)""",
+        r"""['"](?P<name>[\w-]+)['"]\s*=>\s*\{(?P<body>.*?)\},?\s*""" r"""(?=\n\s*['"][\w-]+['"]\s*=>\s*\{|\Z)""",
         block.group(1),
         re.S,
     ):
@@ -351,9 +345,7 @@ def parse_profiles(vagrantfile: Path) -> dict[str, dict] | None:
         profiles[name] = {
             "vms": vms_match.group(1).split() if vms_match else [],
             "min_ram": int(ram_match.group(1)) if ram_match else None,
-            "recommended_ram": (
-                int(rec_match.group(1)) if rec_match else None
-            ),
+            "recommended_ram": (int(rec_match.group(1)) if rec_match else None),
         }
 
     return profiles or None
@@ -372,9 +364,7 @@ def best_override_profile(vagrantfile: Path, vm: str) -> tuple[str, dict] | None
     if not profiles:
         return None
 
-    hits = sorted(
-        name for name, info in profiles.items() if vm in info["vms"]
-    )
+    hits = sorted(name for name, info in profiles.items() if vm in info["vms"])
 
     if not hits:
         return None
@@ -444,11 +434,7 @@ def run_vagrant(
     if extra_args:
         cmd.extend(extra_args)
 
-    label = (
-        ", ".join(vms_list)
-        if vms_list
-        else (vm or "(all)")
-    )
+    label = ", ".join(vms_list) if vms_list else (vm or "(all)")
 
     env = build_vagrant_environment()
 
@@ -460,15 +446,9 @@ def run_vagrant(
             f"profile otherwise).[/dim]"
         )
 
-    console.rule(
-        f"[bold cyan]vagrant {action}[/bold cyan] {label}"
-    )
+    console.rule(f"[bold cyan]vagrant {action}[/bold cyan] {label}")
 
-    stdin_arg = (
-        None
-        if action == "ssh"
-        else subprocess.DEVNULL
-    )
+    stdin_arg = None if action == "ssh" else subprocess.DEVNULL
 
     try:
         result = subprocess.run(
@@ -491,9 +471,7 @@ def run_vagrant(
             detail=str(exc),
         )
     except KeyboardInterrupt:
-        console.print(
-            "[yellow]Interrupted by user.[/yellow]"
-        )
+        console.print("[yellow]Interrupted by user.[/yellow]")
 
         return VmAction(
             name=label,
@@ -527,8 +505,7 @@ def switch_attacker_box() -> None:
     current_version = os.environ.get("KALI_BOX_VERSION", "2026.1.0")
     console.print(
         Panel.fit(
-            "[bold]Attacker box (kali VM)[/bold]\n"
-            f"Current: [cyan]{current_box}[/cyan] @ {current_version}",
+            "[bold]Attacker box (kali VM)[/bold]\n" f"Current: [cyan]{current_box}[/cyan] @ {current_version}",
             border_style="cyan",
         )
     )
@@ -546,10 +523,7 @@ def switch_attacker_box() -> None:
         if box is None:
             os.environ.pop("KALI_BOX", None)
             os.environ.pop("KALI_BOX_VERSION", None)
-            console.print(
-                "[green]Attacker box reset to the Kali default "
-                "(kalilinux/rolling).[/green]"
-            )
+            console.print("[green]Attacker box reset to the Kali default " "(kalilinux/rolling).[/green]")
         else:
             os.environ["KALI_BOX"] = box
             os.environ["KALI_BOX_VERSION"] = version
@@ -565,10 +539,7 @@ def switch_attacker_box() -> None:
             default=os.environ.get("KALI_BOX", ""),
         )
         if not custom_box:
-            console.print(
-                "[yellow]No box entered -- leaving the current setting "
-                "unchanged.[/yellow]"
-            )
+            console.print("[yellow]No box entered -- leaving the current setting " "unchanged.[/yellow]")
             return
 
         custom_version = Prompt.ask(
@@ -605,15 +576,10 @@ def ssh_opnsense(host: str) -> VmAction:
     This intentionally bypasses `vagrant ssh` because OPNsense requires
     direct root-shell access.
     """
-    console.print(
-        "[yellow]Attempting direct SSH to OPNsense...[/yellow]"
-    )
+    console.print("[yellow]Attempting direct SSH to OPNsense...[/yellow]")
 
     if not host or host == "N/A":
-        console.print(
-            "[red]Could not determine OPNsense SSH host "
-            "for direct connection.[/red]"
-        )
+        console.print("[red]Could not determine OPNsense SSH host " "for direct connection.[/red]")
 
         return VmAction(
             name="opnsense",
@@ -699,11 +665,7 @@ def show_main_menu(
     """
     console.clear()
 
-    box_line = (
-        f"\n[dim]Attacker box: {os.environ['KALI_BOX']}[/dim]"
-        if os.environ.get("KALI_BOX")
-        else ""
-    )
+    box_line = f"\n[dim]Attacker box: {os.environ['KALI_BOX']}[/dim]" if os.environ.get("KALI_BOX") else ""
     console.print(
         Panel.fit(
             "[bold white]PENTEST VLAN LAB MANAGER v4.1[/bold white]\n"
@@ -788,13 +750,7 @@ def show_main_menu(
 
     console.print(table)
 
-    console.print(
-        "[cyan][A] Start All   "
-        "[B] Halt All   "
-        "[K] Attacker box   "
-        "[R] Refresh   "
-        "[Q] Quit[/cyan]"
-    )
+    console.print("[cyan][A] Start All   " "[B] Halt All   " "[K] Attacker box   " "[R] Refresh   " "[Q] Quit[/cyan]")
 
     return options, excluded
 
@@ -813,9 +769,7 @@ def vm_menu(
     scoped to each subprocess call only.
     """
     while True:
-        states, ssh_hosts = get_vagrant_inventory(
-            vagrantfile
-        )
+        states, ssh_hosts = get_vagrant_inventory(vagrantfile)
 
         state = states.get(
             vm,
@@ -829,11 +783,7 @@ def vm_menu(
 
         console.clear()
 
-        detail_box_line = (
-            f"\n[dim]Attacker box: {os.environ['KALI_BOX']}[/dim]"
-            if os.environ.get("KALI_BOX")
-            else ""
-        )
+        detail_box_line = f"\n[dim]Attacker box: {os.environ['KALI_BOX']}[/dim]" if os.environ.get("KALI_BOX") else ""
         console.print(
             Panel.fit(
                 "[bold white]"
@@ -844,15 +794,9 @@ def vm_menu(
             )
         )
 
-        console.print(
-            f"VM:    [cyan]{vm}[/cyan]"
-        )
-        console.print(
-            f"State: {state}"
-        )
-        console.print(
-            f"Host:  {host}"
-        )
+        console.print(f"VM:    [cyan]{vm}[/cyan]")
+        console.print(f"State: {state}")
+        console.print(f"Host:  {host}")
 
         if profile_override:
             console.print(
@@ -875,20 +819,13 @@ def vm_menu(
 
         if choice == "S":
             if state != "running":
-                console.print(
-                    f"[yellow]{vm} is not running. "
-                    "Start it before connecting via SSH."
-                    "[/yellow]"
-                )
+                console.print(f"[yellow]{vm} is not running. " "Start it before connecting via SSH." "[/yellow]")
 
             elif vm == "opnsense":
                 result = ssh_opnsense(host)
 
                 if not result.ok:
-                    console.print(
-                        f"[red]OPNsense SSH failed: "
-                        f"{result.detail}[/red]"
-                    )
+                    console.print(f"[red]OPNsense SSH failed: " f"{result.detail}[/red]")
 
             else:
                 run_vagrant(
@@ -916,8 +853,7 @@ def vm_menu(
 
         elif choice == "D":
             if Confirm.ask(
-                f"[bold red]Really destroy {vm}?"
-                "[/bold red]",
+                f"[bold red]Really destroy {vm}?" "[/bold red]",
                 default=False,
             ):
                 run_vagrant(
@@ -940,9 +876,7 @@ def vm_menu(
             return
 
         else:
-            console.print(
-                "[red]Invalid option[/red]"
-            )
+            console.print("[red]Invalid option[/red]")
 
         Prompt.ask(
             "[bright_black]Press Enter to continue...[/bright_black]",
@@ -965,9 +899,7 @@ def start_all(
     active under the current LAB_PROFILE (see resolve_active_vms),
     not unconditionally ALL_VMS.
     """
-    console.print(
-        "[green]Starting all VMs...[/green]"
-    )
+    console.print("[green]Starting all VMs...[/green]")
 
     return run_vagrant(
         "up",
@@ -982,9 +914,7 @@ def halt_all(
     vms: tuple[str, ...] | list[str],
 ) -> VmAction:
     """Halt the given lab VMs."""
-    console.print(
-        "[yellow]Halting all VMs...[/yellow]"
-    )
+    console.print("[yellow]Halting all VMs...[/yellow]")
 
     return run_vagrant(
         "halt",
@@ -1011,22 +941,12 @@ def validate_vm_names(
 
     known = set(states) if states else set(ALL_VMS)
 
-    unknown = [
-        vm
-        for vm in requested
-        if vm not in known
-    ]
+    unknown = [vm for vm in requested if vm not in known]
 
     if unknown:
-        console.print(
-            "[bold red]Unknown VM(s):[/bold red] "
-            + ", ".join(unknown)
-        )
+        console.print("[bold red]Unknown VM(s):[/bold red] " + ", ".join(unknown))
 
-        console.print(
-            "[dim]Known lab VMs:[/dim] "
-            + ", ".join(ALL_VMS)
-        )
+        console.print("[dim]Known lab VMs:[/dim] " + ", ".join(ALL_VMS))
 
         return []
 
@@ -1048,11 +968,7 @@ def print_results(
     table.add_column("Detail")
 
     for result in results:
-        status = (
-            "[green]OK[/green]"
-            if result.ok
-            else "[red]FAILED[/red]"
-        )
+        status = "[green]OK[/green]" if result.ok else "[red]FAILED[/red]"
 
         table.add_row(
             result.name,
@@ -1068,9 +984,7 @@ def print_results(
 
 def main() -> int:
     """Program entry point."""
-    parser = argparse.ArgumentParser(
-        description="Manage Pentest Lab VLAN VMs."
-    )
+    parser = argparse.ArgumentParser(description="Manage Pentest Lab VLAN VMs.")
 
     parser.add_argument(
         "action",
@@ -1099,10 +1013,7 @@ def main() -> int:
     parser.add_argument(
         "--provision",
         action="store_true",
-        help=(
-            "Run Vagrant provisioning with the "
-            "'up' or 'reload' action."
-        ),
+        help=("Run Vagrant provisioning with the " "'up' or 'reload' action."),
     )
 
     parser.add_argument(
@@ -1157,10 +1068,7 @@ def main() -> int:
     vagrantfile = find_vagrantfile()
 
     if vagrantfile is None:
-        console.print(
-            "[bold red]Error:[/bold red] No Vagrantfile found "
-            "in this directory or any parent."
-        )
+        console.print("[bold red]Error:[/bold red] No Vagrantfile found " "in this directory or any parent.")
         return 1
 
     # ------------------------------------------------------------------
@@ -1196,9 +1104,7 @@ def main() -> int:
 
             return 0 if result.ok else 1
 
-        states, _ = get_vagrant_inventory(
-            vagrantfile
-        )
+        states, _ = get_vagrant_inventory(vagrantfile)
 
         targets = validate_vm_names(
             args.vms,
@@ -1209,23 +1115,12 @@ def main() -> int:
             return 1
 
         # Safety: never allow an implicit global destroy.
-        if (
-            args.action == "destroy"
-            and not args.vms
-        ):
-            console.print(
-                "[bold red]Error:[/bold red] Refusing to "
-                "destroy all VMs without explicit targets."
-            )
+        if args.action == "destroy" and not args.vms:
+            console.print("[bold red]Error:[/bold red] Refusing to " "destroy all VMs without explicit targets.")
 
-            console.print(
-                "Specify VMs to destroy, for example:"
-            )
+            console.print("Specify VMs to destroy, for example:")
 
-            console.print(
-                "  python3 vagrant_manager.py "
-                "destroy kali DC01"
-            )
+            console.print("  python3 vagrant_manager.py " "destroy kali DC01")
 
             return 1
 
@@ -1233,10 +1128,7 @@ def main() -> int:
         if args.action == "destroy":
             extra = ["-f"]
 
-        elif (
-            args.action in {"up", "reload"}
-            and args.provision
-        ):
+        elif args.action in {"up", "reload"} and args.provision:
             extra = ["--provision"]
 
         else:
@@ -1261,9 +1153,7 @@ def main() -> int:
         # ------------------------------------------------------------------
 
         if not args.vms:
-            active_vms, status_resolved = resolve_active_vms(
-                vagrantfile
-            )
+            active_vms, status_resolved = resolve_active_vms(vagrantfile)
 
             if status_resolved and len(active_vms) < len(ALL_VMS):
                 console.print(
@@ -1314,10 +1204,7 @@ def main() -> int:
         if results:
             print_results(results)
 
-            if any(
-                not result.ok
-                for result in results
-            ):
+            if any(not result.ok for result in results):
                 return 1
 
         return 0
@@ -1327,9 +1214,7 @@ def main() -> int:
     # ------------------------------------------------------------------
 
     while True:
-        states, ssh_hosts = get_vagrant_inventory(
-            vagrantfile
-        )
+        states, ssh_hosts = get_vagrant_inventory(vagrantfile)
         active_vms = [vm for vm in ALL_VMS if vm in states] or list(ALL_VMS)
         status_resolved = bool(states)
 
@@ -1407,9 +1292,7 @@ def main() -> int:
             return 0
 
         else:
-            console.print(
-                "[red]Invalid option[/red]"
-            )
+            console.print("[red]Invalid option[/red]")
 
             Prompt.ask(
                 "[bright_black]Press Enter to continue...[/bright_black]",

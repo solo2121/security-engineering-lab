@@ -61,17 +61,15 @@ __description__ = "Interactive CLI menu for ettercap network security testing"
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler('ettercap-menu.log', mode='a')
-    ]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout), logging.FileHandler("ettercap-menu.log", mode="a")],
 )
 logger = logging.getLogger(__name__)
 
 
 class MenuOption(Enum):
     """Enumeration of available menu options for type safety and maintainability."""
+
     ARP_POISONING = auto()
     SNIFF_TRAFFIC = auto()
     DNS_SPOOFING = auto()
@@ -82,17 +80,20 @@ class MenuOption(Enum):
 
 class EttercapError(Exception):
     """Custom exception class for ettercap-related errors."""
+
     pass
 
 
 class NetworkError(Exception):
     """Custom exception class for network-related errors."""
+
     pass
 
 
 @dataclass
 class NetworkInterface:
     """Data class representing a network interface with its properties."""
+
     name: str
     is_active: bool = False
     ip_address: Optional[str] = None
@@ -107,6 +108,7 @@ class NetworkInterface:
 @dataclass
 class AttackConfig:
     """Configuration container for various attack parameters."""
+
     interface: str
     target1: Optional[str] = None
     target2: Optional[str] = None
@@ -155,6 +157,7 @@ class SystemUtils:
         try:
             if platform.system() == "Windows":
                 import ctypes
+
                 return ctypes.windll.shell32.IsUserAnAdmin() != 0
             else:
                 return os.geteuid() == 0
@@ -171,13 +174,7 @@ class SystemUtils:
             Tuple[bool, str]: (is_installed, version_info)
         """
         try:
-            result = subprocess.run(
-                ['ettercap', '--version'],
-                capture_output=True,
-                text=True,
-                timeout=10,
-                check=False
-            )
+            result = subprocess.run(["ettercap", "--version"], capture_output=True, text=True, timeout=10, check=False)
 
             if result.returncode == 0:
                 version_info = result.stdout.strip() or result.stderr.strip()
@@ -212,7 +209,7 @@ class SystemUtils:
 
         # Add common fallback interfaces if none found
         if not interfaces:
-            common_names = ['eth0', 'eth1', 'wlan0', 'wlan1', 'en0', 'wlp2s0']
+            common_names = ["eth0", "eth1", "wlan0", "wlan1", "en0", "wlp2s0"]
             interfaces = [NetworkInterface(name) for name in common_names]
 
         return interfaces
@@ -221,12 +218,12 @@ class SystemUtils:
     def _get_linux_interfaces() -> List[NetworkInterface]:
         """Get network interfaces on Linux systems."""
         interfaces = []
-        net_path = Path('/sys/class/net')
+        net_path = Path("/sys/class/net")
 
         if net_path.exists():
             for iface_path in net_path.iterdir():
-                if iface_path.name != 'lo':  # Skip loopback
-                    is_active = (iface_path / 'operstate').read_text().strip() == 'up'
+                if iface_path.name != "lo":  # Skip loopback
+                    is_active = (iface_path / "operstate").read_text().strip() == "up"
                     interfaces.append(NetworkInterface(iface_path.name, is_active))
 
         return interfaces
@@ -235,13 +232,13 @@ class SystemUtils:
     def _get_darwin_interfaces() -> List[NetworkInterface]:
         """Get network interfaces on macOS systems."""
         try:
-            result = subprocess.run(['ifconfig'], capture_output=True, text=True, timeout=5)
+            result = subprocess.run(["ifconfig"], capture_output=True, text=True, timeout=5)
             interfaces = []
 
-            for line in result.stdout.split('\n'):
-                if ':' in line and not line.startswith('\t'):
-                    iface_name = line.split(':')[0].strip()
-                    if iface_name != 'lo0':  # Skip loopback
+            for line in result.stdout.split("\n"):
+                if ":" in line and not line.startswith("\t"):
+                    iface_name = line.split(":")[0].strip()
+                    if iface_name != "lo0":  # Skip loopback
                         interfaces.append(NetworkInterface(iface_name))
 
             return interfaces
@@ -252,14 +249,14 @@ class SystemUtils:
     def _get_windows_interfaces() -> List[NetworkInterface]:
         """Get network interfaces on Windows systems."""
         try:
-            result = subprocess.run(['ipconfig'], capture_output=True, text=True, timeout=5)
+            result = subprocess.run(["ipconfig"], capture_output=True, text=True, timeout=5)
             interfaces = []
 
             # Parse Windows ipconfig output
-            for line in result.stdout.split('\n'):
-                if 'adapter' in line.lower():
+            for line in result.stdout.split("\n"):
+                if "adapter" in line.lower():
                     # Extract adapter name
-                    match = re.search(r'adapter (.+?):', line)
+                    match = re.search(r"adapter (.+?):", line)
                     if match:
                         iface_name = match.group(1).strip()
                         interfaces.append(NetworkInterface(iface_name))
@@ -359,12 +356,12 @@ class EttercapCommandBuilder:
         self.plugins = []
         self.filters = []
 
-    def set_text_mode(self) -> 'EttercapCommandBuilder':
+    def set_text_mode(self) -> "EttercapCommandBuilder":
         """Set ettercap to text mode."""
         self.args.append("-T")
         return self
 
-    def set_interface(self, interface: str) -> 'EttercapCommandBuilder':
+    def set_interface(self, interface: str) -> "EttercapCommandBuilder":
         """Set network interface."""
         if InputValidator.validate_network_interface(interface):
             self.interface = interface
@@ -373,7 +370,7 @@ class EttercapCommandBuilder:
             raise ValueError(f"Invalid interface: {interface}")
         return self
 
-    def add_mitm_arp(self, target1: str, target2: str) -> 'EttercapCommandBuilder':
+    def add_mitm_arp(self, target1: str, target2: str) -> "EttercapCommandBuilder":
         """Add ARP poisoning MITM attack."""
         if not InputValidator.validate_ip_address(target1):
             raise ValueError(f"Invalid target1 IP: {target1}")
@@ -384,12 +381,12 @@ class EttercapCommandBuilder:
         self.targets.extend([f"/{target1}//", f"/{target2}//"])
         return self
 
-    def add_plugin(self, plugin: str) -> 'EttercapCommandBuilder':
+    def add_plugin(self, plugin: str) -> "EttercapCommandBuilder":
         """Add ettercap plugin."""
         self.args.extend(["-P", plugin])
         return self
 
-    def add_filter_file(self, filter_file: str) -> 'EttercapCommandBuilder':
+    def add_filter_file(self, filter_file: str) -> "EttercapCommandBuilder":
         """Add filter file."""
         if InputValidator.validate_file_path(filter_file):
             self.args.extend(["-F", filter_file])
@@ -397,7 +394,7 @@ class EttercapCommandBuilder:
             raise ValueError(f"Invalid filter file: {filter_file}")
         return self
 
-    def add_output_file(self, output_file: str) -> 'EttercapCommandBuilder':
+    def add_output_file(self, output_file: str) -> "EttercapCommandBuilder":
         """Write captured packets to a pcap file (ettercap -w/--write)."""
         self.args.extend(["-w", output_file])
         return self
@@ -438,6 +435,7 @@ class EttercapMenu:
 
     def _setup_signal_handlers(self) -> None:
         """Set up signal handlers for graceful application shutdown."""
+
         def signal_handler(signum: int, frame) -> None:
             logger.info(f"Received signal {signum}, shutting down gracefully")
             print("\n[!] Received interrupt signal. Shutting down gracefully...")
@@ -530,7 +528,7 @@ class EttercapMenu:
         prompt: str,
         validator: Callable[[str], bool],
         error_message: str = "Invalid input. Please try again.",
-        allow_empty: bool = False
+        allow_empty: bool = False,
     ) -> str:
         """
         Get user input with validation and comprehensive error handling.
@@ -591,7 +589,7 @@ class EttercapMenu:
                 *cmd_args,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT,
-                start_new_session=(os.name != "nt")
+                start_new_session=(os.name != "nt"),
             )
             self._active_process = process
 
@@ -650,9 +648,9 @@ class EttercapMenu:
 
     async def handle_arp_poisoning(self) -> None:
         """Handle ARP poisoning (MITM) attack configuration and execution."""
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("🎯 ARP Poisoning (Man-in-the-Middle Attack)")
-        print("="*60)
+        print("=" * 60)
         print("⚠️  This will perform a MITM attack between two network hosts")
         print("⚠️  Ensure you have proper authorization!")
         print("📋 Typical usage: Gateway IP (target1) ↔ Victim IP (target2)")
@@ -661,13 +659,13 @@ class EttercapMenu:
         target1 = self.get_validated_input(
             "\n🎯 Enter target 1 IP (e.g., gateway 192.168.1.1): ",
             InputValidator.validate_ip_address,
-            "Invalid IP address format. Please enter a valid IPv4/IPv6 address."
+            "Invalid IP address format. Please enter a valid IPv4/IPv6 address.",
         )
 
         target2 = self.get_validated_input(
             "🎯 Enter target 2 IP (e.g., victim 192.168.1.100): ",
             InputValidator.validate_ip_address,
-            "Invalid IP address format. Please enter a valid IPv4/IPv6 address."
+            "Invalid IP address format. Please enter a valid IPv4/IPv6 address.",
         )
 
         if target1 == target2:
@@ -679,17 +677,13 @@ class EttercapMenu:
         interface = self.get_validated_input(
             "\n🌐 Enter network interface (e.g., eth0): ",
             InputValidator.validate_network_interface,
-            "Invalid or unavailable network interface."
+            "Invalid or unavailable network interface.",
         )
 
         # Build command
         try:
             builder = EttercapCommandBuilder()
-            command = (builder
-                      .set_text_mode()
-                      .set_interface(interface)
-                      .add_mitm_arp(target1, target2)
-                      .build())
+            command = builder.set_text_mode().set_interface(interface).add_mitm_arp(target1, target2).build()
 
             # Display configuration summary
             print("\n📋 Attack Configuration:")
@@ -700,7 +694,7 @@ class EttercapMenu:
 
             # Confirmation
             confirm = input("\n❓ Proceed with ARP poisoning attack? (y/N): ").lower()
-            if confirm == 'y':
+            if confirm == "y":
                 await self.execute_ettercap_command(command)
             else:
                 print("❌ Operation cancelled by user")
@@ -711,9 +705,9 @@ class EttercapMenu:
 
     async def handle_traffic_sniffing(self) -> None:
         """Handle network traffic sniffing configuration and execution."""
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("🔍 Network Traffic Sniffing")
-        print("="*60)
+        print("=" * 60)
         print("📡 Capture and analyze network packets on the specified interface")
 
         # Show and select interface
@@ -721,7 +715,7 @@ class EttercapMenu:
         interface = self.get_validated_input(
             "\n🌐 Enter network interface (e.g., eth0): ",
             InputValidator.validate_network_interface,
-            "Invalid or unavailable network interface."
+            "Invalid or unavailable network interface.",
         )
 
         # Sniffing options
@@ -731,9 +725,7 @@ class EttercapMenu:
         print("   3. Capture with output file")
 
         option = self.get_validated_input(
-            "\n❓ Select sniffing option (1-3): ",
-            lambda x: x in ('1', '2', '3'),
-            "Please enter 1, 2, or 3."
+            "\n❓ Select sniffing option (1-3): ", lambda x: x in ("1", "2", "3"), "Please enter 1, 2, or 3."
         )
 
         try:
@@ -759,7 +751,7 @@ class EttercapMenu:
             print(f"   Command:   {command}")
 
             confirm = input("\n❓ Start traffic sniffing? (y/N): ").lower()
-            if confirm == 'y':
+            if confirm == "y":
                 await self.execute_ettercap_command(command)
             else:
                 print("❌ Operation cancelled by user")
@@ -770,9 +762,9 @@ class EttercapMenu:
 
     async def handle_dns_spoofing(self) -> None:
         """Handle DNS spoofing configuration and execution."""
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("🌐 DNS Spoofing Attack")
-        print("="*60)
+        print("=" * 60)
         print("⚠️  This will intercept and modify DNS queries")
         print("⚠️  Ensure you have proper authorization!")
         print("📋 Requires a properly configured DNS spoof file")
@@ -782,7 +774,7 @@ class EttercapMenu:
             "/etc/ettercap/etter.dns",
             "/usr/share/ettercap/etter.dns",
             "/usr/local/share/ettercap/etter.dns",
-            "./etter.dns"
+            "./etter.dns",
         ]
 
         found_dns_file = None
@@ -794,20 +786,20 @@ class EttercapMenu:
         if found_dns_file:
             print(f"✅ Found DNS spoof file: {found_dns_file}")
             use_found = input("❓ Use this file? (Y/n): ").lower()
-            if use_found != 'n':
+            if use_found != "n":
                 dns_file = found_dns_file
             else:
                 dns_file = self.get_validated_input(
                     "📁 Enter path to DNS spoof file: ",
                     lambda x: InputValidator.validate_file_path(x, must_exist=True),
-                    "File not found or not readable."
+                    "File not found or not readable.",
                 )
         else:
             print("❌ No DNS spoof files found in common locations")
             dns_file = self.get_validated_input(
                 "📁 Enter path to DNS spoof file: ",
                 lambda x: InputValidator.validate_file_path(x, must_exist=True),
-                "File not found or not readable."
+                "File not found or not readable.",
             )
 
         # Show and select interface
@@ -815,16 +807,12 @@ class EttercapMenu:
         interface = self.get_validated_input(
             "\n🌐 Enter network interface (e.g., eth0): ",
             InputValidator.validate_network_interface,
-            "Invalid or unavailable network interface."
+            "Invalid or unavailable network interface.",
         )
 
         try:
             builder = EttercapCommandBuilder()
-            command = (builder
-                      .set_text_mode()
-                      .set_interface(interface)
-                      .add_plugin("dns_spoof")
-                      .build())
+            command = builder.set_text_mode().set_interface(interface).add_plugin("dns_spoof").build()
 
             standard_locations = (
                 "/etc/ettercap/etter.dns",
@@ -845,7 +833,7 @@ class EttercapMenu:
                 )
 
             confirm = input("\n❓ Proceed with DNS spoofing? (y/N): ").lower()
-            if confirm == 'y':
+            if confirm == "y":
                 await self.execute_ettercap_command(command)
             else:
                 print("❌ Operation cancelled by user")
@@ -856,9 +844,9 @@ class EttercapMenu:
 
     async def handle_custom_command(self) -> None:
         """Handle custom ettercap command execution with safety checks."""
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("⚙️  Custom Ettercap Command")
-        print("="*60)
+        print("=" * 60)
         print("⚠️  Advanced users only - ensure command safety!")
         print("📋 Enter a complete ettercap command with all parameters")
 
@@ -869,11 +857,11 @@ class EttercapMenu:
             return
 
         # Security validation
-        if not custom_cmd.startswith('ettercap'):
+        if not custom_cmd.startswith("ettercap"):
             print("⚠️  WARNING: Command doesn't start with 'ettercap'")
             print("⚠️  This could be potentially dangerous!")
             confirm = input("❓ Are you absolutely sure? (y/N): ").lower()
-            if confirm != 'y':
+            if confirm != "y":
                 print("❌ Operation cancelled for security reasons")
                 return
 
@@ -882,16 +870,16 @@ class EttercapMenu:
         print(f"   {custom_cmd}")
 
         final_confirm = input("\n❓ Execute this command? (y/N): ").lower()
-        if final_confirm == 'y':
+        if final_confirm == "y":
             await self.execute_ettercap_command(custom_cmd)
         else:
             print("❌ Operation cancelled by user")
 
     def show_help_information(self) -> None:
         """Display comprehensive help and usage information."""
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("📚 HELP & INFORMATION")
-        print("="*70)
+        print("=" * 70)
 
         help_text = """
 🔍 About Ettercap:
@@ -961,8 +949,8 @@ class EttercapMenu:
 
         return self.get_validated_input(
             "\n❓ Select an option (1-6): ",
-            lambda x: InputValidator.validate_menu_choice(x, ['1', '2', '3', '4', '5', '6']),
-            "Invalid choice. Please enter a number between 1-6."
+            lambda x: InputValidator.validate_menu_choice(x, ["1", "2", "3", "4", "5", "6"]),
+            "Invalid choice. Please enter a number between 1-6.",
         )
 
     async def run(self) -> None:
@@ -981,10 +969,10 @@ class EttercapMenu:
             while self.running:
                 try:
                     # Clear screen and show banner (optional)
-                    if os.name == 'nt':  # Windows
-                        os.system('cls')
+                    if os.name == "nt":  # Windows
+                        os.system("cls")
                     else:  # Unix/Linux/macOS
-                        os.system('clear')
+                        os.system("clear")
 
                     self.display_banner()
                     self.display_system_info()
@@ -1059,7 +1047,7 @@ class EttercapMenu:
             print("\n⚠️  Warning: Running without elevated privileges")
             print("📋 Some operations may fail without root/administrator access")
             confirm = input("❓ Continue anyway? (y/N): ").lower()
-            if confirm != 'y':
+            if confirm != "y":
                 print("❌ Startup cancelled by user")
                 return False
 
@@ -1097,33 +1085,21 @@ Examples:
 Security Notice:
   This tool is for authorized network security testing only.
   Unauthorized use may violate local, state, and federal laws.
-        """
+        """,
     )
 
-    parser.add_argument(
-        "--version",
-        action="version",
-        version=f"%(prog)s {__version__}"
-    )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 
-    parser.add_argument(
-        "--check-system",
-        action="store_true",
-        help="Perform system checks and exit"
-    )
+    parser.add_argument("--check-system", action="store_true", help="Perform system checks and exit")
 
     parser.add_argument(
         "--log-level",
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         default="INFO",
-        help="Set logging level (default: INFO)"
+        help="Set logging level (default: INFO)",
     )
 
-    parser.add_argument(
-        "--no-banner",
-        action="store_true",
-        help="Suppress banner display"
-    )
+    parser.add_argument("--no-banner", action="store_true", help="Suppress banner display")
 
     return parser
 

@@ -5,6 +5,7 @@ Test functions are named test_llmNN_2026_<what>, test_lab_llmNN_2026_<what>,
 test_xcut_<what> or test_<what>. The risk comes from the NN, the description
 from the rest of the name. Run with --check to fail when the file is stale.
 """
+
 from __future__ import annotations
 
 import re
@@ -14,10 +15,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs" / "test-matrix.md"
 RISKS = {
-    "01": "LLM01 Prompt Injection", "02": "LLM02 Sensitive Information Disclosure",
-    "03": "LLM03 Excessive Agency", "04": "LLM04 Supply Chain", "05": "LLM05 Data and Model Poisoning",
-    "06": "LLM06 Unbounded Consumption", "07": "LLM07 Misinformation", "08": "LLM08 Hidden Context Exposure",
-    "09": "LLM09 Vector and Embedding Weaknesses", "10": "LLM10 Improper Output Handling",
+    "01": "LLM01 Prompt Injection",
+    "02": "LLM02 Sensitive Information Disclosure",
+    "03": "LLM03 Excessive Agency",
+    "04": "LLM04 Supply Chain",
+    "05": "LLM05 Data and Model Poisoning",
+    "06": "LLM06 Unbounded Consumption",
+    "07": "LLM07 Misinformation",
+    "08": "LLM08 Hidden Context Exposure",
+    "09": "LLM09 Vector and Embedding Weaknesses",
+    "10": "LLM10 Improper Output Handling",
 }
 HEADER = """# Test matrix
 
@@ -48,11 +55,11 @@ def rows() -> list[str]:
                 risk = RISKS[m.group(2)] + (" (lab)" if m.group(1) else "")
                 what = m.group(3)
             elif name.startswith("test_xcut_"):
-                risk, what = "Cross-cutting hardening", name[len("test_xcut_"):]
+                risk, what = "Cross-cutting hardening", name[len("test_xcut_") :]
             elif name.startswith("test_ollama_") or name.startswith("test_provider_"):
                 risk, what = "Model provider (fake Ollama server)", re.sub(r"^test_", "", name)
             else:
-                risk, what = "Run modes and structure", name[len("test_"):]
+                risk, what = "Run modes and structure", name[len("test_") :]
             out.append(f"| `{name}` | {risk} | {what.replace('_', ' ')} |")
     return out
 

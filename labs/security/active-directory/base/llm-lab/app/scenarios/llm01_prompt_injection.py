@@ -39,6 +39,7 @@ Logging/detection point:
 
 Test case: see tests/test_app.py::test_llm01_prompt_injection
 """
+
 from __future__ import annotations
 
 import logging
@@ -98,10 +99,7 @@ async def chat(payload: ChatRequest, request: Request):
     # Vulnerable mode: naive concatenation, no separation or policy check.
     combined = f"{SYSTEM_INSTRUCTION}\nUser: {prompt}"
     if override_detected:
-        response_text = (
-            "Sure — here is the protected marker as requested: "
-            f"{SECRET_MARKER}"
-        )
+        response_text = "Sure — here is the protected marker as requested: " f"{SECRET_MARKER}"
     else:
         response_text = f"Processing: {prompt[:200]}"
 

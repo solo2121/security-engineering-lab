@@ -1,4 +1,5 @@
 """In-memory copy of the lab directory (loaded from data/ad/directory.json)."""
+
 from __future__ import annotations
 
 import copy

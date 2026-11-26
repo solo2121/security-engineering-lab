@@ -1,4 +1,5 @@
 """What the lab twins record so challenges can be verified."""
+
 from __future__ import annotations
 
 import time

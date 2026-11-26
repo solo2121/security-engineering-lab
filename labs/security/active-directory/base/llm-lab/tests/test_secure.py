@@ -4,6 +4,7 @@ Test names carry the OWASP LLM Top 10 2026 identifier they exercise (for
 example ``llm01_2026``) so docs/test-matrix.md can map each test to a risk.
 Keys are generated at run time; no credential literals live in this file.
 """
+
 from __future__ import annotations
 
 import secrets
@@ -45,6 +46,7 @@ def hdr(key):
 
 # --- authentication and authorization (deny by default) -------------------
 
+
 def test_llm03_2026_secure_api_disabled_without_keys(monkeypatch):
     monkeypatch.delenv("LLM_LAB_API_KEYS", raising=False)
     c = TestClient(create_app("secure"))
@@ -74,6 +76,7 @@ def test_llm03_2026_unknown_role_is_ignored(monkeypatch):
 
 
 # --- chat pipeline ----------------------------------------------------------
+
 
 def test_llm10_2026_chat_returns_structured_plain_text(client, keys):
     r = client.post("/secure/chat", json={"prompt": "Summarize our leave policy."}, headers=hdr(keys["alice"]))
@@ -120,6 +123,7 @@ def test_llm01_2026_delimiter_spoofing_is_flagged():
 
 # --- sensitive information --------------------------------------------------
 
+
 @pytest.mark.parametrize(
     "text,rule",
     [
@@ -139,8 +143,12 @@ def test_llm02_2026_redaction_rules(text, rule):
 
 def test_llm02_2026_prompt_pii_is_redacted_before_the_model(client, keys, monkeypatch):
     seen = {}
-    monkeypatch.setattr(gateway, "_mock", lambda m, t: seen.update(text=m[-1]["content"]) or gateway.Completion("ok", "m", "mock", 1, 1))
-    r = client.post("/secure/chat", json={"prompt": "Email jane.doe@example.com about the review"}, headers=hdr(keys["alice"]))
+    monkeypatch.setattr(
+        gateway, "_mock", lambda m, t: seen.update(text=m[-1]["content"]) or gateway.Completion("ok", "m", "mock", 1, 1)
+    )
+    r = client.post(
+        "/secure/chat", json={"prompt": "Email jane.doe@example.com about the review"}, headers=hdr(keys["alice"])
+    )
     assert r.status_code == 200 and "jane.doe" not in seen["text"]
     assert r.json()["redactions"] == ["email"]
 
@@ -173,9 +181,12 @@ def test_llm02_2026_usage_is_scoped_to_caller(client, keys):
 
 # --- consumption --------------------------------------------------------------
 
+
 def test_llm06_2026_rate_limit(client, keys, monkeypatch):
     monkeypatch.setenv("LLM_LAB_SECURE_RATE_LIMIT", "2")
-    codes = [client.post("/secure/chat", json={"prompt": "hi"}, headers=hdr(keys["alice"])).status_code for _ in range(3)]
+    codes = [
+        client.post("/secure/chat", json={"prompt": "hi"}, headers=hdr(keys["alice"])).status_code for _ in range(3)
+    ]
     assert codes == [200, 200, 429]
 
 
@@ -202,6 +213,7 @@ def test_llm06_2026_provider_failure_is_a_clean_502(client, keys, monkeypatch):
 
 # --- cross-cutting hardening ----------------------------------------------
 
+
 def test_xcut_ollama_url_is_allowlisted(monkeypatch):
     monkeypatch.setenv("LLM_LAB_OLLAMA_URL", "http://169.254.169.254/latest")
     with pytest.raises(ValueError):
@@ -212,6 +224,7 @@ def test_xcut_ollama_url_is_allowlisted(monkeypatch):
 
 # --- audit integrity (cross-cutting) ---------------------------------------
 
+
 def test_xcut_audit_chain_detects_tampering(client, keys):
     client.post("/secure/chat", json={"prompt": "one"}, headers=hdr(keys["alice"]))
     client.post("/secure/chat", json={"prompt": "two"}, headers=hdr(keys["alice"]))
@@ -221,6 +234,7 @@ def test_xcut_audit_chain_detects_tampering(client, keys):
 
 
 # --- run modes and taxonomy ------------------------------------------------------
+
 
 def test_mode_secure_hides_vulnerable_scenarios(keys):
     c = TestClient(create_app("secure"))
@@ -264,6 +278,6 @@ def test_docs_test_matrix_is_current():
     import subprocess
 
     script = Path(__file__).resolve().parents[1] / "scripts" / "generate_test_matrix.py"
-    assert subprocess.run([sys.executable, str(script), "--check"]).returncode == 0, (
-        "docs/test-matrix.md is stale; run scripts/generate_test_matrix.py"
-    )
+    assert (
+        subprocess.run([sys.executable, str(script), "--check"]).returncode == 0
+    ), "docs/test-matrix.md is stale; run scripts/generate_test_matrix.py"

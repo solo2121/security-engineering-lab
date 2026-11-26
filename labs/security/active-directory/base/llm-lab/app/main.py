@@ -17,6 +17,7 @@ Docs:
     http://<host>:8000/docs   (Swagger UI)
     http://<host>:8000/redoc  (ReDoc)
 """
+
 from __future__ import annotations
 
 import logging
@@ -150,7 +151,6 @@ def create_app(mode: str = config.LAB_MODE) -> FastAPI:
     @app.get("/health")
     async def health():
         return {"status": "ok", "lab": config.LAB_NAME}
-
 
     @app.get("/owasp/categories")
     async def owasp_categories():

@@ -35,6 +35,7 @@ Logging/detection point:
 
 Test case: see tests/test_app.py::test_llm02_redaction
 """
+
 from __future__ import annotations
 
 import json

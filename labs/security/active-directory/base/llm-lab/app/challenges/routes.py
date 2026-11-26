@@ -1,4 +1,5 @@
 """Challenge API and the two extra lab endpoints the challenges need (lab mode only)."""
+
 from __future__ import annotations
 
 import time
@@ -46,9 +47,16 @@ def list_challenges() -> Dict[str, Any]:
 @router.get("/{cid}")
 def detail(cid: str, hint: int = Query(default=0, ge=0, le=5)) -> Dict[str, Any]:
     c = _get(cid)
-    out: Dict[str, Any] = {"id": c.id, "risk": c.risk, "title": c.title, "scenario": c.scenario,
-                           "attack": c.attack, "submit": c.submit, "solved": c.id in state.solved,
-                           "hints_available": len(c.hints)}
+    out: Dict[str, Any] = {
+        "id": c.id,
+        "risk": c.risk,
+        "title": c.title,
+        "scenario": c.scenario,
+        "attack": c.attack,
+        "submit": c.submit,
+        "solved": c.id in state.solved,
+        "hints_available": len(c.hints),
+    }
     if hint:
         out["hint"] = c.hints[hint - 1] if hint <= len(c.hints) else "No more hints."
     return out
@@ -60,8 +68,14 @@ def verify(cid: str, body: Verify) -> Dict[str, Any]:
     solved, evidence = c.verify(body.model_dump())
     if solved:
         state.solved.setdefault(c.id, time.time())
-    return {"id": c.id, "solved": solved, "evidence": evidence,
-            "next": f"Run POST /challenges/{c.id}/defense-check to see which controls stop this attack." if solved else None}
+    return {
+        "id": c.id,
+        "solved": solved,
+        "evidence": evidence,
+        "next": (
+            f"Run POST /challenges/{c.id}/defense-check to see which controls stop this attack." if solved else None
+        ),
+    }
 
 
 @router.post("/{cid}/defense-check")
@@ -69,8 +83,12 @@ def defense_check(cid: str) -> Dict[str, Any]:
     """Replay the attack against the secure policy on throwaway data."""
     c = _get(cid)
     passed, controls = c.defense_check()
-    return {"id": c.id, "passed": passed, "controls": controls,
-            "note": "Runs on throwaway copies of the data; the secure instance is not touched."}
+    return {
+        "id": c.id,
+        "passed": passed,
+        "controls": controls,
+        "note": "Runs on throwaway copies of the data; the secure instance is not touched.",
+    }
 
 
 @router.post("/reset")
@@ -84,6 +102,7 @@ def reset() -> Dict[str, Any]:
 
 # -- lab chat: hidden instructions that hold a secret --------------------------------------
 
+
 class LabChat(BaseModel):
     prompt: str = Field(..., max_length=config.MAX_TEXT_LENGTH)
 
@@ -91,11 +110,14 @@ class LabChat(BaseModel):
 @lab_router.post("/chat")
 def lab_chat(body: LabChat) -> Dict[str, Any]:
     system = catalog.LAB_SYSTEM.format(flag=flags.flag("c08"))
-    return {"answer": gateway.complete(body.prompt, 200, system=system).text,
-            "note": "LAB MODE: the system prompt holds a secret and nothing filters the answer."}
+    return {
+        "answer": gateway.complete(body.prompt, 200, system=system).text,
+        "note": "LAB MODE: the system prompt holds a secret and nothing filters the answer.",
+    }
 
 
 # -- lab render: model output inserted into HTML without encoding ----------------------------
+
 
 @lab_router.post("/render", response_class=HTMLResponse)
 def lab_render(body: LabChat) -> HTMLResponse:

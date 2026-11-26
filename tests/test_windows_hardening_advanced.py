@@ -73,7 +73,7 @@ def test_wef_subscription_is_source_initiated_and_covers_sysmon() -> None:
 def test_vagrant_helper_is_opt_in_and_reads_secrets_from_env() -> None:
     text = (ADV / "vagrant_advanced.rb").read_text(encoding="utf-8")
     assert 'flag?("HARDENING_ADVANCED"' in text
-    assert 'settings.fetch(:admin_password)' in text
+    assert "settings.fetch(:admin_password)" in text
     for name in EXPECTED_SCRIPTS:
         assert name in text, f"{name} is not wired into vagrant_advanced.rb"
 

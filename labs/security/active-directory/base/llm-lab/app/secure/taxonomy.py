@@ -7,6 +7,7 @@ maps the 2026 identifiers onto them.
 
 Source: https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/
 """
+
 from __future__ import annotations
 
 from typing import Dict, List

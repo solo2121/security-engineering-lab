@@ -13,6 +13,7 @@ import sys
 import nmap
 import paramiko
 import telnetlib  # NOTE: deprecated, slated for removal in Python 3.13.
+
 # CI currently pins Python 3.11, where this still works. Will need a
 # replacement (e.g. Telnet via a subprocess wrapper, or dropping Telnet
 # support) before upgrading past 3.12.
@@ -31,13 +32,13 @@ TIMEOUT = 5  # seconds for connection attempts
 
 def validate_ip_range(ip_range):
     """Validate CIDR notation IP range format."""
-    pattern = re.compile(r'^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$')
+    pattern = re.compile(r"^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$")
     if not pattern.match(ip_range):
         return False
 
     # Validate each octet
-    ip, mask = ip_range.split('/')
-    octets = ip.split('.')
+    ip, mask = ip_range.split("/")
+    octets = ip.split(".")
     for octet in octets:
         if not 0 <= int(octet) <= 255:
             return False
@@ -53,8 +54,7 @@ def scan_network(target_ip_range):
 
     try:
         nm = nmap.PortScanner()
-        nm.scan(hosts=target_ip_range,
-                arguments=f'-p {SSH_PORT},{TELNET_PORT} --open')
+        nm.scan(hosts=target_ip_range, arguments=f"-p {SSH_PORT},{TELNET_PORT} --open")
     except nmap.PortScannerError as e:
         print(f"[-] Nmap scan failed: {e}")
         return []
@@ -65,7 +65,7 @@ def scan_network(target_ip_range):
             "ip": host,
             "ssh_open": nm[host].has_tcp(SSH_PORT),
             "telnet_open": nm[host].has_tcp(TELNET_PORT),
-            "hostname": nm[host].hostname() or "Unknown"
+            "hostname": nm[host].hostname() or "Unknown",
         }
         devices.append(device_info)
 
@@ -77,11 +77,9 @@ def test_ssh_login(host, username, password):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        ssh.connect(host, port=SSH_PORT, username=username,
-                    password=password, timeout=TIMEOUT)
+        ssh.connect(host, port=SSH_PORT, username=username, password=password, timeout=TIMEOUT)
         # Try executing a simple command to verify access
-        stdin, stdout, stderr = ssh.exec_command(
-            'show version', timeout=TIMEOUT)
+        stdin, stdout, stderr = ssh.exec_command("show version", timeout=TIMEOUT)
         if "Cisco" in stdout.read().decode():
             return True
     except Exception as e:
@@ -101,13 +99,13 @@ def test_telnet_login(host, username, password):
         if not login_prompt:
             login_prompt = tn.read_until(b"login:", timeout=TIMEOUT)
 
-        tn.write(username.encode('ascii') + b"\n")
+        tn.write(username.encode("ascii") + b"\n")
 
         password_prompt = tn.read_until(b"Password:", timeout=TIMEOUT)
         if not password_prompt:
             return False
 
-        tn.write(password.encode('ascii') + b"\n")
+        tn.write(password.encode("ascii") + b"\n")
 
         # Check for successful login (Cisco prompt)
         response = tn.read_until(b"#", timeout=TIMEOUT)
@@ -134,13 +132,15 @@ def brute_force_logins(devices, username_list, password_list):
                 for password in password_list:
                     if test_ssh_login(ip, username, password):
                         print(f"  [+] SSH Success: {username}:{password}")
-                        results.append({
-                            "ip": ip,
-                            "service": "SSH",
-                            "username": username,
-                            "password": password,
-                            "timestamp": datetime.now().isoformat()
-                        })
+                        results.append(
+                            {
+                                "ip": ip,
+                                "service": "SSH",
+                                "username": username,
+                                "password": password,
+                                "timestamp": datetime.now().isoformat(),
+                            }
+                        )
                         found = True
                         break  # Stop trying passwords for this user
 
@@ -153,13 +153,15 @@ def brute_force_logins(devices, username_list, password_list):
                 for password in password_list:
                     if test_telnet_login(ip, username, password):
                         print(f"  [+] Telnet Success: {username}:{password}")
-                        results.append({
-                            "ip": ip,
-                            "service": "Telnet",
-                            "username": username,
-                            "password": password,
-                            "timestamp": datetime.now().isoformat()
-                        })
+                        results.append(
+                            {
+                                "ip": ip,
+                                "service": "Telnet",
+                                "username": username,
+                                "password": password,
+                                "timestamp": datetime.now().isoformat(),
+                            }
+                        )
                         found = True
                         break  # Stop trying passwords for this user
 

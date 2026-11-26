@@ -3,6 +3,7 @@
 These exercise the real HTTP client code (requests, timeouts, bad responses)
 without a model. They do not prove how a real model behaves.
 """
+
 from __future__ import annotations
 
 import json
@@ -55,7 +56,9 @@ class Fake(BaseHTTPRequestHandler):
             return self._send(Fake.chat_reply)
         if self.path == "/api/embed":
             text = payload["input"].lower()
-            vec = [float(text.count(w)) for w in ("leave", "expense", "roadmap", "refund", "days", "meal", "hotel", "sso")]
+            vec = [
+                float(text.count(w)) for w in ("leave", "expense", "roadmap", "refund", "days", "meal", "hotel", "sso")
+            ]
             return self._send({"embeddings": [vec if any(vec) else [0.1] * 8]})
         self.send_response(404)
         self.end_headers()

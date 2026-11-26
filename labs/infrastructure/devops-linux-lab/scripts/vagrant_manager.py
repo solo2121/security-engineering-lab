@@ -45,7 +45,6 @@ from rich.panel import Panel
 from rich.prompt import Confirm, Prompt
 from rich.table import Table
 
-
 console = Console()
 
 # ========================== RESULT TYPE ==========================
@@ -110,11 +109,7 @@ VM_GROUPS = {
     "CI/CD SERVER": ("cicd-server",),
 }
 
-ALL_VMS = tuple(
-    vm
-    for group in VM_GROUPS.values()
-    for vm in group
-)
+ALL_VMS = tuple(vm for group in VM_GROUPS.values() for vm in group)
 
 # VMs whose provisioning actually uses the Harbor admin password.
 #
@@ -133,6 +128,7 @@ def vm_needs_harbor(vm: str | None) -> bool:
     the Harbor VMs.
     """
     return vm is None or vm in HARBOR_VMS
+
 
 # Known Vagrant states.
 _VAGRANT_STATES = (
@@ -280,26 +276,17 @@ def ensure_harbor_pass() -> bool:
 
     while True:
         try:
-            password = getpass.getpass(
-                "Enter Harbor admin password: "
-            )
+            password = getpass.getpass("Enter Harbor admin password: ")
         except (KeyboardInterrupt, EOFError):
-            console.print(
-                "\n[yellow]Password entry cancelled.[/yellow]"
-            )
+            console.print("\n[yellow]Password entry cancelled.[/yellow]")
             return False
 
         if not password:
-            console.print(
-                "[bold red]ERROR: Password cannot be empty.[/bold red]"
-            )
+            console.print("[bold red]ERROR: Password cannot be empty.[/bold red]")
             continue
 
         if len(password) < 8:
-            console.print(
-                "[yellow]WARNING: Password is less than "
-                "8 characters.[/yellow]"
-            )
+            console.print("[yellow]WARNING: Password is less than " "8 characters.[/yellow]")
 
             if not Confirm.ask(
                 "Continue?",
@@ -308,26 +295,18 @@ def ensure_harbor_pass() -> bool:
                 return False
 
         try:
-            password_confirm = getpass.getpass(
-                "Confirm password: "
-            )
+            password_confirm = getpass.getpass("Confirm password: ")
         except (KeyboardInterrupt, EOFError):
-            console.print(
-                "\n[yellow]Password entry cancelled.[/yellow]"
-            )
+            console.print("\n[yellow]Password entry cancelled.[/yellow]")
             return False
 
         if password != password_confirm:
-            console.print(
-                "[bold red]ERROR: Passwords do not match.[/bold red]"
-            )
+            console.print("[bold red]ERROR: Passwords do not match.[/bold red]")
             continue
 
         HARBOR_PASS = password
 
-        console.print(
-            "[green]Password configured successfully.[/green]"
-        )
+        console.print("[green]Password configured successfully.[/green]")
 
         return True
 
@@ -422,23 +401,13 @@ def run_vagrant(
 
     label = vm or "(all)"
 
-    console.rule(
-        f"[bold cyan]vagrant {action}[/bold cyan] {label}"
-    )
+    console.rule(f"[bold cyan]vagrant {action}[/bold cyan] {label}")
 
     # Status and halt without an explicit VM must cover every machine,
     # not only the ones in the active LAB_PROFILE.
-    env = build_vagrant_environment(
-        include_all_vms=(
-            vm is None and action in ("status", "halt")
-        )
-    )
+    env = build_vagrant_environment(include_all_vms=(vm is None and action in ("status", "halt")))
 
-    stdin_arg = (
-        None
-        if action == "ssh"
-        else subprocess.DEVNULL
-    )
+    stdin_arg = None if action == "ssh" else subprocess.DEVNULL
 
     try:
         result = subprocess.run(
@@ -461,9 +430,7 @@ def run_vagrant(
             detail=str(exc),
         )
     except KeyboardInterrupt:
-        console.print(
-            "[yellow]Interrupted by user.[/yellow]"
-        )
+        console.print("[yellow]Interrupted by user.[/yellow]")
 
         return VmAction(
             name=label,
@@ -496,8 +463,7 @@ def show_main_menu(
 
     console.print(
         Panel.fit(
-            "[bold white]VAGRANT LAB MANAGER v8.2[/bold white]\n"
-            f"[dim]Provider: {SELECTED_PROVIDER}[/dim]",
+            "[bold white]VAGRANT LAB MANAGER v8.2[/bold white]\n" f"[dim]Provider: {SELECTED_PROVIDER}[/dim]",
             border_style="blue",
         )
     )
@@ -558,28 +524,13 @@ def show_main_menu(
 
     console.print(table)
 
+    console.print("[cyan][A] Start All (provision)  " "[V] DevOps (provision)[/cyan]")
+    console.print("[cyan][W] Workers (no provision)   " "[N] Ansible (no provision)[/cyan]")
+    console.print("[cyan][L] Linux Labs (no provision) " "[M] Modern (no provision)[/cyan]")
+    console.print("[cyan][C] CI/CD Server (no provision) " "[B] Halt All[/cyan]")
+    console.print("[cyan][R] Refresh  [Q] Quit[/cyan]")
     console.print(
-        "[cyan][A] Start All (provision)  "
-        "[V] DevOps (provision)[/cyan]"
-    )
-    console.print(
-        "[cyan][W] Workers (no provision)   "
-        "[N] Ansible (no provision)[/cyan]"
-    )
-    console.print(
-        "[cyan][L] Linux Labs (no provision) "
-        "[M] Modern (no provision)[/cyan]"
-    )
-    console.print(
-        "[cyan][C] CI/CD Server (no provision) "
-        "[B] Halt All[/cyan]"
-    )
-    console.print(
-        "[cyan][R] Refresh  [Q] Quit[/cyan]"
-    )
-    console.print(
-        "[bright_black]Note: Harbor password only required "
-        "once per session for provisioning[/bright_black]"
+        "[bright_black]Note: Harbor password only required " "once per session for provisioning[/bright_black]"
     )
 
     return options
@@ -591,9 +542,7 @@ def vm_menu(
 ) -> None:
     """Display the individual VM management menu."""
     while True:
-        states = get_machine_states(
-            vagrantfile
-        )
+        states = get_machine_states(vagrantfile)
 
         state = states.get(
             vm,
@@ -609,68 +558,32 @@ def vm_menu(
             )
         )
 
-        console.print(
-            f"VM:    [cyan]{vm}[/cyan]"
-        )
-        console.print(
-            f"State: {state}"
-        )
+        console.print(f"VM:    [cyan]{vm}[/cyan]")
+        console.print(f"State: {state}")
 
         needs_harbor = vm_needs_harbor(vm)
 
         # Only VMs that use Harbor ever ask for its password.
-        pw_note = (
-            "(password needed once)"
-            if needs_harbor
-            else "(no password)"
-        )
+        pw_note = "(password needed once)" if needs_harbor else "(no password)"
 
         if not needs_harbor:
-            console.print(
-                "Harbor: [bright_black]not used by this VM[/bright_black]"
-            )
+            console.print("Harbor: [bright_black]not used by this VM[/bright_black]")
         elif HARBOR_PASS and HARBOR_PROMPT_DONE:
-            console.print(
-                "Harbor: [green]configured (session)[/green]"
-            )
+            console.print("Harbor: [green]configured (session)[/green]")
         elif HARBOR_PASS:
-            console.print(
-                "Harbor: [green]configured[/green]"
-            )
+            console.print("Harbor: [green]configured[/green]")
         else:
-            console.print(
-                "Harbor: [yellow]not set "
-                "(only needed for provision)[/yellow]"
-            )
+            console.print("Harbor: [yellow]not set " "(only needed for provision)[/yellow]")
 
-        console.print(
-            "\n[cyan][S] SSH (no password needed)[/cyan]"
-        )
-        console.print(
-            f"[cyan][U] Up with Provision {pw_note}[/cyan]"
-        )
-        console.print(
-            "[cyan][T] Start "
-            "(no provision, no password)[/cyan]"
-        )
-        console.print(
-            "[cyan][H] Halt (no password)[/cyan]"
-        )
-        console.print(
-            f"[cyan][R] Reload with Provision {pw_note}[/cyan]"
-        )
-        console.print(
-            f"[cyan][P] Provision only {pw_note}[/cyan]"
-        )
-        console.print(
-            "[cyan][D] Destroy (no password)[/cyan]"
-        )
-        console.print(
-            "[cyan][B] Back[/cyan]"
-        )
-        console.print(
-            "[cyan][Q] Quit[/cyan]"
-        )
+        console.print("\n[cyan][S] SSH (no password needed)[/cyan]")
+        console.print(f"[cyan][U] Up with Provision {pw_note}[/cyan]")
+        console.print("[cyan][T] Start " "(no provision, no password)[/cyan]")
+        console.print("[cyan][H] Halt (no password)[/cyan]")
+        console.print(f"[cyan][R] Reload with Provision {pw_note}[/cyan]")
+        console.print(f"[cyan][P] Provision only {pw_note}[/cyan]")
+        console.print("[cyan][D] Destroy (no password)[/cyan]")
+        console.print("[cyan][B] Back[/cyan]")
+        console.print("[cyan][Q] Quit[/cyan]")
 
         choice = Prompt.ask(
             "[bold]Action[/bold]",
@@ -726,8 +639,7 @@ def vm_menu(
 
         elif choice == "D":
             if Confirm.ask(
-                f"[bold red]Really destroy {vm}?"
-                "[/bold red]",
+                f"[bold red]Really destroy {vm}?" "[/bold red]",
                 default=False,
             ):
                 run_vagrant(
@@ -745,9 +657,7 @@ def vm_menu(
             raise SystemExit(return_code)
 
         else:
-            console.print(
-                "[red]Invalid option[/red]"
-            )
+            console.print("[red]Invalid option[/red]")
 
         Prompt.ask(
             "[bright_black]Press Enter to continue...[/bright_black]",
@@ -807,10 +717,7 @@ def start_group(
 
     for vm in vms:
         if provision:
-            console.print(
-                f"[yellow]Starting {vm} "
-                "(provision)...[/yellow]"
-            )
+            console.print(f"[yellow]Starting {vm} " "(provision)...[/yellow]")
 
             result = run_vagrant(
                 "up",
@@ -819,9 +726,7 @@ def start_group(
                 extra_args=["--provision"],
             )
         else:
-            console.print(
-                f"[yellow]Starting {vm}...[/yellow]"
-            )
+            console.print(f"[yellow]Starting {vm}...[/yellow]")
 
             result = run_vagrant(
                 "up",
@@ -838,9 +743,7 @@ def halt_all(
     vagrantfile: Path,
 ) -> VmAction:
     """Halt all VMs."""
-    console.print(
-        "[yellow]Halting all VMs...[/yellow]"
-    )
+    console.print("[yellow]Halting all VMs...[/yellow]")
 
     return run_vagrant(
         "halt",
@@ -866,28 +769,14 @@ def validate_vm_names(
     if not requested:
         return []
 
-    known = (
-        set(states)
-        if states
-        else set(ALL_VMS)
-    )
+    known = set(states) if states else set(ALL_VMS)
 
-    unknown = [
-        vm
-        for vm in requested
-        if vm not in known
-    ]
+    unknown = [vm for vm in requested if vm not in known]
 
     if unknown:
-        console.print(
-            "[bold red]Unknown VM(s):[/bold red] "
-            + ", ".join(unknown)
-        )
+        console.print("[bold red]Unknown VM(s):[/bold red] " + ", ".join(unknown))
 
-        console.print(
-            "[dim]Known lab VMs:[/dim] "
-            + ", ".join(ALL_VMS)
-        )
+        console.print("[dim]Known lab VMs:[/dim] " + ", ".join(ALL_VMS))
 
         return []
 
@@ -912,11 +801,7 @@ def print_results(
     table.add_column("Detail")
 
     for result in results:
-        status = (
-            "[green]OK[/green]"
-            if result.ok
-            else "[red]FAILED[/red]"
-        )
+        status = "[green]OK[/green]" if result.ok else "[red]FAILED[/red]"
 
         table.add_row(
             result.name,
@@ -932,9 +817,7 @@ def print_results(
 
 def main() -> int:
     """Program entry point."""
-    parser = argparse.ArgumentParser(
-        description="Manage lab Vagrant VMs."
-    )
+    parser = argparse.ArgumentParser(description="Manage lab Vagrant VMs.")
 
     parser.add_argument(
         "action",
@@ -986,10 +869,7 @@ def main() -> int:
     vagrantfile = find_vagrantfile()
 
     if vagrantfile is None:
-        console.print(
-            "[bold red]Error:[/bold red] No Vagrantfile found "
-            "in this directory or any parent."
-        )
+        console.print("[bold red]Error:[/bold red] No Vagrantfile found " "in this directory or any parent.")
 
         return 1
 
@@ -1018,9 +898,7 @@ def main() -> int:
 
             return 0 if result.ok else 1
 
-        states = get_machine_states(
-            vagrantfile
-        )
+        states = get_machine_states(vagrantfile)
 
         targets = validate_vm_names(
             args.vms,
@@ -1031,32 +909,18 @@ def main() -> int:
             return 1
 
         # Never allow implicit global destruction.
-        if (
-            args.action == "destroy"
-            and not args.vms
-        ):
-            console.print(
-                "[bold red]Error:[/bold red] Refusing to "
-                "destroy all VMs without explicit targets."
-            )
+        if args.action == "destroy" and not args.vms:
+            console.print("[bold red]Error:[/bold red] Refusing to " "destroy all VMs without explicit targets.")
 
-            console.print(
-                "Specify VMs to destroy, for example:"
-            )
+            console.print("Specify VMs to destroy, for example:")
 
-            console.print(
-                "  python3 vagrant_manager.py "
-                "destroy devops-1 worker-1"
-            )
+            console.print("  python3 vagrant_manager.py " "destroy devops-1 worker-1")
 
             return 1
 
         # Only ask for the Harbor password when at least one target
         # uses Harbor (no explicit targets means every VM).
-        needs_harbor = not targets or any(
-            vm_needs_harbor(vm)
-            for vm in targets
-        )
+        needs_harbor = not targets or any(vm_needs_harbor(vm) for vm in targets)
 
         # Determine provisioning behavior.
         if args.action == "provision":
@@ -1065,10 +929,7 @@ def main() -> int:
 
             extra = None
 
-        elif (
-            args.action in {"up", "reload"}
-            and args.provision
-        ):
+        elif args.action in {"up", "reload"} and args.provision:
             if needs_harbor and not ensure_harbor_pass_once():
                 return 1
 
@@ -1094,37 +955,23 @@ def main() -> int:
 
         print_results(results)
 
-        return (
-            1
-            if any(
-                not result.ok
-                for result in results
-            )
-            else 0
-        )
+        return 1 if any(not result.ok for result in results) else 0
 
     # ------------------------------------------------------------------
     # Interactive mode.
     # ------------------------------------------------------------------
 
     while True:
-        states = get_machine_states(
-            vagrantfile
-        )
+        states = get_machine_states(vagrantfile)
 
-        options = show_main_menu(
-            states
-        )
+        options = show_main_menu(states)
 
         choice = Prompt.ask(
             "[bold]Selection[/bold]",
             default="R",
         )
 
-        if (
-            choice.isdigit()
-            and choice in options
-        ):
+        if choice.isdigit() and choice in options:
             vm_menu(
                 vagrantfile,
                 options[choice],
@@ -1150,9 +997,7 @@ def main() -> int:
             print_results(results)
 
         elif choice == "B":
-            result = halt_all(
-                vagrantfile
-            )
+            result = halt_all(vagrantfile)
 
             print_results([result])
 
@@ -1164,9 +1009,7 @@ def main() -> int:
             return 0
 
         else:
-            console.print(
-                "[red]Invalid option[/red]"
-            )
+            console.print("[red]Invalid option[/red]")
 
             Prompt.ask(
                 "[bright_black]Press Enter to continue...[/bright_black]",

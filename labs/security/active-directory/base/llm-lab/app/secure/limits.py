@@ -1,4 +1,5 @@
 """Per-principal rate limit and daily token budget (LLM06 Unbounded Consumption)."""
+
 from __future__ import annotations
 
 import os

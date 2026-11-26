@@ -1,4 +1,5 @@
 """Tool registry: what the agent can do, how risky it is, how arguments are checked."""
+
 from __future__ import annotations
 
 import re
@@ -34,6 +35,7 @@ def _none(args: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # -- handlers (all act on the in-memory directory) ------------------------------
+
 
 def lookup_user(d: Directory, a: Dict[str, Any]) -> Dict[str, Any]:
     u = d.get(a["sam"])
@@ -88,14 +90,17 @@ class Tool:
     description: str = ""
 
 
-REGISTRY: Dict[str, Tool] = {t.name: t for t in (
-    Tool("lookup_user", "read", _sam, lookup_user, "sam", None, "Show one user's directory entry."),
-    Tool("list_group_members", "read", _group, list_group_members, "group", None, "List the members of a group."),
-    Tool("list_locked_accounts", "read", _none, list_locked_accounts, None, None, "List locked accounts."),
-    Tool("unlock_account", "medium", _sam, unlock_account, "sam", "lock_account", "Unlock a locked account."),
-    Tool("reset_password", "high", _sam, reset_password, "sam", None, "Issue a temporary credential."),
-    Tool("disable_account", "high", _sam, disable_account, "sam", "enable_account", "Disable an account."),
-)}
+REGISTRY: Dict[str, Tool] = {
+    t.name: t
+    for t in (
+        Tool("lookup_user", "read", _sam, lookup_user, "sam", None, "Show one user's directory entry."),
+        Tool("list_group_members", "read", _group, list_group_members, "group", None, "List the members of a group."),
+        Tool("list_locked_accounts", "read", _none, list_locked_accounts, None, None, "List locked accounts."),
+        Tool("unlock_account", "medium", _sam, unlock_account, "sam", "lock_account", "Unlock a locked account."),
+        Tool("reset_password", "high", _sam, reset_password, "sam", None, "Issue a temporary credential."),
+        Tool("disable_account", "high", _sam, disable_account, "sam", "enable_account", "Disable an account."),
+    )
+}
 
 # Internal reverse operations: never offered to the planner, only used by undo.
 _REVERSE: Dict[str, Tool] = {

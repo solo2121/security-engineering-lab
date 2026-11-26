@@ -4,6 +4,7 @@ The seed is random per process unless LLM_LAB_CHALLENGE_SEED is set, so a flag
 read from a write-up or another student's instance is worthless. Flags are
 synthetic and only exist to prove an extraction worked.
 """
+
 from __future__ import annotations
 
 import hashlib

@@ -4,6 +4,7 @@ Pattern-based scanning is a safety net, not a guarantee. It misses reworded or
 encoded data, which is why retrieval authorization and data minimization
 (LLM02) matter more than this layer.
 """
+
 from __future__ import annotations
 
 import re

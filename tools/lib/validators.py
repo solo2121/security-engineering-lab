@@ -14,10 +14,7 @@ import ipaddress
 import re
 from pathlib import Path
 
-_HOSTNAME_RE = re.compile(
-    r"^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)"
-    r"(\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*$"
-)
+_HOSTNAME_RE = re.compile(r"^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)" r"(\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*$")
 
 
 def is_valid_ip(value: str) -> bool:

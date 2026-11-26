@@ -1,4 +1,5 @@
 """Shared Pydantic request/response models for the LLM lab API."""
+
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
@@ -46,6 +47,4 @@ class RagQuery(BaseModel):
 class DocumentIngest(BaseModel):
     doc_id: str = Field(..., max_length=64)
     content: str = Field(..., max_length=config.MAX_TEXT_LENGTH)
-    trusted: bool = Field(
-        default=False, description="Whether the ingesting client asserts this source is trusted."
-    )
+    trusted: bool = Field(default=False, description="Whether the ingesting client asserts this source is trusted.")

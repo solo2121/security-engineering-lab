@@ -5,6 +5,7 @@ entry breaks the chain and verify() reports it. Raw prompts and responses are
 never stored, only their length and a short hash, so the log does not become a
 second copy of sensitive data.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -30,7 +31,9 @@ class AuditLog:
         self._lock = threading.Lock()
         self._last_hash = GENESIS
 
-    def record(self, event: str, user: str, outcome: str, tenant: Optional[str] = None, **fields: Any) -> Dict[str, Any]:
+    def record(
+        self, event: str, user: str, outcome: str, tenant: Optional[str] = None, **fields: Any
+    ) -> Dict[str, Any]:
         with self._lock:
             body = {
                 "ts": round(time.time(), 3),

@@ -38,6 +38,7 @@ Logging/detection point:
 
 Test case: see tests/test_app.py::test_llm07_prompt_leakage
 """
+
 from __future__ import annotations
 
 import logging
