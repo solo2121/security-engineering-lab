@@ -164,7 +164,7 @@ Two isolated networks:
 | db01 | 172.28.128.23 | Simulated SQL / SMB target | Windows Server 2022 |
 | ca01-esc | 172.28.128.25 | Certificate Authority | Windows Server 2022 |
 | win10 | 172.28.128.30 | Domain workstation | Windows 10 |
-| llm01 | 172.28.128.60 | LLM / AI Platform | Ubuntu + Python |
+| llm01 | 172.28.128.60 | LLM / AI Platform | Ubuntu + Docker |
 | linux01 | 172.28.128.72 | Linux server | Ubuntu 22.04 |
 | print01 | 172.28.128.73 | Print server | Windows Server 2022 |
 | cloud-pentest | 172.28.128.80 | AWS simulation | Ubuntu + LocalStack |
@@ -589,7 +589,21 @@ Both providers pull the same Vagrant Cloud boxes (`kalilinux/rolling`, `generic/
 
 Implements the **OWASP Top 10 for LLM Applications** — see
 [`llm-lab/README.md`](llm-lab/README.md) for full docs, the safety model, and the
-category/endpoint/test table. Quick reference:
+category/endpoint/test table.
+
+**Starts by itself.** `vagrant up llm01` installs Docker, builds the lab image, starts it
+on every boot and waits for `/health` before it reports success. If Docker cannot be set
+up, provisioning falls back to the Python service and says so. Fresh random API keys are
+generated per VM in `/opt/llm-lab/.env` (root only; read them with `sudo cat` inside the
+VM). Egress is limited to the lab subnet for the host and for containers, and is reapplied
+on every boot. The real local model is optional: `sudo llm01-ollama enable` (about 1.5 GB).
+
+Besides the endpoints below, the lab includes a two-tenant RAG pipeline, a helpdesk agent
+on a snapshot of this lab's Active Directory, and ten challenges at `/challenges`
+(attack the vulnerable twin, defend, then prove the defense works). See the
+[`llm-lab/README.md`](llm-lab/README.md) for each.
+
+Quick reference:
 
 | Category | Endpoint prefix |
 |---|---|
@@ -955,6 +969,7 @@ In-depth docs for this lab live under [`docs/`](docs/):
 - The inline PowerShell and shell provisioners moved out of the `Vagrantfile` into [`provision/`](#provisioning-scripts). The rendered scripts are unchanged. The `Vagrantfile` shrank from about 2,630 to about 960 lines, and the scripts can now be reviewed, diffed and linted as files.
 
 **Added:**
+- `llm01` starts the lab by itself: it installs Docker, builds the image, starts it on every boot, waits for `/health`, generates per-VM API keys, and applies egress isolation to containers as well as the host (reapplied on every boot). `sudo llm01-ollama enable` adds a real local model on request. See [`llm-lab/README.md`](llm-lab/README.md).
 - `KALI_BOX` / `KALI_BOX_VERSION` environment variables let the attacker VM run an alternate Debian-based pentesting distribution — for example Parrot Security — instead of Kali Linux, without changing the VM name (`kali`), hostname, or IP. Defaults are unchanged (`kalilinux/rolling`, `2026.1.0`). See [Configuration](#configuration).
 
 ### v1.13 (unreleased)

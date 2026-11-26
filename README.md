@@ -238,6 +238,8 @@ It also hosts the OWASP Top 10 for LLM Applications training lab on a dedicated 
 LAB_PROFILE=llm vagrant up llm01
 ```
 
+The VM installs Docker, builds the lab image and starts it on every boot, so the lab is ready as soon as provisioning ends. Beyond the per-risk scenarios it includes a two-tenant RAG pipeline, an Active Directory helpdesk agent, ten challenges with attack, defend and verify steps, and an optional real local model through Ollama.
+
 See [`llm-lab/README.md`](./labs/security/active-directory/base/llm-lab/README.md) for the safety model and category-to-endpoint reference.
 
 See the [lab README](./labs/security/active-directory/base/) for provider-specific instructions, resource profiles, validation procedures, and authorized security-testing guidance.

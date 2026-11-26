@@ -761,7 +761,7 @@ Full interactive docs: `http://172.28.30.60:8000/docs`.
 | VM boot failure | Reduce profile size or increase host resources |
 | Domain join failure | Verify DC01 is running and DNS is available |
 | Windows provisioning issues | Check WinRM connectivity and VM logs. `DC01` uses extended timeouts (10800s boot / 7200s communication) for AD promotion — other Windows VMs use 7200s / 3600s. Long DC01 provisioning is expected, not necessarily a failure. |
-| LLM service unavailable | Restart services on `llm01` |
+| LLM service unavailable | Restart services on `llm01` (`sudo systemctl restart llm-owasp-lab`). The Docker auto-start and `llm01-ollama` helper are in the `base` lab; see [`../base/llm-lab/README.md`](../base/llm-lab/README.md) |
 | LocalStack unavailable | Verify `cloud-pentest` services are running |
 
 ---

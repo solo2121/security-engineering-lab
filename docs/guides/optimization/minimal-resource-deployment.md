@@ -67,7 +67,7 @@ Its startup banner also documents a tested minimal set for 32 GiB hosts:
 | `dc01` | Domain Controller | 4096 MB |
 | `win10` | Domain-joined workstation | 2048 MB |
 | `ca01-esc` | AD CS (certificate services) | 4096 MB |
-| `llm01` | Vulnerable LLM platform | 4096 MB |
+| `llm01` | Vulnerable LLM platform (Docker; the first build needs the internet and some free disk) | 4096 MB |
 | `cloud-pentest` | LocalStack cloud simulation | 2048 MB |
 
 **Total for this subset: ~20 GiB.** The full lab (all 11 VMs — adds

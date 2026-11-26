@@ -884,22 +884,24 @@ Alert if: metadata service access log shows request to:
 
 ### LLM Endpoint Abuse (llm01 VM)
 
-The app logs structured JSON to stdout, captured by systemd/journald (see
-[`llm-lab/README.md`](../../../labs/security/active-directory/base/llm-lab/README.md)).
+The app logs structured JSON to stdout. On `llm01` it runs in Docker, so the logs come
+from the container (if provisioning fell back to the Python service, use
+`journalctl -u llm-owasp-lab` instead). See
+[`llm-lab/README.md`](../../../labs/security/active-directory/base/llm-lab/README.md).
 
 ```bash
 # On llm01 — follow all lab-app log output
-journalctl -u llm-owasp-lab -f
+sudo docker compose -f /opt/llm-lab/docker-compose.yml --profile lab logs -f llm-lab-vulnerable
 
 # Alert on suspicious prompt content or blocked actions
-journalctl -u llm-owasp-lab -f | grep -iE \
+sudo docker compose -f /opt/llm-lab/docker-compose.yml --profile lab logs -f llm-lab-vulnerable | grep -iE \
   "override_detected.:true|blocked_command|blocked_path_traversal|rate_limited|daily_quota_exceeded"
 ```
 
 **Detection patterns:**
 
 ```
-Alert if: llm-owasp-lab journal shows:
+Alert if: the llm-lab container log shows:
   "override_detected":true          (LLM01 prompt-injection attempt against /llm01/chat)
   "blocked_command"                 (LLM06 attempted a non-allowlisted "tool" command)
   "blocked_path_traversal"          (LLM06/LLM02 attempted to escape the data/sandbox path)

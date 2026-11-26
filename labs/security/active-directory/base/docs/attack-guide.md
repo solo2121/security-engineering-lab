@@ -800,6 +800,8 @@ aws --endpoint-url=http://172.28.128.80:4566 iam attach-user-policy \
 per-category endpoint/test table. `GET /owasp/categories` on the running service lists
 the authoritative current category set (self-verifying, so this guide can't silently
 drift from what the app actually implements). Interactive docs: `http://172.28.128.60:8000/docs`.
+The lab starts by itself on every boot, and `/challenges` lists ten attack, defend and
+verify exercises (one per risk).
 
 ### Endpoint Map
 

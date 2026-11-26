@@ -213,9 +213,11 @@ LOCAL_ACCOUNTS:
 ```
 
 > **Note:** `llm01` does not have a password-based login account. The lab app runs as
-> an unprivileged, no-shell service account (`llmlab`, `/usr/sbin/nologin`) under
-> systemd — see [`llm-lab/README.md`](../llm-lab/README.md#safety-model). Access
-> `llm01` via `vagrant ssh llm01` (key-based) or the API directly.
+> an unprivileged container (read-only, all capabilities dropped) started by Docker at
+> boot, or, if Docker could not be set up, as the no-shell `llmlab` account under systemd —
+> see [`llm-lab/README.md`](../llm-lab/README.md#safety-model). Access
+> `llm01` via `vagrant ssh llm01` (key-based) or the API directly. The secure API keys are
+> random per VM and live in `/opt/llm-lab/.env` (root only): `sudo cat /opt/llm-lab/.env`.
 
 </details>
 
