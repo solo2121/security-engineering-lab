@@ -133,6 +133,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The base lab Vagrantfile is split.** The 962-line file is now a 114-line Vagrantfile plus `vagrant/*.rb` (constants, profiles, provider and Windows helpers, plugin checks) and one file per VM under `vagrant/machines/`, loaded in the original order. Behavior is unchanged: a trace of every call the Vagrantfile makes is identical before and after for all six profiles, both providers, and several environment and plugin variants. `vagrant_manager.py` now reads the files the Vagrantfile loads. See [`vagrant/README.md`](labs/security/active-directory/base/vagrant/README.md).
 - **Root README shortened from 710 to about 395 lines.** Provider and Apple Silicon details, prerequisites, the full command list, the repository structure, the development quickstart and the known limitations moved to `docs/` (`setup/platform-support.md`, `guides/workflows/common-workflows.md`, `development.md`, `known-limitations.md`); the README keeps a short version of each and the same anchors. The skills table moved to the portfolio, and a stray closing code fence at the end of the README is gone.
 - **One llm01 provisioner for both labs.** The segmented lab now provisions `llm01` with the
   base lab's script instead of its own older copy, so the DNS wait, the Docker auto-start and

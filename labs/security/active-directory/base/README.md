@@ -321,7 +321,7 @@ Use the included interactive manager instead of typing raw Vagrant commands.
 python3 scripts/vagrant_manager.py
 ```
 
-It discovers VM names directly from the `Vagrantfile` and is `LAB_PROFILE`-aware (see [Lab Profiles](#lab-profiles)): it reads the `Vagrantfile`'s `LAB_PROFILES` hash and your `LAB_PROFILE` environment variable, so `--list`, the interactive "a. all" option, and a bare `up`/`halt`/`reload`/`provision`/`destroy` with no VM names all default to only the VMs that actually exist under your active profile — not all 11. VMs excluded by the current profile are shown grayed out with a hint (e.g. `print01 (needs LAB_PROFILE=full)`).
+It discovers VM names directly from the `Vagrantfile` (and the files it loads from [`vagrant/`](vagrant/)) and is `LAB_PROFILE`-aware (see [Lab Profiles](#lab-profiles)): it reads the `LAB_PROFILES` hash (in [`vagrant/profiles.rb`](vagrant/profiles.rb)) and your `LAB_PROFILE` environment variable, so `--list`, the interactive "a. all" option, and a bare `up`/`halt`/`reload`/`provision`/`destroy` with no VM names all default to only the VMs that actually exist under your active profile — not all 11. VMs excluded by the current profile are shown grayed out with a hint (e.g. `print01 (needs LAB_PROFILE=full)`).
 
 **Picking an excluded VM in the interactive menu:** you're not locked out of it. The menu asks whether to run just that one action under the profile that includes it — e.g. picking `print01` under `LAB_PROFILE=ad` asks *"'print01' requires LAB_PROFILE=full... Run this one action with LAB_PROFILE=full?"*. Answering yes runs only that command under `full`; the rest of your session (and your shell's `LAB_PROFILE`) is untouched. Answering no cancels cleanly instead of erroring out against Vagrant. Option `8` ("List all lab VMs") shows every VM, its status, and which profile(s) include it, for browsing before you commit to anything.
 
@@ -350,7 +350,7 @@ Use `libvirt-manager.sh` when you need to inspect or clean up libvirt resources 
 
 ## Provisioning Scripts
 
-The `Vagrantfile` defines the VMs, networks and providers. What each VM runs
+The `Vagrantfile` loads the VM, network and provider code from [`vagrant/`](vagrant/README.md) (one file per VM under `vagrant/machines/`). What each VM runs
 at boot lives in [`provision/`](provision/), as ordinary PowerShell (`.ps1`)
 and shell (`.sh`) files, not as inline heredocs:
 

@@ -160,9 +160,30 @@ def find_vagrantfile() -> Path | None:
     return None
 
 
+def read_lab_sources(vagrantfile: Path) -> str:
+    """
+    Return the Vagrantfile's text followed by the files it loads with
+    ``require_relative 'vagrant/...'``, in the order they are loaded.
+
+    The lab's VM definitions and LAB_PROFILES live under ``vagrant/``, so
+    reading only the Vagrantfile would find neither. A Vagrantfile with no
+    such lines (older or single-file labs) is returned unchanged.
+    """
+    text = vagrantfile.read_text(encoding="utf-8", errors="ignore")
+    parts = [text]
+    for rel in re.findall(r"""^\s*require_relative\s+['"](vagrant/[\w./-]+)['"]""", text, re.M):
+        path = vagrantfile.parent / (rel if rel.endswith(".rb") else rel + ".rb")
+        try:
+            parts.append(path.read_text(encoding="utf-8", errors="ignore"))
+        except OSError:
+            continue
+    return "\n".join(parts)
+
+
 def discover_vms(vagrantfile: Path) -> list[str]:
     """
-    Discover VM names from the Vagrantfile.
+    Discover VM names from the Vagrantfile and the files it loads from
+    vagrant/ (see read_lab_sources).
 
     First tries the common:
 
@@ -172,10 +193,7 @@ def discover_vms(vagrantfile: Path) -> list[str]:
     `vagrant status`.
     """
     try:
-        text = vagrantfile.read_text(
-            encoding="utf-8",
-            errors="ignore",
-        )
+        text = read_lab_sources(vagrantfile)
     except OSError as exc:
         console.print(f"[yellow]Warning:[/yellow] Unable to read " f"{vagrantfile}: {exc}")
         return []
@@ -233,7 +251,7 @@ def discover_vms_from_status(vagrantfile: Path) -> list[str]:
 
 def parse_lab_profiles(vagrantfile: Path) -> dict[str, list[str]] | None:
     """
-    Parse the LAB_PROFILES hash out of the Vagrantfile, e.g.:
+    Parse the LAB_PROFILES hash out of the Vagrantfile (or vagrant/profiles.rb), e.g.:
 
         LAB_PROFILES = {
           'minimal' => %w[win10],
@@ -246,7 +264,7 @@ def parse_lab_profiles(vagrantfile: Path) -> dict[str, list[str]] | None:
     every discovered VM as always active, preserving prior behavior.
     """
     try:
-        text = vagrantfile.read_text(encoding="utf-8", errors="ignore")
+        text = read_lab_sources(vagrantfile)
     except OSError:
         return None
 
