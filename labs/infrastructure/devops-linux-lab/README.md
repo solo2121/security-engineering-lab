@@ -35,7 +35,7 @@ A full enterprise-grade cloud-native lab built with Vagrant and KVM/libvirt. Des
 > `cicd-server` also forwards to host port `8080`. Running both VMs together
 > (e.g. `LAB_PROFILE=full`) will fail with a Vagrant port-collision error.
 > Until this is fixed upstream, avoid starting both at once, or edit the
-> `JENKINS_PORT` constant near the top of the Vagrantfile to a free host
+> `JENKINS_PORT` constant in [`vagrant/versions.rb`](vagrant/versions.rb) to a free host
 > port (e.g. `18080`) before running `vagrant up`.
 
 ---
@@ -268,7 +268,7 @@ vagrant ssh ubuntu-lab
 
 ## Provisioning Scripts
 
-The `Vagrantfile` defines the VMs, profiles, networks and providers. What each
+The `Vagrantfile` loads the VM, profile, network and provider code from [`vagrant/`](vagrant/README.md) (one file per role under `vagrant/roles/`). What each
 VM runs at boot lives in [`provision/`](provision/) as plain shell files, not
 as inline heredocs:
 
@@ -506,7 +506,7 @@ vagrant destroy -f
 | Out of memory | Use `LAB_PROFILE=minimal` or `START_VMS=` to deploy only needed VMs. |
 | CI/CD service unreachable | SSH into `cicd-server` and check `docker ps`; restart with `docker restart <service>`. |
 | Jenkins password unknown | Run `docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword` from inside `cicd-server`. |
-| Port 8080 already in use | `devops-1` (Ingress) and `cicd-server` (Jenkins) both default to host port 8080. Don't start both at once, or change `JENKINS_PORT` in the Vagrantfile. |
+| Port 8080 already in use | `devops-1` (Ingress) and `cicd-server` (Jenkins) both default to host port 8080. Don't start both at once, or change `JENKINS_PORT` in `vagrant/versions.rb`. |
 
 ---
 

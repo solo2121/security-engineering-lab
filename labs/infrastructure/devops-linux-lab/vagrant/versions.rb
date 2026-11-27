@@ -1,0 +1,43 @@
+# Pinned versions and ports
+# Tool versions and the host and guest ports used by the lab.
+# Loaded in order by the Vagrantfile (require_relative); see vagrant/README.md.
+
+# PINNED VERSIONS
+HARBOR_CHART_VERSION = "1.14.0"
+INGRESS_NGINX_VERSION = "v1.11.3"
+K3S_VERSION = "v1.31.4+k3s1"
+DOCKER_VERSION = "27.3.1"
+HARBOR_PROJECT = "airgap"
+
+# Enterprise Tools Versions
+ARGOCD_VERSION = "7.7.5"
+PROMETHEUS_VERSION = "68.3.0"
+FALCO_VERSION = "2.3.0"
+KYVERNO_VERSION = "3.3.7"
+CERT_MANAGER_VERSION = "1.16.2"
+TERRAFORM_VERSION = "1.9.8"
+
+# Modern Tools Versions
+OPENTOFU_VERSION = "1.8.0"
+KIND_VERSION = "v0.24.0"
+K3D_VERSION = "v5.7.5"
+KUBECTL_VERSION = "v1.31.0"
+HELM_VERSION = "v3.22.1"
+
+# CI/CD Tools Versions
+GITEA_VERSION = "1.24.3"
+JENKINS_VERSION = "2.516.2-lts-jdk17"
+SONARQUBE_VERSION = "25.7"
+VAULT_VERSION = "1.18.2"
+ZAP_VERSION = "2.16.1"
+GITLEAKS_VERSION = "8.18.4"
+TRIVY_VERSION = "0.57.1"
+
+# CI/CD Ports
+GITEA_PORT = 3000
+JENKINS_PORT = 8080
+JENKINS_HOST_PORT = 18080
+SONARQUBE_PORT = 9000
+VAULT_PORT = 8200
+ZAP_PORT = 8090
+JENKINS_AGENT_PORT = 50000

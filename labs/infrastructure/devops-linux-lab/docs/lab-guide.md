@@ -1537,7 +1537,7 @@ LAB_PROFILE=full vagrant up
 
 > Note: `devops-1`'s Ingress endpoint and Jenkins on `cicd-server` both
 > default to host port 8080. Don't run both VMs at once until this is
-> resolved, or edit `JENKINS_PORT` in the Vagrantfile.
+> resolved, or edit `JENKINS_PORT` in `vagrant/versions.rb`.
 
 ### Get the Jenkins Admin Password
 
