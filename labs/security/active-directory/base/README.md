@@ -1,4 +1,4 @@
-# Active Directory Penetration Testing Lab (KVM/libvirt + VirtualBox) v1.14
+# Active Directory Penetration Testing Lab (KVM/libvirt + VirtualBox) v1.15
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Platform](https://img.shields.io/badge/platform-KVM%2Flibvirt%20%7C%20VirtualBox-blue)](https://www.linux-kvm.org/)
@@ -962,6 +962,11 @@ In-depth docs for this lab live under [`docs/`](docs/):
 ---
 
 ## Changelog
+
+### v1.15 (unreleased)
+
+**Changed:**
+- The `Vagrantfile` (962 lines) is split into a 114-line `Vagrantfile` plus [`vagrant/*.rb`](vagrant/README.md) and one file per VM under `vagrant/machines/`, loaded in the original order. Behavior is unchanged: a trace of every call it makes is identical before and after. `scripts/vagrant_manager.py` reads the files the `Vagrantfile` loads.
 
 ### v1.14 (unreleased)
 

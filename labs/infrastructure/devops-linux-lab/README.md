@@ -429,6 +429,16 @@ vagrant ssh suse-lab     # openSUSE / SLES
 
 Practice topics: LVM, SELinux, networking, systemd, users and permissions, package management, cron, firewalls.
 
+`rocky-lab` and `alma-lab` run release 10 (`bento/rockylinux-10.1` and `almalinux/10`). Release 10 needs a CPU with x86-64-v3 support; if a VM does not boot, use the older boxes or Alma's `x86_64_v2` build. Override the boxes with environment variables:
+
+```bash
+ROCKY_BOX=rockylinux/10 vagrant up rocky-lab        # official Rocky box
+ALMA_BOX=almalinux/10-x86_64_v2 vagrant up alma-lab # for older CPUs
+ALMA_BOX=almalinux/9 ROCKY_BOX=bento/rockylinux-9.6 vagrant up alma-lab rocky-lab
+```
+
+These boxes have not been booted on every provider yet; check that the box you pick publishes your provider on Vagrant Cloud.
+
 ---
 
 ## Ansible Practice

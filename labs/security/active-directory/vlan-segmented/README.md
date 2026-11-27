@@ -262,6 +262,7 @@ Relative to:
 ```text
 .
 ├── Vagrantfile
+├── vagrant/
 ├── provision/
 ├── scripts/
 ├── configs/
@@ -275,6 +276,7 @@ Key components:
 | Path | Purpose |
 |---|---|
 | `Vagrantfile` | VM definitions, profiles, networking — unified for both KVM/libvirt (default) and VirtualBox, select with `--provider`. See [VirtualBox Provider](#virtualbox-provider) |
+| `vagrant/` | The lab code the `Vagrantfile` loads: domain, profiles, VM table, VLAN network, provider and guest helpers, and one file per VM under `vagrant/roles/`. See [`vagrant/README.md`](vagrant/README.md) |
 | `provision/` | PowerShell and shell scripts each VM runs at boot (OPNsense, DC01 phases, member servers, Linux VMs). See [Provisioning Scripts](#provisioning-scripts) |
 | `scripts/` | Lab automation and management tools |
 | `configs/` | Service and VM configuration files |
@@ -282,7 +284,7 @@ Key components:
 
 ### Provisioning Scripts
 
-The `Vagrantfile` defines VMs, VLANs and providers; what each VM runs at boot
+The `Vagrantfile` loads the lab code from [`vagrant/`](vagrant/README.md) (VMs, VLANs and providers); what each VM runs at boot
 lives in [`provision/`](provision/) as plain `.ps1` / `.sh` files rather than
 inline heredocs:
 
@@ -787,6 +789,7 @@ Full deployment:
 ### Unreleased
 
 Changed:
+- The `Vagrantfile` (966 lines) is split into a short `Vagrantfile` plus [`vagrant/*.rb`](vagrant/README.md), loaded in the original order, with one file per VM under `vagrant/roles/`. Behavior is unchanged: a trace of every call it makes is identical before and after. Provider detection is now shared with the base lab.
 - The inline PowerShell and shell provisioners moved out of the `Vagrantfile` into [`provision/`](#provisioning-scripts). The scripts each VM receives are unchanged, with one exception: the OPNsense scripts began with an indented `#!/bin/sh` line that never acted as a shebang, and it was dropped. The `Vagrantfile` shrank from about 2,470 to about 960 lines.
 
 ### v2.1.5 (2026-07-31)

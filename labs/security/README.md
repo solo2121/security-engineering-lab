@@ -8,8 +8,8 @@ This directory contains enterprise-focused Active Directory penetration testing 
 
 | Lab                    | Path                             | Focus                                                                                                                     | Version                                                | Hosts |
 |------------------------|----------------------------------|---------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------|-------|
-| Active Directory Lab   | [`active-directory/base/`](active-directory/base/)     | Complete AD attack chain from recon to Domain Admin; Kerberos attacks, AD CS exploits, lateral movement, cloud and LLM attacks | v1.13 – Enterprise Edition (FLAT NETWORK – OPTIMIZED) | up to 11 (`LAB_PROFILE=full`); 6 by default |
-| VLAN Enterprise AD Lab | [`active-directory/vlan-segmented/`](active-directory/vlan-segmented/) | Multi-subnet enterprise topology with VLAN segmentation, routing, inter-VLAN attacks, and network isolation testing       | v2.1.5                                                 | up to 12 (`LAB_PROFILE=full`); auto-detected by default |
+| Active Directory Lab   | [`active-directory/base/`](active-directory/base/)     | Complete AD attack chain from recon to Domain Admin; Kerberos attacks, AD CS exploits, lateral movement, cloud and LLM attacks | v1.15 – Enterprise Edition (FLAT NETWORK – PROFILE-BASED) | up to 11 (`LAB_PROFILE=full`); 6 by default |
+| VLAN Enterprise AD Lab | [`active-directory/vlan-segmented/`](active-directory/vlan-segmented/) | Multi-subnet enterprise topology with VLAN segmentation, routing, inter-VLAN attacks, and network isolation testing       | v2.1.6                                                 | up to 12 (`LAB_PROFILE=full`); auto-detected by default |
 | Windows Server Hardening Lab (experimental) | [`windows-hardening/`](windows-hardening/) | Defensive counterpart to the AD Pentest Lab — CIS-benchmark-inspired hardening baseline, each control mapped to the AD pentest attack technique it mitigates | v0.1.0 (MVP) | up to 2 (`LAB_PROFILE=full`); 1 by default |
 
 The two AD pentest labs and the hardening lab are all `LAB_PROFILE`-scoped: `vagrant up` with no profile set only creates a subset of VMs sized for the host, not every machine listed above. See each lab's own README for its profile table.
@@ -131,7 +131,8 @@ See [`active-directory/vlan-segmented/README.md`](active-directory/vlan-segmente
 - **`docs/attack-guide.md`** – Complete attack reference (14+ sections).
 - **`docs/lab-credentials.md`** – All seeded credentials and service accounts.
 - **`docs/dc01-deployment-validation.md`** – Recorded validation of a successful `dc01` deployment (static IP, AD promotion, scenario configuration).
-- **`Vagrantfile`** – Lab definition (v1.14 – FLAT NETWORK – PROFILE-BASED), unified for both KVM/libvirt and VirtualBox (select with `--provider`).
+- **`Vagrantfile`** – Lab definition (v1.15 – FLAT NETWORK – PROFILE-BASED), unified for both KVM/libvirt and VirtualBox (select with `--provider`).
+- **`vagrant/`** – The lab code the `Vagrantfile` loads (constants, profiles, provider and guest helpers, one file per VM).
 - **`provision/`** – The PowerShell and shell scripts each VM runs, kept as reviewable files.
 - **`scripts/lab_attack_automation.py`** – Optional automated attack chain.
 
@@ -141,6 +142,7 @@ See [`active-directory/vlan-segmented/README.md`](active-directory/vlan-segmente
 - **`docs/attack-guide.md`** – VLAN-specific attack paths and scenarios.
 - **`docs/lab-credentials.md`** – Credentials for the VLAN environment.
 - **`Vagrantfile`** – Lab definition with VLAN configuration (v2.1.6), unified for both KVM/libvirt and VirtualBox (select with `--provider`).
+- **`vagrant/`** – The lab code the `Vagrantfile` loads (domain, profiles, VM table, VLAN network, provider and guest helpers, one file per VM).
 - **`provision/`** – The scripts each VM runs (OPNsense, Windows, Linux), kept as reviewable files.
 
 ---

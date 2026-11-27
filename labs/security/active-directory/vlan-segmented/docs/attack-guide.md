@@ -1,6 +1,6 @@
 # AD Pentest VLAN Lab — Attack Guide
 
-**Lab version:** 2.1.5  
+**Lab version:** 2.1.6  
 **Author:** Miguel A. Carlo
 
 ---

@@ -69,7 +69,7 @@ open http://172.28.128.60:8000/docs   # Swagger UI (macOS `open`; use xdg-open o
 
 The `llm01` VM's systemd unit sets `lab`, so the VM works exactly as before. A bare
 `uvicorn app.main:app` now starts in `secure` mode. For the secure API, architecture,
-threat model, test matrix, runbook and roadmap see [`docs/`](docs/).
+threat model, test matrix, runbook and roadmap see [`docs/`](docs/): [architecture](docs/architecture.md), [threat model](docs/threat-model.md), [test matrix](docs/test-matrix.md), [runbook](docs/runbook.md).
 
 ## RAG with two tenants
 

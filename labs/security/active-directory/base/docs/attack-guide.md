@@ -1,6 +1,6 @@
 # Active Directory Pentest Lab — Attack Guide
 
-**Lab version:** 1.10  
+**Lab version:** 1.15  
 **Author:** Miguel A. Carlo  
 **Network:** 172.28.128.0/24
 **Release Date:** 2026-07-07
