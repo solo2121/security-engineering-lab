@@ -81,8 +81,8 @@ Host (Linux, KVM/libvirt)
 │
 ├── Linux Practice Nodes
 │   ├── ubuntu-lab  (Ubuntu 24.04)
-│   ├── rocky-lab   (Rocky Linux 9.6)
-│   ├── alma-lab    (AlmaLinux 9.6)
+│   ├── rocky-lab   (Rocky Linux 10)
+│   ├── alma-lab    (AlmaLinux 10)
 │   └── suse-lab    (openSUSE Leap 15.6)
 │
 ├── CI/CD Server

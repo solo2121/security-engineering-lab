@@ -61,3 +61,12 @@ def test_no_file_uses_dir_to_find_the_lab_directory():
         if path.name == "provision.rb":
             continue
         assert "__dir__" not in path.read_text(encoding="utf-8"), f"{path.name} should use LAB_DIR"
+
+
+def test_enterprise_linux_boxes_are_overridable_and_default_to_release_10():
+    settings = (LAB / "vagrant" / "settings.rb").read_text(encoding="utf-8")
+    cluster = (LAB / "vagrant" / "cluster.rb").read_text(encoding="utf-8")
+    assert "ROCKY_BOX = ENV['ROCKY_BOX'] || 'bento/rockylinux-10" in settings
+    assert "ALMA_BOX = ENV['ALMA_BOX'] || 'almalinux/10'" in settings
+    assert '"rocky-lab" => { box: ROCKY_BOX' in cluster
+    assert '"alma-lab" => { box: ALMA_BOX' in cluster

@@ -10,8 +10,8 @@ cluster = {
 
 LINUX_LABS = {
   "ubuntu-lab" => { box: "bento/ubuntu-24.04", ip: vm_ip(20), memory: 2048, cpus: 2, role: "lab" },
-  "rocky-lab" => { box: "bento/rockylinux-9.6", ip: vm_ip(21), memory: 2048, cpus: 2, role: "lab" },
-  "alma-lab" => { box: "bento/almalinux-9.6", ip: vm_ip(22), memory: 2048, cpus: 2, role: "lab" },
+  "rocky-lab" => { box: ROCKY_BOX, ip: vm_ip(21), memory: 2048, cpus: 2, role: "lab" },
+  "alma-lab" => { box: ALMA_BOX, ip: vm_ip(22), memory: 2048, cpus: 2, role: "lab" },
   "suse-lab" => { box: "bento/opensuse-leap-15.6", ip: vm_ip(23), memory: 2048, cpus: 2, role: "lab" }
 }
 

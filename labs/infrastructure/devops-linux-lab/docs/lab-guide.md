@@ -39,8 +39,8 @@
 | kind-lab | .40 | Kind cluster inside Docker | 4096 MB | 2 |
 | k3d-lab | .41 | K3d cluster inside Docker | 4096 MB | 2 |
 | ubuntu-lab | .20 | Ubuntu 24.04 practice node | 2048 MB | 2 |
-| rocky-lab | .21 | Rocky Linux 9.6 practice node | 2048 MB | 2 |
-| alma-lab | .22 | AlmaLinux 9.6 practice node | 2048 MB | 2 |
+| rocky-lab | .21 | Rocky Linux 10 practice node | 2048 MB | 2 |
+| alma-lab | .22 | AlmaLinux 10 practice node | 2048 MB | 2 |
 | suse-lab | .23 | openSUSE Leap 15.6 practice node | 2048 MB | 2 |
 | node1 | .30 | Ansible managed node | 1024 MB | 1 |
 | node2 | .31 | Ansible managed node | 1024 MB | 1 |
