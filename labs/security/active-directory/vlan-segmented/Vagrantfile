@@ -10,8 +10,8 @@
 
 # Author      : Miguel A. Carlo
 # Project     : Enterprise Active Directory Penetration Testing Lab (VLAN Edition)
-# Version     : 2.1.7 - Unified Edition (KVM/libvirt + VirtualBox)
-# Updated     : 2026-08-18
+# Version     : 2.1.6 - Unified Edition (KVM/libvirt + VirtualBox)
+# Updated     : 2026-11-27
 #
 # UNIFIED VAGRANTFILE: this single file supports both KVM/QEMU via
 # vagrant-libvirt and VirtualBox. Select a provider explicitly, e.g.:

@@ -8,7 +8,7 @@
 # Author        : Miguel A. Carlo (solo2121)
 # Version       : 8.2.0 (layout: vagrant/*.rb, see vagrant/README.md)
 # Created       : 2025
-# Last Updated  : 2026-08-16
+# Last Updated  : 2026-11-27
 # Status        : Active Development
 # License       : Personal / Educational Use
 #
@@ -38,7 +38,7 @@ LAB_NAME        = "Enterprise Cloud-Native DevSecOps Lab"
 LAB_VERSION     = "8.2.0"
 LAB_AUTHOR      = "Miguel A. Carlo (solo2121)"
 LAB_CREATED     = "2025"
-LAB_UPDATED     = "2026-08-16"
+LAB_UPDATED     = "2026-11-27"
 LAB_STATUS      = "Active & Maintained"
 
 puts "=================================================="
