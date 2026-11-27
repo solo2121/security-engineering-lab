@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Tests for the base lab's split Vagrantfile (vagrant/*.rb) and the manager that reads it."""
 
-import importlib.util
+import json
 import re
+import subprocess
 import sys
 from pathlib import Path
-from unittest import mock
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 LAB = PROJECT_ROOT / "labs" / "security" / "active-directory" / "base"
@@ -26,24 +26,36 @@ EXPECTED_VMS = [
 ]
 
 
-def _load_manager():
-    # vagrant_manager.py needs the third-party "rich" package, which is not a
-    # development dependency; fall back to a stub so these tests stay light.
-    stubs = {}
-    try:
-        import rich.console  # noqa: F401
-    except ImportError:
-        for name in ("rich", "rich.console", "rich.panel", "rich.prompt", "rich.table", "rich.text"):
-            stubs[name] = mock.MagicMock()
-    with mock.patch.dict(sys.modules, stubs):
-        spec = importlib.util.spec_from_file_location("base_vagrant_manager", MANAGER_PATH)
-        module = importlib.util.module_from_spec(spec)
-        sys.modules["base_vagrant_manager"] = module
-        spec.loader.exec_module(module)
-    return module
+# The manager imports the third-party "rich" package, which is not a development
+# dependency, so it runs in a subprocess with "rich" stubbed out. That also keeps
+# this large script out of the in-process coverage figure, as before this test.
+_MANAGER_SNIPPET = """
+import importlib.util, json, sys
+from pathlib import Path
+from unittest import mock
+
+stubs = {n: mock.MagicMock() for n in ("rich", "rich.console", "rich.panel", "rich.prompt", "rich.table", "rich.text")}
+with mock.patch.dict(sys.modules, stubs):
+    spec = importlib.util.spec_from_file_location("lab_manager", sys.argv[1])
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["lab_manager"] = module
+    spec.loader.exec_module(module)
+vagrantfile = Path(sys.argv[2])
+print(json.dumps({"vms": module.discover_vms(vagrantfile), "profiles": module.parse_lab_profiles(vagrantfile)}))
+"""
 
 
-manager = _load_manager()
+def _manager_view(vagrantfile: Path) -> dict:
+    result = subprocess.run(
+        [sys.executable, "-I", "-c", _MANAGER_SNIPPET, str(MANAGER_PATH), str(vagrantfile)],
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=60,
+    )
+    return json.loads(result.stdout.strip().splitlines()[-1])
+
+
 VAGRANTFILE = LAB / "Vagrantfile"
 
 
@@ -74,11 +86,11 @@ def test_each_machine_file_defines_the_matching_function_and_is_called():
 
 
 def test_manager_discovers_all_vms_in_definition_order():
-    assert manager.discover_vms(VAGRANTFILE) == EXPECTED_VMS
+    assert _manager_view(VAGRANTFILE)["vms"] == EXPECTED_VMS
 
 
 def test_manager_reads_profiles_from_vagrant_dir():
-    profiles = manager.parse_lab_profiles(VAGRANTFILE)
+    profiles = _manager_view(VAGRANTFILE)["profiles"]
     assert profiles is not None
     assert set(profiles) == {"minimal", "ad", "web", "cloud", "llm", "full"}
     assert profiles["llm"] == ["llm01"]
@@ -92,11 +104,10 @@ def test_manager_still_reads_a_single_file_vagrantfile(tmp_path):
         '  config.vm.define "web" do |vm|\n  end\nend\n',
         encoding="utf-8",
     )
-    assert manager.discover_vms(vf) == ["web"]
-    assert manager.parse_lab_profiles(vf) == {"ad": ["web"]}
+    assert _manager_view(vf) == {"vms": ["web"], "profiles": {"ad": ["web"]}}
 
 
 def test_manager_ignores_a_required_file_that_is_missing(tmp_path):
     vf = tmp_path / "Vagrantfile"
     vf.write_text("require_relative 'vagrant/gone'\nconfig.vm.define \"one\"\n", encoding="utf-8")
-    assert manager.discover_vms(vf) == ["one"]
+    assert _manager_view(vf)["vms"] == ["one"]
