@@ -525,9 +525,9 @@ def show_main_menu(
     console.print(table)
 
     console.print("[cyan][A] Start All (provision)  " "[V] DevOps (provision)[/cyan]")
-    console.print("[cyan][W] Workers (no provision)   " "[N] Ansible (no provision)[/cyan]")
-    console.print("[cyan][L] Linux Labs (no provision) " "[M] Modern (no provision)[/cyan]")
-    console.print("[cyan][C] CI/CD Server (no provision) " "[B] Halt All[/cyan]")
+    console.print("[cyan][W] Workers (no re-provision)   " "[N] Ansible (no re-provision)[/cyan]")
+    console.print("[cyan][L] Linux Labs (no re-provision) " "[M] Modern (no re-provision)[/cyan]")
+    console.print("[cyan][C] CI/CD Server (no re-provision) " "[B] Halt All[/cyan]")
     console.print("[cyan][R] Refresh  [Q] Quit[/cyan]")
     console.print(
         "[bright_black]Note: Harbor password only required " "once per session for provisioning[/bright_black]"
@@ -577,7 +577,7 @@ def vm_menu(
 
         console.print("\n[cyan][S] SSH (no password needed)[/cyan]")
         console.print(f"[cyan][U] Up with Provision {pw_note}[/cyan]")
-        console.print("[cyan][T] Start " "(no provision, no password)[/cyan]")
+        console.print("[cyan][T] Start " "(provisions only a new VM, no password)[/cyan]")
         console.print("[cyan][H] Halt (no password)[/cyan]")
         console.print(f"[cyan][R] Reload with Provision {pw_note}[/cyan]")
         console.print(f"[cyan][P] Provision only {pw_note}[/cyan]")
@@ -678,7 +678,8 @@ def start_group(
     Preserves v8.1 behavior:
     - all -> provision
     - DEVOPS -> provision
-    - all other groups -> no provisioning
+    - all other groups -> plain `vagrant up`: Vagrant still provisions a VM the
+      first time it is created, but does not re-provision an existing one
     """
     group_map = {
         "V": "DEVOPS",
