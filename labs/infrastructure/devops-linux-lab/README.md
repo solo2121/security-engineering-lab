@@ -429,15 +429,15 @@ vagrant ssh suse-lab     # openSUSE / SLES
 
 Practice topics: LVM, SELinux, networking, systemd, users and permissions, package management, cron, firewalls.
 
-`rocky-lab` and `alma-lab` run release 10 (`bento/rockylinux-10.1` and `almalinux/10`). Release 10 needs a CPU with x86-64-v3 support; if a VM does not boot, use the older boxes or Alma's `x86_64_v2` build. Override the boxes with environment variables:
+`rocky-lab` and `alma-lab` run release 10 (the official Rocky image from `dl.rockylinux.org` and the `almalinux/10` box). Release 10 needs a CPU with x86-64-v3 support; if a VM does not boot, use the older boxes or Alma's `x86_64_v2` build. Override the boxes with environment variables:
 
 ```bash
-ROCKY_BOX=rockylinux/10 vagrant up rocky-lab        # official Rocky box
+ROCKY_BOX=rockylinux/10 vagrant up rocky-lab        # Vagrant Cloud box instead of the direct image
 ALMA_BOX=almalinux/10-x86_64_v2 vagrant up alma-lab # for older CPUs
 ALMA_BOX=almalinux/9 ROCKY_BOX=bento/rockylinux-9.6 vagrant up alma-lab rocky-lab
 ```
 
-These boxes have not been booted on every provider yet; check that the box you pick publishes your provider on Vagrant Cloud.
+`rocky-lab` downloads the official image directly (about 400 MB, one file per provider) because the `rockylinux/10` entry on Vagrant Cloud pointed to a deleted libvirt image and `bento/rockylinux-10.1` has no libvirt build. Vagrant stores it as the box `rocky10`. These boxes have not been booted on every provider yet.
 
 ---
 

@@ -66,7 +66,11 @@ def test_no_file_uses_dir_to_find_the_lab_directory():
 def test_enterprise_linux_boxes_are_overridable_and_default_to_release_10():
     settings = (LAB / "vagrant" / "settings.rb").read_text(encoding="utf-8")
     cluster = (LAB / "vagrant" / "cluster.rb").read_text(encoding="utf-8")
-    assert "ROCKY_BOX = ENV['ROCKY_BOX'] || 'bento/rockylinux-10" in settings
+    machine = (LAB / "vagrant" / "machine.rb").read_text(encoding="utf-8")
+    assert "ROCKY_BOX = ENV['ROCKY_BOX'] || 'rocky10'" in settings
     assert "ALMA_BOX = ENV['ALMA_BOX'] || 'almalinux/10'" in settings
-    assert '"rocky-lab" => { box: ROCKY_BOX' in cluster
+    assert "Rocky-10-Vagrant-Libvirt.latest" in settings
+    assert "Rocky-10-Vagrant-Vbox.latest" in settings
+    assert '"rocky-lab" => { box: ROCKY_BOX, box_url: ROCKY_BOX_URL' in cluster
     assert '"alma-lab" => { box: ALMA_BOX' in cluster
+    assert "vm.vm.box_url = cfg[:box_url] if cfg[:box_url]" in machine

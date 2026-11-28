@@ -5,6 +5,7 @@
 def define_vm(config, name, cfg)
   config.vm.define name do |vm|
     vm.vm.box = cfg[:box]
+    vm.vm.box_url = cfg[:box_url] if cfg[:box_url]
     vm.vm.hostname = name
 
     # Provider-specific network configuration
